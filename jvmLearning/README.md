@@ -68,9 +68,7 @@ classLoader、类加载过程、双亲委派（破坏双亲委派）、模块化
 
 jps, jstack, jmap、jstat, jconsole, jinfo, jhat, javap, btrace、TProfiler
 
-
-
-
+ [java常用命令.md](java常用命令.md) 
 
 
 
