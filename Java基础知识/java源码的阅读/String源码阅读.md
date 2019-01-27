@@ -46,6 +46,15 @@ private final char value[];
 > 这是一个字符数组，并且是final类型，他用于存储字符串内容，从fianl这个关键字中我们可以看出，String的内容一旦被初始化了是不能被更改的。 虽然有这样的例子： String s = “a”; s = “b” 但是，这并不是对s的修改，而是重新指向了新的字符串， 从这里我们也能知道，**String其实就是用char[]实现的。**
 
 ```java
+private final byte[] value;
+private final byte coder;
+```
+
+值得注意的是：在jdk11的版本中，已经被修改为byte[]类型，同时增加了coder属性。猜测是为了更好的序列化。
+
+coder属性支持LATIN1和UTF-16两种编码方法。
+
+```java
 private int hash;
 ```
 
@@ -131,7 +140,7 @@ String类作为一个java.lang包中比较常用的类,自然有很多重载的�
     }
 ```
 
-当然，这两个构造方法是很少用到的，至少我从来没有使用过，因为当我们有了StringBuffer或者StringBuilfer对象之后可以直接使用他们的toString方法来得到String。关于效率问题，Java的官方文档有提到说使用StringBuilder的toString方法会更快一些，原因是StringBuffer的`toString`方法是synchronized的，在牺牲了效率的情况下保证了线程安全。
+当然，这两个构造方法是很少用到的，至少我从来没有使用过，因为当我们有了StringBuffer或者StringBuilfer对象之后可以直接使用他们的toString方法来得到String（事实上，在jdk11上，也是直接调用buffer.toString()方法来实现的）。关于效率问题，Java的官方文档有提到说使用StringBuilder的toString方法会更快一些，原因是StringBuffer的`toString`方法是synchronized的，在牺牲了效率的情况下保证了线程安全。
 
 ```java
  public String toString() {
@@ -239,7 +248,7 @@ String s = "你好，世界！";
 byte[] bytes = s.getBytes();
 ```
 
-这段代码在不同的平台上运行得到结果是不一样的。**由于我们没有指定编码方式，所以在该方法对字符串进行编码的时候就会使用系统的默认编码方式，比如在中文操作系统中可能会使用GBK或者GB2312进行编码，在英文操作系统中有可能使用iso-8859-1进行编码。**这样写出来的代码就和机器环境有很强的关联性了，所以，为了避免不必要的麻烦，我们要**指定编码方式**。如使用以下方式：
+这段代码在不同的平台''上运行得到结果是不一样的。**由于我们没有指定编码方式，所以在该方法对字符串进行编码的时候就会使用系统的默认编码方式，比如在中文操作系统中可能会使用GBK或者GB2312进行编码，在英文操作系统中有可能使用iso-8859-1进行编码。**这样写出来的代码就和机器环境有很强的关联性了，所以，为了避免不必要的麻烦，我们要**指定编码方式**。如使用以下方式：
 
 ```java
 String s = "你好，世界！"; 
