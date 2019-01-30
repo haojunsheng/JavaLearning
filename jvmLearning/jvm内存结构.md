@@ -134,6 +134,8 @@ Class文件中除了有类的版本、字段、方法、接口等描述信息外
 
 **static数组和static实例都存放在堆内存中**。
 
+![](https://ws4.sinaimg.cn/large/006tNc79ly1fzj50wonbrj30ol12j7bc.jpg)
+
 ## 1.5 堆
 
 线程共享
