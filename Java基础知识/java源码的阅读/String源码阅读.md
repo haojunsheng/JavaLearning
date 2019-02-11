@@ -29,6 +29,47 @@ String str = new String(data);
 
 String类提供了检查字符序列中单个字符的方法，比如有比较字符串，搜索字符串，提取子字符串，创建一个字符串的副本、字符串的大小写转换等。实例映射是基于`Character`类中指定的Unicode标准的。 **Java语言提供了对字符串连接运算符的特别支持（+）**，该符号也可用于将其他类型转换成字符串。字符串的连接实际上是通过`StringBuffer`或者`StringBuilder`的`append()`方法来实现的，字符串的转换通过`toString`方法实现，该方法由 Object 类定义，并可被 Java 中的所有类继承。 除非另有说明，传递一个空参数在这类构造函数或方法会导致`NullPointerException`异常被抛出。**String表示一个字符串通过UTF-16(unicode)格式**，补充字符通过代理对（参见Character类的 Unicode Character Representations 获取更多的信息）表示。索引值参考字符编码单元，所以补充字符在String中占两个位置。
 
+
+
+intern的作用是把编译期无法确定的结果，在运行期加入常量池中。
+
+比如说:
+
+```java
+    String s1 = "Hollis";
+    String s2 = "Chuang";
+    String s3 = s1 + s2;
+    String s4 = "Hollis" + "Chuang";
+```
+
+上面的代码编译之后，常量池中存放的是"Hollis"和"Chuang"。"Hollis" + "Chuang"编译后在常量池中存放的是"HollisChuang"。intern的作用是在运行期间把“HollisChuang”存入常量池。
+
+又比如：
+
+```java
+static final int MAX = 1000 * 10000;
+static final String[] arr = new String[MAX];
+
+public static void main(String[] args) throws Exception {
+    Integer[] DB_DATA = new Integer[10];
+    Random random = new Random(10 * 10000);
+    for (int i = 0; i < DB_DATA.length; i++) {
+        DB_DATA[i] = random.nextInt();
+    }
+    long t = System.currentTimeMillis();
+    for (int i = 0; i < MAX; i++) {
+         arr[i] = new String(String.valueOf(DB_DATA[i % DB_DATA.length])).intern();
+    }
+
+    System.out.println((System.currentTimeMillis() - t) + "ms");
+    System.gc();
+}
+```
+
+在以上代码中，我们明确的知道，会有很多重复的相同的字符串产生，但是这些字符串的值都是只有在运行期才能确定的。所以，只能我们通过`intern`显示的将其加入常量池，这样可以减少很多字符串的重复创建。
+
+
+
 #1. 定义
 
 ```java
