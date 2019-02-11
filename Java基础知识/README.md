@@ -68,9 +68,13 @@ transient、instanceof、volatile、synchronized、final、static、const 原理
 
  [单例模式的七种写法.md](java枚举/单例模式的七种写法.md) 
 
+## Java反射与javassist
 
+反射与工厂模式、 `java.lang.reflect.*`
 
+ [Java 反射与动态代理.md](java反射/Java 反射与动态代理.md) 
 
+ [java工厂模式与反射机制的结合.md](java反射/java工厂模式与反射机制的结合.md) 
 
 
 
