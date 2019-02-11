@@ -28,8 +28,6 @@ java的基础知识包括
 
  [String相关知识.md](String相关知识.md) 
 
-
-
 ## 熟悉java中的各种关键字
 
 transient、instanceof、volatile、synchronized、final、static、const 原理及用法。
@@ -68,9 +66,7 @@ transient、instanceof、volatile、synchronized、final、static、const 原理
 
  [深度分析Java的枚举类型—-枚举的线程安全性及序列化问题.md](java枚举/深度分析Java的枚举类型—-枚举的线程安全性及序列化问题.md) 
 
-
-
-
+ [单例模式的七种写法.md](java枚举/单例模式的七种写法.md) 
 
 
 

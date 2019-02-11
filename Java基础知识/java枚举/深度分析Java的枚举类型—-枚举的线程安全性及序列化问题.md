@@ -122,4 +122,3 @@ public static <T extends Enum<T>> T valueOf(Class<T> enumType,String name) {
 ## 3.枚举实例创建是thread-safe(线程安全的)
 
 > 我们在[深度分析Java的ClassLoader机制（源码级别）](http://www.hollischuang.com/archives/199)和[Java类的加载、链接和初始化](http://www.hollischuang.com/archives/201)两个文章中分别介绍过，当一个Java类第一次被真正使用到的时候静态资源被初始化、Java类的加载和初始化过程都是线程安全的。所以，**创建一个enum类型是线程安全的**。
-
