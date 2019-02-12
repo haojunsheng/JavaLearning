@@ -102,7 +102,11 @@ protobuf、
 
  [Java反序列化漏洞详解.md](java序列化/Java反序列化漏洞详解.md) 
 
+## JMS
 
+JMS(Java Message Service) 
+
+什么是Java消息服务、JMS消息传送模型
 
 
 
