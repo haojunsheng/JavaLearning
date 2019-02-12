@@ -76,9 +76,31 @@ transient、instanceof、volatile、synchronized、final、static、const 原理
 
  [java工厂模式与反射机制的结合.md](java反射/java工厂模式与反射机制的结合.md) 
 
+## java序列化
 
+什么是序列化与反序列化、为什么序列化、
 
+ [Java对象的序列化与反序列化.md](java序列化/Java对象的序列化与反序列化.md) 
 
+序列化底层原理、
+
+ [深入分析Java的序列化与反序列化.md](java序列化/深入分析Java的序列化与反序列化.md) 
+
+序列化与单例模式、
+
+ [单例与序列化的那些事儿.md](java序列化/单例与序列化的那些事儿.md) 
+
+protobuf、
+
+ [Google Protocol Buffer 的使用和原理.md](java序列化/Google Protocol Buffer 的使用和原理.md) 
+
+为什么说序列化并不安全
+
+ [关于 Java 对象序列化您不知道的 5 件事.md](java序列化/关于 Java 对象序列化您不知道的 5 件事（.md) 
+
+ [Java反序列化漏洞通用利用分析.md](java序列化/Java反序列化漏洞通用利用分析.md) 
+
+ [Java反序列化漏洞详解.md](java序列化/Java反序列化漏洞详解.md) 
 
 
 
