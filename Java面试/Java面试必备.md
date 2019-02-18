@@ -202,11 +202,11 @@
 
 %2、servlet中，如何定制`session`的过期时间？
 
- [Servlet 工作原理解析.md](J2EE相关/Servlet 工作原理解析.md) 
+ [Session的工作原理.md](J2EE相关/Session的工作原理.md) 
 
 ！3、Servlet中的`session`工作原理 （`禁用cookie如何使用session`）
 
- [Servlet 工作原理解析.md](J2EE相关/Servlet 工作原理解析.md) 
+ [Session的工作原理.md](J2EE相关/Session的工作原理.md) 
 
 ！4、servlet中，`filter`的应用场景有哪些？
 
@@ -218,7 +218,15 @@
 
 ？6、JSP的动态`include`和静态`include`
 
+ [JSP的动态include和静态include.md](J2EE相关/JSP的动态include和静态include.md) 
+
 ！7、Servlet的生命周期
+
+ [Servlet的生命周期.md](J2EE相关/Servlet的生命周期.md) 
+
+8.Servlet的线程安全问题
+
+ [Servlet的线程安全问题.md](J2EE相关/Servlet的线程安全问题.md) 
 
 ## 6.2 WEB框架的掌握(挑其掌握的一种)
 
