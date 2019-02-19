@@ -25,6 +25,8 @@ JavaLearning
 
  [单例模式.md](Java进阶/设计模式/单例模式.md) 
 
+ [不使用synchronized和lock，如何实现一个线程安全的单例？.md](Java进阶/设计模式/不使用synchronized和lock，如何实现一个线程安全的单例？.md) 
+
 
 
  [简单工厂模式.md](Java进阶/设计模式/简单工厂模式.md) 
