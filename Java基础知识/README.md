@@ -32,6 +32,10 @@ java的基础知识包括
 
 transient、instanceof、volatile、synchronized、final、static、const 原理及用法。
 
+ [static的原理及用法.md](熟悉Java中各种关键字/static的原理及用法.md) 
+
+ [final的原理和用法.md](熟悉Java中各种关键字/final的原理和用法.md) 
+
  [Java中的四种访问级别.md](熟悉Java中各种关键字/Java中的四种访问级别.md) 
 
  [Java泛型中K T V E ？ object等的含义.md](熟悉Java中各种关键字/Java泛型中K T V E ？ object等的含义.md) 
@@ -199,3 +203,13 @@ JMS(Java Message Service)
 **接口和抽象类**
 
  [抽象类与接口的区别.md](面向对象/抽象类与接口的区别.md) 
+
+
+
+**内部类**
+
+ [详解内部类.md](面向对象/详解内部类.md) 
+
+## java基本数据类型
+
+ [Java基本数据类型.md](Java基本数据类型.md) 
