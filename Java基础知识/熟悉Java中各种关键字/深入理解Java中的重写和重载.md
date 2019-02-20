@@ -119,3 +119,16 @@ class Dog{
 # 参考资料
 
 [Overriding vs. Overloading in Java](http://www.programcreek.com/2009/02/overriding-and-overloading-in-java-with-examples/)
+
+
+
+### 成员变量可以被重写吗
+
+成员变量不会被重写，但是子类和父类都拥有一个相同名称（类型可以不相同）的成员变量的时候，父类的成员变量会被隐藏，叫做隐藏域。
+
+在The Java™ Tutorials中的定义如下：
+**Hiding Fields**
+Within a class, a field that has the same name as a field in the superclass hides the superclass’s field, even if their types are different. Within the subclass, the field in the superclass cannot be referenced by its simple name. Instead, the field must be accessed through super, which is covered in the next section. Generally speaking, we don’t recommend hiding fields as it makes code difficult to read.
+
+简单翻译下就是：
+在一个类中，有一个字段的名称和父类的一个字段名称相同，那么这个字段就会将父类的字段隐藏起来，即使它们的类型不相同。在子类中，不能简单的通过名称引用父类被隐藏的字段，而是必须通过super来访问。一般来说，我们不建议隐藏字段，这会使得代码难以阅读
