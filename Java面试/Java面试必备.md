@@ -106,13 +106,28 @@
 ## 4.1 继承、抽象类与接口区别、访问控制(private, public, protected，默认)、多态相关
 
 > ！1、`interface`和 `abstrat class`的区别
+>
+>  [抽象类与接口的区别.md](../Java基础知识/面向对象/抽象类与接口的区别.md) 
+>
 > ！2、是否可以继承多个接口，是否可以继承多个抽象类
+>
 > %3、`Static Nested Class` 和 `Inner Class`的不同
+>
+>  [详解内部类.md](../Java基础知识/面向对象/详解内部类.md) 
+>
 > ！4、`Overload`和`Override`的区别。`Overloaded`的方法是否可以改变返回值的类型?
+>
+>  [深入理解Java中的重写和重载.md](../Java基础知识/熟悉Java中各种关键字/深入理解Java中的重写和重载.md) 
+>
 > ！5、`abstract`的method是否可同时是`static`,是否可同时是`native`，是否可同时是`synchronized`
 > ！6、是否可以继承`String`类
+>
+>  [String相关知识.md](../Java基础知识/String相关知识.md) 
+>
 > ！7、构造器`Constructor`是否可被`override`?
 > ！8、作用域`public`,`protected`,`private`,以及`不写`时的区别?
+>
+>  [Java中的四种访问级别.md](../Java基础知识/熟悉Java中各种关键字/Java中的四种访问级别.md) 
 
 ## 4.2 collections相关的数据结构及API
 
@@ -126,17 +141,40 @@
 ## 4.3 异常体系
 
 > ！1、`Error`、`Exception`和`RuntimeException`的区别，作用又是什么？列举3个以上的`RuntimeException`
+>
+> 其中Error为错误，是程序无法处理的，如OutOfMemoryError、ThreadDeath等，出现这种情况你唯一能做的就是听之任之，交由JVM来处理，不过JVM在大多数情况下会选择终止线程。
+>
+> 而Exception是程序可以处理的异常。它又分为两种CheckedException（受捡异常），一种是UncheckedException（不受检异常）。其中CheckException发生在编译阶段，必须要使用try…catch（或者throws）否则编译不通过。而UncheckedException发生在运行期，具有不确定性，主要是由于程序的逻辑问题所引起的，难以排查，我们一般都需要纵观全局才能够发现这类的异常错误，所以在程序设计中我们需要认真考虑，好好写代码，尽量处理异常，即使产生了异常，也能尽量保证程序朝着有利方向发展。
+>
+> 类型转换异常，算术溢出异常，非法参数异常，索引溢出异常。
+>
 > ！2、Java中的异常处理机制的简单原理和应用
+>
+> 
+>
 > ！3、内存溢出和内存泄露
 
 ## 4.4 其它
 
 > ！1、`String`和`StringBuffer`、`StringBuilder`的区别
+>
+>  [String相关知识.md](../Java基础知识/String相关知识.md) 
+>
 > ！2、String s = “123”;这个语句有几个对象产生
+>
+> 同上
+>
 > ！3、`reader`和`inputstream`区别
 > ！4、`==`和`equals`的区别
+>
+> 
+>
 > %5、`hashCode`的作用
+>
 > %6、`hashCode`和`equals`方法的关系
+>
+>  [Java中的equals()和hashcode()之间关系.md](../Java基础知识/熟悉Java中各种关键字/Java中的equals()和hashcode()之间关系.md) 
+>
 > ？7、Object类中有哪些方法，列举3个以上（可以引导）
 > ！8、`char`型变量中能不能存贮一个中文汉字?为什么?
 > %9、了解过哪些JDK8的新特性，举例描述下相应的特性？
@@ -145,10 +183,19 @@
 > ！12、启动一个线程是用`run()`还是`start()`?
 > %13、海量数据查询、存储
 > ！14、`switch`可以使用那些数据类型
+>
+>  [Java中的Switch.md](../Java基础知识/熟悉Java中各种关键字/Java中的Switch.md) 
+>
 > ！15、多线程与死锁
 > %16、Java的四种引用
 > ！17、序列化与反序列化
+>
+>  [Java对象的序列化与反序列化.md](../Java基础知识/java序列化/Java对象的序列化与反序列化.md) 
+>
 > ！18、自动装箱与拆箱
+>
+>  [一文读懂什么是Java中的自动拆装箱.md](../Java基础知识/一文读懂什么是Java中的自动拆装箱.md) 
+>
 > ！19、正则表达式
 
 # 4.5 JAVA开发工具、环境的使用

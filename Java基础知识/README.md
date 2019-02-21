@@ -36,6 +36,12 @@ transient、instanceof、volatile、synchronized、final、static、const 原理
 
  [final的原理和用法.md](熟悉Java中各种关键字/final的原理和用法.md) 
 
+ [深入理解Java中的volatile关键字.md](熟悉Java中各种关键字/深入理解Java中的volatile关键字.md) 
+
+ [transient关键字使用小记.md](熟悉Java中各种关键字/transient关键字使用小记.md) 
+
+ [深入理解Synchronized关键字.md](熟悉Java中各种关键字/深入理解Synchronized关键字.md) 
+
  [Java中的四种访问级别.md](熟悉Java中各种关键字/Java中的四种访问级别.md) 
 
  [Java泛型中K T V E ？ object等的含义.md](熟悉Java中各种关键字/Java泛型中K T V E ？ object等的含义.md) 
@@ -213,3 +219,28 @@ JMS(Java Message Service)
 ## java基本数据类型
 
  [Java基本数据类型.md](Java基本数据类型.md) 
+
+
+
+## Java异常处理
+
+- 异常类型、正确处理异常、自定义异常
+- Error 和 Exception
+- 异常链、try-with-resources
+- finally 和 return 的执行顺序
+  - 当在try块或catch块中遇到return语句时，finally语句块将在方法返回之前被执行。
+
+ [Java中的异常机制及其原理.md](Java异常/Java中的异常机制及其原理.md) 
+
+ [异常处理的 15 个处理原则.md](Java异常/异常处理的 15 个处理原则.md) 
+
+ [Java异常处理的陋习展播.md](Java异常/Java异常处理的陋习展播.md) 
+
+
+
+
+
+
+
+
+
