@@ -94,11 +94,7 @@ class User implements Serializable {
 }
 ```
 
-[![复制代码](http://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
-
 输出为：
-
-[![复制代码](http://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
 
 ```
 read before Serializable: 
@@ -109,8 +105,6 @@ read after Serializable:
 username: Alexia
 password: null
 ```
-
-[![复制代码](http://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
 
 密码字段为null，说明反序列化时根本没有从文件中获取到信息。
 
@@ -123,10 +117,6 @@ password: null
 3）被transient关键字修饰的变量不再能被序列化，一个静态变量不管是否被transient修饰，均不能被序列化。
 
 第三点可能有些人很迷惑，因为发现在User类中的username字段前加上static关键字后，程序运行结果依然不变，即static类型的username也读出来为“Alexia”了，这不与第三点说的矛盾吗？实际上是这样的：第三点确实没错（一个静态变量不管是否被transient修饰，均不能被序列化），反序列化后类中static型变量username的值为当前JVM中对应static变量的值，这个值是JVM中的不是反序列化得出的，不相信？好吧，下面我来证明：
-
-
-
-[![复制代码](http://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
 
 ```
 import java.io.FileInputStream;
@@ -215,11 +205,9 @@ class User implements Serializable {
 }
 ```
 
-[![复制代码](http://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
-
 运行结果为：
 
-[![复制代码](http://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
+
 
 ```
 read before Serializable: 
@@ -231,15 +219,13 @@ username: jmwang
 password: null
 ```
 
-[![复制代码](http://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
-
 这说明反序列化后类中static型变量username的值为当前JVM中对应static变量的值，为修改后jmwang，而不是序列化时的值Alexia。
 
 # 3. transient使用细节——被transient关键字修饰的变量真的不能被序列化吗？
 
 思考下面的例子：
 
-[![复制代码](http://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
+
 
 ```
 import java.io.Externalizable;
@@ -291,8 +277,6 @@ public class ExternalizableTest implements Externalizable {
     }
 }
 ```
-
-[![复制代码](http://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
 
 content变量会被序列化吗？好吧，我把答案都输出来了，是的，运行结果就是：
 

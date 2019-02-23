@@ -238,6 +238,65 @@ JMS(Java Message Service)
 
 
 
+## Java数组的基本学习
+
+ [Java数组的基本学习.md](Java数组/Java数组的基本学习.md) 
+
+ [Java中的数组是对象吗?.md](Java中的数组是对象吗?.md) 
+
+
+
+## Java中的容器
+
+http://cmsblogs.com/?p=3740
+
+- 常用集合类的使用、ArrayList 和 LinkedList 和 Vector 的区别 、SynchronizedList 和 Vector 的区别、HashMap、HashTable、ConcurrentHashMap 区别、
+- Set 和 List 区别？Set 如何保证元素不重复？
+- Java 8 中 stream 相关用法、apache 集合处理工具类的使用、不同版本的 JDK 中 HashMap 的实现的区别以及原因
+- Collection 和 Collections 区别
+- Arrays.asList 获得的 List 使用时需要注意什么
+- Enumeration 和 Iterator 区别
+- fail-fast 和 fail-safe
+- CopyOnWriteArrayList、ConcurrentSkipListMap
+
+ [集合大家族.md](Java中的容器/集合大家族.md) 
+
+List相关：
+
+ [ArrayList概述.md](Java中的容器/List/ArrayList概述.md) 
+
+ [LinkedList概述.md](Java中的容器/List/LinkedList概述.md) 
+
+ [Stack概述.md](Java中的容器/List/Stack概述.md) 
+
+ [Vector概述.md](Java中的容器/List/Vector概述.md) 
+
+ [List总结.md](Java中的容器/List/List总结.md) 
+
+**Map相关：**
+
+ [HashMap中傻傻分不清楚的那些概念.md](Java中的容器/Map/HashMap中傻傻分不清楚的那些概念.md) 
+
+ [HashMap完全解读.md](Java中的容器/Map/HashMap完全解读.md) 
+
+ [全网把Map中的hash()分析的最透彻的文章，别无二家。.md](Java中的容器/Map/全网把Map中的hash()分析的最透彻的文章，别无二家。.md) 
+
+ [hashCode完全解读.md](Java中的容器/Map/hashCode完全解读.md) 
+
+ [关于HashMap容量的初始化，还有这么多学问。.md](Java中的容器/Map/关于HashMap容量的初始化，还有这么多学问。.md) 
+
+ [Map总结.md](Java中的容器/Map/Map总结.md) 
+
+**Set相关：**
+
+ [HashSet的完全解读.md](Java中的容器/Set/HashSet的完全解读.md) 
+
+ [TreeSet完全解读.md](Java中的容器/Set/TreeSet完全解读.md) 
+
+
+
+
+
 
 
 
