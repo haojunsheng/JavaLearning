@@ -250,11 +250,15 @@ JMS(Java Message Service)
 
 http://cmsblogs.com/?p=3740
 
-- 常用集合类的使用、ArrayList 和 LinkedList 和 Vector 的区别 、SynchronizedList 和 Vector 的区别、HashMap、HashTable、ConcurrentHashMap 区别、
+- 常用集合类的使用、ArrayList 和 LinkedList 和 Vector 的区别 
+- SynchronizedList 和 Vector 的区别
+  -  [SynchronizedList和Vector的区别.md](Java中的容器/List/SynchronizedList和Vector的区别.md) 
+- HashMap、HashTable、ConcurrentHashMap 区别、
 - Set 和 List 区别？Set 如何保证元素不重复？
 - Java 8 中 stream 相关用法、apache 集合处理工具类的使用、不同版本的 JDK 中 HashMap 的实现的区别以及原因
 - Collection 和 Collections 区别
 - Arrays.asList 获得的 List 使用时需要注意什么
+  -  [Arrays.asList的缺陷.md](Java中的容器/List/Arrays.asList的缺陷.md) 
 - Enumeration 和 Iterator 区别
 - fail-fast 和 fail-safe
 - CopyOnWriteArrayList、ConcurrentSkipListMap
