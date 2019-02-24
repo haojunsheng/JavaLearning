@@ -133,9 +133,18 @@
 
 > ！1、列举几个`Java Collection`类库中的常用类
 > ！2、`List`、`Set`、`Map`是否都继承自`Collection`接口？
+>
+> Map不是。
+>
 > ！3、`HashMap`和`Hashtable`的区别
+>
+>  [Map总结.md](../Java基础知识/Java中的容器/Map/Map总结.md) 
+>
 > %4、`HashMap`中是否任何对象都可以做为key,用户自定义对象做为key有没有什么要求？
 > ！5、`Collection` 和 `Collections`的区别
+>
+>  [Java中集合类的关系图谱.md](../Java基础知识/Java中的容器/Java中集合类的关系图谱.md) 
+>
 > %6、其他的集合类：`concurrenthashmap`,`treemap`,`treeset`,`linkedhashmap`等。
 
 ## 4.3 异常体系
