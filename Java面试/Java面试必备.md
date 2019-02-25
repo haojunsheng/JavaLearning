@@ -167,13 +167,16 @@
 
 > ！1、`String`和`StringBuffer`、`StringBuilder`的区别
 >
->  [String相关知识.md](../Java基础知识/String相关知识.md) 
+> [String相关知识.md](../Java基础知识/String相关知识.md) 
 >
 > ！2、String s = “123”;这个语句有几个对象产生
 >
 > 同上
 >
 > ！3、`reader`和`inputstream`区别
+>
+>  [IO基础教程.md](../Java基础知识/Java IO的学习/IO基础教程.md) 
+>
 > ！4、`==`和`equals`的区别
 >
 > 
@@ -182,28 +185,37 @@
 >
 > %6、`hashCode`和`equals`方法的关系
 >
->  [Java中的equals()和hashcode()之间关系.md](../Java基础知识/熟悉Java中各种关键字/Java中的equals()和hashcode()之间关系.md) 
+> [Java中的equals()和hashcode()之间关系.md](../Java基础知识/熟悉Java中各种关键字/Java中的equals()和hashcode()之间关系.md) 
 >
 > ？7、Object类中有哪些方法，列举3个以上（可以引导）
 > ！8、`char`型变量中能不能存贮一个中文汉字?为什么?
+>
+> 可以，因为在java里，char为两个字节。
+>
 > %9、了解过哪些JDK8的新特性，举例描述下相应的特性？
 > ！10、`Input/OutputStream`和`Reader/Writer`有何区别？何为字符，何为字节？
+>
+>  [IO基础教程.md](../Java基础知识/Java IO的学习/IO基础教程.md) 
+>
 > ！11、如何在字符流和字节流之间转换？
+>
+> InputStreamReader和OutputStreamWriter
+>
 > ！12、启动一个线程是用`run()`还是`start()`?
 > %13、海量数据查询、存储
 > ！14、`switch`可以使用那些数据类型
 >
->  [Java中的Switch.md](../Java基础知识/熟悉Java中各种关键字/Java中的Switch.md) 
+> [Java中的Switch.md](../Java基础知识/熟悉Java中各种关键字/Java中的Switch.md) 
 >
 > ！15、多线程与死锁
 > %16、Java的四种引用
 > ！17、序列化与反序列化
 >
->  [Java对象的序列化与反序列化.md](../Java基础知识/java序列化/Java对象的序列化与反序列化.md) 
+> [Java对象的序列化与反序列化.md](../Java基础知识/java序列化/Java对象的序列化与反序列化.md) 
 >
 > ！18、自动装箱与拆箱
 >
->  [一文读懂什么是Java中的自动拆装箱.md](../Java基础知识/一文读懂什么是Java中的自动拆装箱.md) 
+> [一文读懂什么是Java中的自动拆装箱.md](../Java基础知识/一文读懂什么是Java中的自动拆装箱.md) 
 >
 > ！19、正则表达式
 
@@ -237,6 +249,10 @@
 ## 5.4 NIO
 
 > ？1、`IO`和`NIO`本质不同在实际项目使用场景及如何使用
+>
+> IO同步阻塞，NIO同步非阻塞。
+>
+>  [BIO、NIO 和 AIO 的区别.md](../Java基础知识/Java IO的学习/BIO、NIO 和 AIO 的区别.md) 
 
 ## 5.5 其它
 
