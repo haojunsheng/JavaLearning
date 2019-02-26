@@ -84,7 +84,7 @@ public class GenericsDemo14{
 
 ### 受限泛型
 
-```
+```java
 class Info< T>{  
  private T var ;  // 定义泛型变量  
  public void setVar(T var){  
@@ -114,7 +114,7 @@ public class GenericsDemo17{
 
 ------
 
-```
+```java
 class Info< T>{  
  private T var ;  // 定义泛型变量  
  public void setVar(T var){  
@@ -144,7 +144,7 @@ public class GenericsDemo21{
 
 ### Java泛型无法向上转型
 
-```
+```java
 class Info< T>{  
  private T var ;  // 定义泛型变量  
  public void setVar(T var){  
@@ -168,7 +168,7 @@ public class GenericsDemo23{
 
 ### Java泛型接口
 
-```
+```java
 interface Info< T>{  // 在接口上定义泛型  
  public T getVar() ; // 定义抽象方法，抽象方法的返回值就是泛型类型  
 }  
@@ -195,7 +195,7 @@ public class GenericsDemo24{
 
 ------
 
-```
+```java
 interface Info< T>{  // 在接口上定义泛型  
  public T getVar() ; // 定义抽象方法，抽象方法的返回值就是泛型类型  
 }  
@@ -222,7 +222,7 @@ public class GenericsDemo25{
 
 ### Java泛型方法
 
-```
+```java
 class Demo{  
  public < T> T fun(T t){   // 可以接收任意类型的数据  
   return t ;     // 直接把参数返回  
@@ -241,7 +241,7 @@ public class GenericsDemo26{
 
 ### 通过泛型方法返回泛型类型实例
 
-```
+```java
 class Info< T extends Number>{ // 指定上限，只能是数字类型  
  private T var ;  // 此类型由外部决定  
  public T getVar(){  
@@ -269,7 +269,7 @@ public class GenericsDemo27{
 
 ### 使用泛型统一传入的参数类型
 
-```
+```java
 class Info< T>{ // 指定上限，只能是数字类型  
  private T var ;  // 此类型由外部决定  
  public T getVar(){  
@@ -298,7 +298,7 @@ public class GenericsDemo28{
 
 ### Java泛型数组
 
-```
+```java
 public class GenericsDemo30{  
  public static void main(String args[]){  
   Integer i[] = fun1(1,2,3,4,5,6) ; // 返回泛型数组  
@@ -318,7 +318,7 @@ public class GenericsDemo30{
 
 ### Java泛型的嵌套设置
 
-```
+```java
 class Info< T,V>{  // 接收两个泛型类型  
  private T var ;  
  private V value ;  
