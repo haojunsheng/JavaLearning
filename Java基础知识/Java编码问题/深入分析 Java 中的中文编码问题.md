@@ -150,18 +150,22 @@ Java 中还有一个 ByteBuffer 类，它提供一种 char 和 byte 之间的软
 
 ##### ![Figure xxx. Requires a heading](https://ws3.sinaimg.cn/large/006tKfTcly1g0jrz83eu6g30fw03igli.gif)
 
-GB2312 对应的 Charset 是 sun.nio.cs.ext. EUC_CN 而对应的 CharsetDecoder 编码类是 sun.nio.cs.ext. DoubleByte，GB2312 字符集有一个 char 到 byte 的码表，不同的字符编码就是查这个码表找到与每个字符的对应的字节，然后拼装成 byte 数组。查表的规则如下：`c2b[c2bIndex[char >> 8] + (char & 0xff)]`如果查到的码位值大于 oxff 则是双字节，否则是单字节。双字节高 8 位作为第一个字节，低 8 位作为第二个字节，如下代码所示：
+GB2312 对应的 Charset 是 sun.nio.cs.ext. EUC_CN 而对应的 CharsetDecoder 编码类是 sun.nio.cs.ext. DoubleByte，GB2312 字符集有一个 char 到 byte 的码表，不同的字符编码就是查这个码表找到与每个字符的对应的字节，然后拼装成 byte 数组。查表的规则如下：
+
+`c2b[c2bIndex[char >> 8] + (char & 0xff)]`
+
+如果查到的码位值大于 oxff 则是双字节，否则是单字节。双字节高 8 位作为第一个字节，低 8 位作为第二个字节，如下代码所示：
 
 ```
 if (bb > 0xff) {    // DoubleByte 
-           ``if (dl - dp < ``2``) 
-               ``return CoderResult.OVERFLOW; 
-           ``da[dp++] = (byte) (bb >> 8); 
-           ``da[dp++] = (byte) bb; 
+           if (dl - dp < 2) 
+               return CoderResult.OVERFLOW; 
+           da[dp++] = (byte) (bb >> 8); 
+           da[dp++] = (byte) bb; 
 } else {                      // SingleByte 
-           ``if (dl - dp < 1) 
-               ``return CoderResult.OVERFLOW; 
-           ``da[dp++] = (byte) bb; 
+           if (dl - dp < 1) 
+               return CoderResult.OVERFLOW; 
+           da[dp++] = (byte) bb; 
 }
 ```
 

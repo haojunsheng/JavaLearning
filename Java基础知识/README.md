@@ -140,10 +140,6 @@ JMS(Java Message Service)
 
  [Java中泛型的理解.md](java泛型/Java中泛型的理解.md) 
 
-## Java集合类
-
-
-
 ## Java单元测试
 
 - 什么地方改写单测
@@ -307,7 +303,7 @@ List相关：
 
  [同步与异步、阻塞与非阻塞概念以及Linux五种IO模型.md](Java IO的学习/同步与异步、阻塞与非阻塞概念以及Linux五种IO模型.md) 
 
-
+ [Java IO不迷茫，一文为你导航！.md](Java IO的学习/Java IO不迷茫，一文为你导航！.md) 
 
 ## Java语法糖
 
@@ -365,9 +361,13 @@ Class 类
 
 
 
+## Java并发编程
 
+![](https://ws4.sinaimg.cn/large/006tKfTcly1g0ju1v2v01j30u018eadn.jpg)
 
+并发与并行的区别,线程，与进程的区别，共享变量
 
+ [到底什么是线程安全.md](Java并发编程/到底什么是线程安全.md) 
 
 
 
