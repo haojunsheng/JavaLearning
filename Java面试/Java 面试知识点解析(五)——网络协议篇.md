@@ -1,12 +1,18 @@
+[TOC]
+
 > 前排引用说明及好文推荐：[面试/笔试第一弹 —— 计算机网络面试问题集锦——书呆子Rico](https://blog.csdn.net/justloveyou_/article/details/78303617)
 
-## （一）网络基础知识
+
+
+# 前言
+
+> 网络协议方面，考察最多的包括服务器和客户端在三次握手、四次挥手过程中的状态变化；还有网络拥塞控制，及其解决办法等。
 
 ### 1）Http和Https的区别？
 
-答：Http协议运行在TCP之上，明文传输，客户端与服务器端都无法验证对方的身份；Https是身披SSL(Secure Socket Layer)外壳的Http，运行于SSL上，SSL运行于TCP之上，是添加了加密和认证机制的HTTP。二者之间存在如下不同：
+答：Http协议运行在TCP之上，明文传输，客户端与服务器端都无法验证对方的身份；Https是身披SSL(Secure Socket Layer)外壳的Http，运行于SSL上，SSL运行于TCP之上，是添加了**加密和认证机制**的HTTP。二者之间存在如下不同：
 
-- 端口不同：Http与Http使用不同的连接方式，用的端口也不一样，前者是80，后者是443；
+- 端口不同：Http与Https使用不同的连接方式，用的端口也不一样，前者是80，后者是443；
 - 资源消耗：和HTTP通信相比，Https通信会由于加减密处理消耗更多的CPU和内存资源；
 - 开销：Https通信需要证书，而证书一般需要向认证机构购买；
 
@@ -22,9 +28,11 @@ Https的加密机制是一种共享密钥加密和公开密钥加密并用的混
 
 由于非对称加密的方式不需要发送用来解密的私钥，所以可以保证安全性；但是和对称加密比起来，它非常的慢，所以我们还是要用对称加密来传送消息，但对称加密所使用的密钥我们可以通过非对称加密的方式发送出去。
 
+**对称加密来传送信息，非对称加密来传送对称密钥。**
+
 ------
 
-### 3）三次握手与四次挥手
+### 3）三次握手与四次挥手（重要）
 
 答：
 
@@ -34,7 +42,7 @@ Https的加密机制是一种共享密钥加密和公开密钥加密并用的混
 - 第二次握手：Server收到数据包后由标志位SYN=1知道Client请求建立连接，Server将标志位SYN和ACK都置为1，ack=J+1，随机产生一个值seq=K，并将该数据包发送给Client以确认连接请求，Server进入SYN_RCVD状态。
 - 第三次握手：Client收到确认后，检查ack是否为J+1，ACK是否为1，如果正确则将标志位ACK置为1，ack=K+1，并将该数据包发送给Server，Server检查ack是否为K+1，ACK是否为1，如果正确则连接建立成功，Client和Server进入ESTABLISHED状态，完成三次握手，随后Client与Server之间可以开始传输数据了。
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-ef0439a102c5432f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](https://ws3.sinaimg.cn/large/006tKfTcgy1g0lwya5icbj30ef073glh.jpg)
 
 **(2). 四次挥手（我要和你断开链接；好的，断吧。我也要和你断开链接；好的，断吧）：**
 
@@ -43,11 +51,11 @@ Https的加密机制是一种共享密钥加密和公开密钥加密并用的混
 - 第三次挥手：Server发送一个FIN，**用来关闭Server到Client的数据传送**，Server进入LAST_ACK状态。
 - 第四次挥手：Client收到FIN后，Client进入TIME_WAIT状态，接着发送一个ACK给Server，确认序号为收到序号+1，Server进入CLOSED状态，完成四次挥手。
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-23ddca6bf4289f92.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](https://ws4.sinaimg.cn/large/006tKfTcgy1g0lx2s95daj30e308h744.jpg)
 
 **(3). 通俗一点的理解就是：**
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-895124472bd4317b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](https://ws3.sinaimg.cn/large/006tKfTcgy1g0lx91cmu4j30pr0or405.jpg)
 
 ------
 
@@ -72,7 +80,7 @@ Https的加密机制是一种共享密钥加密和公开密钥加密并用的混
 
 ### 6）TCP 协议如何来保证传输的可靠性
 
-答：TCP 提供一种面向连接的、可靠的字节流服务。其中，面向连接意味着两个使用 TCP 的应用（通常是一个客户和一个服务器）在彼此交换数据之前必须先建立一个 TCP 连接。在一个 TCP 连接中，仅有两方进行彼此通信；而字节流服务意味着两个应用程序通过 TCP 链接交换 8 bit 字节构成的字节流，TCP 不在字节流中插入记录标识符。
+答：TCP 提供一种面向连接的、可靠的字节流服务。其中，面向连接意味着两个使用 TCP 的应用（通常是一个客户和一个服务器）在彼此交换数据之前必须先建立一个 TCP 连接。在一个 TCP 连接中，仅有**两方进行彼此通信**；而字节流服务意味着两个应用程序通过 TCP 链接交换 8 bit 字节构成的字节流，TCP 不在字节流中插入记录标识符。
 
 **对于可靠性，TCP通过以下方式进行保证：**
 
@@ -138,11 +146,11 @@ Https的加密机制是一种共享密钥加密和公开密钥加密并用的混
 
 现在考虑这样一个问题，如果我们的参数值中就包含=或&这种特殊字符的时候该怎么办？比如，“name1=value1”，其中value1的值是“va&lu=e1”字符串，那么实际在传输过程中就会变成这样“name1=va&lu=e1”。这样，我们的本意是只有一个键值对，但是服务端却会解析成两个键值对，这样就产生了歧义。
 
-那么，如何解决上述问题带来的歧义呢？解决的办法就是对参数进行URL编码：例如，我们对上述会产生歧义的字符进行URL编码后结果：“name1=va%26lu%3D”，这样服务端会把紧跟在“%”后的字节当成普通的字节，就是不会把它当成各个参数或键值对的分隔符。
+那么，如何解决上述问题带来的歧义呢？解决的办法就是对参数进行URL编码：例如，我们对上述会产生歧义的字符进行URL编码后结果：“name1=va%26lu%3D”，这样服务端会把紧跟**在“%”后的字节当成普通的字节**，就是不会把它当成各个参数或键值对的分隔符。
 
 ------
 
-### 9）TCP与UDP的区别
+### 9）TCP与UDP的区别(重要)
 
 答：TCP (Transmission Control Protocol)和UDP(User Datagram Protocol)协议属于传输层协议，它们之间的区别包括：
 
@@ -195,7 +203,7 @@ Https的加密机制是一种共享密钥加密和公开密钥加密并用的混
 
 **拥塞避免**：拥塞避免算法让拥塞窗口缓慢增长，即每经过一个往返时间RTT就把发送方的拥塞窗口cwnd加1，而不是加倍，这样拥塞窗口按线性规律缓慢增长。
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-15f6b11bb3c818ed.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](https://ws4.sinaimg.cn/large/006tKfTcgy1g0lytbsssej30hl09mtbk.jpg)
 
 **(2). 快重传 + 快恢复：**
 

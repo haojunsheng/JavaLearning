@@ -365,9 +365,70 @@ Class 类
 
 ![](https://ws4.sinaimg.cn/large/006tKfTcly1g0ju1v2v01j30u018eadn.jpg)
 
-并发与并行的区别,线程，与进程的区别，共享变量
+**并发与并行的区别,线程，与进程的区别，共享变量**
 
  [到底什么是线程安全.md](Java并发编程/到底什么是线程安全.md) 
+
+**进一步理解java中的线程;**
+
+- 线程的状态
+- 线程调度
+- 线程间通信
+- 守护线程
+- 幽灵线程
+- 线程优先级
+- ThreadLocal
+- 线程池
+  - 自己设计线程池、submit() 和 execute()、线程池原理
+  - 为什么不允许使用 Executors 创建线程池
+
+ [进一步理解java中的线程.md](Java并发编程/进一步理解java中的线程.md) 
+
+ [ThreadLocal.md](Java并发编程/ThreadLocal.md) 
+
+ [Java线程池的实现原理.md](Java并发编程/Java线程池的实现原理.md) 
+
+**Java线程的创建方式：**
+
+ [java创建线程的四种方式.md](Java并发编程/java创建线程的四种方式.md) 
+
+**计算机硬件升级带来的问题**
+
+- 多级缓存和一致性问题
+- CPU时间片与原子性问题
+- 指令重排与有序性问题
+
+ [计算机硬件升级带来的问题.md](Java并发编程/计算机硬件升级带来的问题.md) 
+
+**并发问题和内存模型**
+
+ [并发问题和内存模型.md](Java并发编程/并发问题和内存模型.md) 
+
+**Synchronized**
+
+- Synchronized的用法
+
+ [再有人问你synchronized是什么，就把这篇文章发给他。.md](Java并发编程/再有人问你synchronized是什么，就把这篇文章发给他。.md) 
+
+- Synchronized实现原理
+
+ [Synchronized实现原理.md](Java并发编程/Synchronized实现原理.md) 
+
+monitor实现原理
+
+ [Moniter的实现原理.md](Java并发编程/Moniter的实现原理.md) 
+
+Synchronized和线程安全
+
+ [再有人问你synchronized是什么，就把这篇文章发给他。.md](Java并发编程/再有人问你synchronized是什么，就把这篇文章发给他。.md) 
+
+
+
+
+
+
+
+
 
 
 
