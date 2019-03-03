@@ -330,3 +330,214 @@ getMap()方法可以获取当前线程所对应的ThreadLocalMap，如下：
 > - ThreadLocal 不是用于解决共享变量的问题的，也不是为了协调线程同步而存在，而是为了方便每个线程处理自己的状态而引入的一个机制。这点至关重要。
 > - 每个Thread内部都有一个ThreadLocal.ThreadLocalMap类型的成员变量，该成员变量用来存储实际的ThreadLocal变量副本。
 > - ThreadLocal并不是为线程保存对象的副本，它仅仅只起到一个索引的作用。它的主要木得视为每一个线程隔离一个类的实例，这个实例的作用范围仅限于线程内部。
+
+
+
+
+
+张大胖上午遇到了一个棘手的问题，他在一个AccountService中写了一段类似这样的代码：
+
+
+
+```
+Context ctx = new Context();
+ctx.setTrackerID(.....)
+```
+
+
+
+然后这个AccountService 调用了其他Java类，不知道经过了多少层调用以后，最终来到了一个叫做AccountUtil的地方，在这个类中需要使用Context中的trackerID来做点儿事情：
+
+
+
+![image-20190302151054799](https://ws2.sinaimg.cn/large/006tKfTcly1g0ogwhcerrj30ps0nwn92.jpg)
+
+
+
+很明显，**这个AccountUtil没有办法拿到Context对象， 怎么办？**
+
+
+
+张大胖想到，要不把Context对象一层层地传递下去，这样AccountUtil不就可以得到了吗？
+
+
+
+![image-20190302151107821](https://ws1.sinaimg.cn/large/006tKfTcly1g0ogwp45cnj30tc0o6h16.jpg)
+
+可是这么做改动量太大！涉及到的每一层函数调用都得改动，有很多类都不属于自己的小组管理，还得和别人协调。 
+
+
+
+更要命的是有些类根本就没有源码，想改都改不了。
+
+
+
+这也难不住我，张大胖想：可以把那个set/get TrackerID的方法改成静态(static)的，这样不管跨多少层调用都没有问题！
+
+
+
+```
+public class Context{
+    public static String getTrackerID(){
+        ......
+    }
+    public static void setTrackerID(String id){
+        ......
+    }
+}
+```
+
+
+
+![image-20190302151121906](https://ws1.sinaimg.cn/large/006tKfTcly1g0ogwyfyebj30qg0mqgvs.jpg)
+
+
+
+这样就不用一层层地传递了，Perfect！
+
+
+
+张大胖得意洋洋地把代码提交给Bill做Review。 
+
+
+
+Bill看了一眼就指出了致命的问题： 多线程并发的时候出错！
+
+
+
+张大胖恨不得找个地缝钻进去：又栽在多线程上面了，这次犯的还是低级错误！
+
+
+
+线程1调用了Context.setTrackerID()， 线程2 也调用了Context.setTrackerID()，数据互相覆盖，不出乱子才怪。
+
+
+
+张大胖感慨地说：“像我这样中情况，需要在某处设置一个值，然后经过重重方法调用，到了另外一处把这个值取出来，又要线程安全，实在是不好办啊， 对了，**我能不能把这个值就放到线程中？ 让线程携带着这个值到处跑，这样我无论在任何地方都可以轻松获得了**！”
+
+
+
+Bill说：“有啊，每个线程都有一个私家领地！ 在Thread这个类中有个专门的数据结构，你可以放入你的TrackerID，然后到任何地方都可以把这个TrackerID给取出来。”
+
+
+
+“这么好？ ” 
+
+
+
+张大胖打开JDK中的Thread类，仔细查看，果然在其中有个叫做threadLocals的变量，还是个Map类型 , 但是在Thread类中却没有对这个变量操作的方法。 
+
+
+
+看到张大胖的疑惑，Bill说：“也许你注意到了，这个变量不是通过Thread的访问的，**对他的访问委托给了ThreadLocal这个类。**”
+
+
+
+“那我怎么使用它？”
+
+
+
+“非常简单， 你可以轻松创建一个ThreadLocal类的实例：
+
+
+
+```
+ThreadLocal<String> threadLocalA= new ThreadLocal<String>();
+
+线程1： threadLocalA.set("1234");
+线程2： threadLocalA.set("5678");
+```
+
+
+
+像‘1234’， ‘5678’这些值都会放到自己所属的线程对象中。”
+
+
+
+![image-20190302151139118](https://ws2.sinaimg.cn/large/006tKfTcly1g0ogx8uk3rj30l60l879x.jpg)
+
+
+
+“等你使用的时候，可以这么办：”
+
+
+
+```
+线程1： threadLocalA.get()  --> "1234"
+线程2： threadLocalA.get() --> "5678"
+```
+
+
+
+“明白了，**相当于把各自的数据放入到了各自Thread这个对象中去了**，每个线程的值自然就区分开了。 可是我不明白的是为什么那个数据结构是个map 呢？”
+
+
+
+“你想想，假设你创建了另外一个threadLocalB：”
+
+
+
+```
+ThreadLocal<Integer> threadLocalB = new ThreadLocal<Integer>();
+
+线程1： threadLocalB.set(30);
+线程2： threadLocalB.set(40);
+```
+
+
+
+那线程对象的Map就起到作用了：
+
+
+
+![image-20190302151151506](https://ws3.sinaimg.cn/large/006tKfTcly1g0ogxgsmroj30m00ns7bp.jpg)
+
+
+
+“明白了，这个私家领地还真是好用，我现在就把我那个Context给改了，让它使用ThreadLocal：”
+
+```
+public class Context {
+    private static final ThreadLocal<String> mThreadLocal 
+        = new ThreadLocal<String>();
+
+    public static void setTrackerID(String id) {
+        mThreadLocal.set(id); 
+    }   
+    public static String getTrackerID() {
+        return mThreadLocal.get();
+    }   
+
+}
+```
+
+
+
+小结：
+
+
+
+ThreadLocal这个名字起得有点让人误解， 很容易让人认为是“本地线程”， 其实是用来维护本线程的变量。 对照着上面的原理讲解，我想大家可以自行去看ThreadLocal的源码，轻松理解。
+
+
+
+ThreadLocal 并不仅仅是Java中的概念，其他语言例如Python,C#中也有，作用类似。
+
+
+
+ThreadLocal在日常工作中用得不多，但是在框架（如Spring）中是个基础性的技术，在事务管理，AOP等领域都能找到。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

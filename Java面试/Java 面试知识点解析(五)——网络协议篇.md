@@ -203,7 +203,7 @@ Https的加密机制是一种共享密钥加密和公开密钥加密并用的混
 
 **拥塞避免**：拥塞避免算法让拥塞窗口缓慢增长，即每经过一个往返时间RTT就把发送方的拥塞窗口cwnd加1，而不是加倍，这样拥塞窗口按线性规律缓慢增长。
 
-![img](https://ws4.sinaimg.cn/large/006tKfTcgy1g0lytbsssej30hl09mtbk.jpg)
+![img](https://ws4.sinaimg.cn/large/006tKfTcly1g0nfe30yftj30hl09m0to.jpg)
 
 **(2). 快重传 + 快恢复：**
 
@@ -213,13 +213,13 @@ Https的加密机制是一种共享密钥加密和公开密钥加密并用的混
 
 **快恢复**：快重传配合使用的还有快恢复算法，当发送方连续收到三个重复确认时，就执行“乘法减小”算法，把ssthresh门限减半，但是接下去并不执行慢开始算法：因为如果网络出现拥塞的话就不会收到好几个重复的确认，所以发送方现在认为网络可能没有出现拥塞。所以此时不执行慢开始算法，而是将cwnd设置为ssthresh的大小，然后执行拥塞避免算法。
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-0d52d7832b4a9c2a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](https://ws4.sinaimg.cn/large/006tKfTcly1g0nfniemiqj30iv0a1n08.jpg)
 
 ------
 
 ### 12）浏览器中输入：“`www.xxx.com`” 之后都发生了什么？请详细阐述。
 
-解析：经典的网络协议问题。
+解析：**经典的网络协议问题**。
 
 答：
 
@@ -263,15 +263,15 @@ HTTP 的这种特性有优点也有缺点：
 
 Cookie实际上是一小段的文本信息。客户端请求服务器，如果服务器需要记录该用户状态，就使用response向客户端浏览器颁发一个Cookie，而客户端浏览器会把Cookie保存起来。当浏览器再请求该网站时，浏览器把请求的网址连同该Cookie一同提交给服务器，服务器检查该Cookie，以此来辨认用户状态。服务器还可以根据需要修改Cookie的内容。
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-5cba15b5ebdc21fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](https://ws3.sinaimg.cn/large/006tKfTcly1g0ng1xpsxij30vi0e2q40.jpg)
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-aa39c7450ebaeb48.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](https://ws2.sinaimg.cn/large/006tKfTcly1g0ng1zx07aj30pv034mx1.jpg)
 
 **(2). Session 及其相关 API：**
 
 同样地，会话状态也可以保存在服务器端。客户端请求服务器，如果服务器记录该用户状态，就获取Session来保存状态，这时，如果服务器已经为此客户端创建过session，服务器就按照sessionid把这个session检索出来使用；如果客户端请求不包含sessionid，则为此客户端创建一个session并且生成一个与此session相关联的sessionid，并将这个sessionid在本次响应中返回给客户端保存。保存这个sessionid的方式可以采用 **cookie机制** ，这样在交互过程中浏览器可以自动的按照规则把这个标识发挥给服务器；若浏览器禁用Cookie的话，可以通过 **URL重写机制** 将sessionid传回服务器。
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-4045b82e54d98900.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](https://ws4.sinaimg.cn/large/006tKfTcly1g0ng2heeb7j30yg036t8y.jpg)
 
 **(3). Session 与 Cookie 的对比：**
 

@@ -6,7 +6,7 @@
 
 在 Web 容器中，Servlet 主要经历 4 个阶段，如下图：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-3504a9d7d5d7ddf1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](https://ws1.sinaimg.cn/large/006tKfTcly1g0ni11pifoj30jg070jry.jpg)
 
 **1. 加载 Servlet**：当 Tomcat 第一次访问 Servlet 的时候，Tomcat 会负责创建 Servlet 的实例。
 
@@ -34,17 +34,9 @@
 
 3. 解析
 
-    
+     
 
-   Tomcat 服务器根目录下的
-
-    
-
-   /config/server.xml
-
-    
-
-   文件：
+   Tomcat 服务器根目录下的/config/server.xml文件：
 
    ```
    <Context docBase="D:\javaPros\test\webapp" path="xxx1" />
@@ -56,17 +48,7 @@
    <Context />
    ```
 
-   元素的
-
-    
-
-   path属性
-
-    
-
-   属性为
-
-    
+   元素的path属性属性为
 
    ```
    xxx1
@@ -75,53 +57,13 @@
    - 若找不到，则返回 **404错误**
    - 若找到了，则解析该`<Context />`元素，得到`docBase`属性，获取当前访问 Web 项目的跟的绝对路径：`D:\javaPros\test\webapp`
 
-4. 从
-
-   ```
-   D:\javaPros\test\webapp
-   ```
-
-   下的
-
-    
-
-   WEB-INF
-
-    
-
-   下找到
-
-    
-
-   web.xml
-
-    
-
-   文件
-
-   判断
-
-    
-
-   web.xml
-
-    
-
-   文件中是否有
-
-    
+4. 从D:\javaPros\test\webapp下的WEB-INF下找到web.xml文件判断web.xml文件中是否有
 
    ```
    <url-pattern>
    ```
 
-    
-
-   的文本内容为
-
-    
-
-   /xxx2
+    的文本内容为/xxx2
 
    - 若找不到，则返回 **404错误**
    - 若找到了，则继续**获取该资源对应 Servlet 类的全限名称：** xxx.xxx
@@ -759,7 +701,7 @@ DispatcherServlet 将会使用视图解析器（view resolver）来将逻辑视�
 
 ------
 
-### 15）MyBatis 中占位符 `#` 和 `$` 的区别
+### 15）MyBatis 中占位符 `#` 和 `###  的区别
 
 区别如下：
 

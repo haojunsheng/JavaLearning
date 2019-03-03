@@ -87,7 +87,7 @@ public synchronized void doSth();
 
 ObjectMonitor类中提供了几个方法，如`enter`、`exit`、`wait`、`notify`、`notifyAll`等。`sychronized`加锁的时候，会调用objectMonitor的enter方法，解锁的时候会调用exit方法。（关于Monitor详见[深入理解多线程（四）—— Moniter的实现原理](http://www.hollischuang.com/archives/2030)）
 
-### synchronized与原子性
+### synchronized与原子性（monitorenter`和`monitorexit）
 
 原子性是指一个操作是不可中断的，要全部执行完成，要不就都不执行。
 
@@ -99,7 +99,7 @@ ObjectMonitor类中提供了几个方法，如`enter`、`exit`、`wait`、`notif
 
 > 线程1在执行`monitorenter`指令的时候，会对Monitor进行加锁，加锁后其他线程无法获得锁，除非线程1主动解锁。即使在执行过程中，由于某种原因，比如CPU时间片用完，线程1放弃了CPU，但是，他并没有进行解锁。而由于`synchronized`的锁是可重入的，下一个时间片还是只能被他自己获取到，还是会继续执行代码。直到所有代码执行完。这就保证了原子性。
 
-### synchronized与可见性
+### synchronized与可见性（锁住对象）
 
 可见性是指当多个线程访问同一个变量时，一个线程修改了这个变量的值，其他线程能够立即看得到修改的值。
 
@@ -109,7 +109,7 @@ ObjectMonitor类中提供了几个方法，如`enter`、`exit`、`wait`、`notif
 
 所以，synchronized关键字锁住的对象，其值是具有可见性的。
 
-### synchronized与有序性
+### synchronized与有序性（）
 
 有序性即程序执行的顺序按照代码的先后顺序执行。
 

@@ -6,7 +6,7 @@
 
 例如：
 
-```
+```java
 -------------创建名为GetUserAccount的存储过程----------------
 create Procedure GetUserAccount
 as
@@ -38,7 +38,7 @@ exec GetUserAccount
 
 我们现在需要建立一个描述学校教务的数据库，该数据库涉及的对象包括学生的学号（Sno）、所在系（Sdept）、系主任姓名（Mname）、课程号（Cno）和成绩（Grade），假设我们使用单一的关系模式 Student 来表示，那么根据现实世界已知的信息，会描述成以下这个样子：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-344feccbb3cb1fad.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](https://ws3.sinaimg.cn/large/006tKfTcly1g0ngdidr6dj30sx081aaf.jpg)
 
 但是，这个关系模式存在以下问题：
 
@@ -57,7 +57,7 @@ exec GetUserAccount
 
 1NF（第一范式）是对属性具有**原子性**的要求，不可再分，例如：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-7a54e7d5d8fbf659.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](https://ws4.sinaimg.cn/large/006tKfTcly1g0ngfjchxgj30dm023741.jpg)
 
 如果认为最后一列还可以再分成出生年，出生月，出生日，则它就不满足第一范式的要求。
 
@@ -65,7 +65,7 @@ exec GetUserAccount
 
 2NF（第二范式）是对记录有**唯一性**的要求，即实体的唯一性，不存在部分依赖，每一列与主键都相关，例如：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-a10fdbaf10a7e6b8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](https://ws3.sinaimg.cn/large/006tKfTcly1g0nggecu5sj30dl026mwz.jpg)
 
 该表明显说明了两个事物：学生信息和课程信息；正常的依赖应该是：学分依赖课程号，姓名依赖学号，但这里存在非主键字段对码的部分依赖，即与主键不相关，不满足第二范式的要求。
 
@@ -604,3 +604,28 @@ select * from emp where sal in (1500,3000,800);
 - CPU：核心数多并且主频高的
 - 内存：增大内存
 - 磁盘配置和选择：磁盘性能
+
+
+
+### 19）**MySQL 和 MongoDB 的区别有哪些？如何选择？**
+
+### 20）**MongoDB 的优缺点有哪些？**
+
+### 21） **数据库中 Where、group by、having 关键字：**
+
+答：  **关键字作用：**
+
+1. where 子句用来筛选 from 子句中指定的操作所产生的的行；
+2. group by 子句用来分组 where 子句的输出；
+3. having 子句用来从分组的结果中筛选行；
+
+**having 和 where 的区别：**
+
+1. 语法类似，where 搜索条件在进行分组操作之前应用；having 搜索条件在进行分组操作之后应用；
+2. having 可以包含聚合函数 sum、avg、max 等；
+3. having 子句限制的是组，而不是行。
+
+当同时含有 where 子句、group by 子句 、having 子句及聚集函数时，执行顺序如下：
+
+1. 执行 where 子句查找符合条件的数据；
+2. 使用 group by 子句对数据进行分组；对 group by 子句形成的组运行聚集函数计算每一组的值；最后用 having 子句去掉不符合条件的组。

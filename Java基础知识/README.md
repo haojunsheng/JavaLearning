@@ -212,6 +212,12 @@ JMS(Java Message Service)
 
  [详解内部类.md](面向对象/详解内部类.md) 
 
+
+
+ [JavaBean的来龙去脉.md](JavaBean的来龙去脉.md) 
+
+ [Java动态代理.md](Java动态代理.md) 
+
 ## java基本数据类型
 
  [Java基本数据类型.md](Java基本数据类型.md) 
@@ -361,11 +367,27 @@ Class 类
 
 
 
+## Java数据库
+
+ [数据库的读现象浅析.md](数据库/数据库的读现象浅析.md) 
+
+
+
+
+
+
+
+
+
 ## Java并发编程
 
 ![](https://ws4.sinaimg.cn/large/006tKfTcly1g0ju1v2v01j30u018eadn.jpg)
 
-**并发与并行的区别,线程，与进程的区别，共享变量**
+**Unsafe->CAS->AQS**
+
+
+
+**并发与并行的区别,线程，与进程的区别，共享变量** 
 
  [到底什么是线程安全.md](Java并发编程/到底什么是线程安全.md) 
 
@@ -421,6 +443,38 @@ monitor实现原理
 Synchronized和线程安全
 
  [再有人问你synchronized是什么，就把这篇文章发给他。.md](Java并发编程/再有人问你synchronized是什么，就把这篇文章发给他。.md) 
+
+Synchronized与锁优化
+
+ [Java虚拟机的锁优化技术.md](Java并发编程/Java虚拟机的锁优化技术.md) 
+
+**Volatile**
+
+ [深入理解Java中的volatile关键字.md](Java并发编程/深入理解Java中的volatile关键字.md) 
+
+ [再有人问你volatile是什么，把这篇文章也发给他。.md](Java并发编程/再有人问你volatile是什么，把这篇文章也发给他。.md) 
+
+##ReentrantLock
+
+ [ReentrantLock.md](Java并发编程/ReentrantLock.md) 
+
+
+
+### CAS
+
+ [深入分析CAS.md](Java并发编程/深入分析CAS.md) 
+
+感觉悲观锁和乐观锁的区别是，在悲观锁中，使用Synchronized关键字，会使程序在用户态和内核态之间进行切换，由于阻塞，唤醒需要耗费大量的代价，所以是悲观的。
+
+在乐观锁中，使用了CAS技术，不需要进行阻塞和唤醒，事实上，CAS指令在修改的时候，在硬件层面上回进行锁住总线。
+
+
+
+
+
+
+
+
 
 
 
