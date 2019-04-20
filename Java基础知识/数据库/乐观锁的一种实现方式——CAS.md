@@ -44,7 +44,7 @@ CAS 操作包含三个操作数 —— 内存位置（V）、预期原值（A）
 
 我们以`java.util.concurrent`中的`AtomicInteger`为例，看一下在不使用锁的情况下是如何保证线程安全的。主要理解`getAndIncrement`方法，该方法的作用相当于 `++i` 操作。
 
-```
+```java
 public class AtomicInteger extends Number implements java.io.Serializable {  
 
         private volatile int value;  
