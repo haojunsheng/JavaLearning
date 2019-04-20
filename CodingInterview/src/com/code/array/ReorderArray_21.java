@@ -2,6 +2,10 @@ package com.code.array;
 
 public class ReorderArray_21 {
 
+    /**
+     * 双指针法
+     * @param a
+     */
     private static void recorderOddEven(int a[]){
         if(a.length==0||a==null){
             return;
