@@ -15,7 +15,7 @@
       <file leaf-file-name="DuplicationInArray_0301.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/code/array/DuplicationInArray_0301.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
+            <state relative-caret-position="1584">
               <caret line="72" column="13" selection-start-line="72" selection-start-column="13" selection-end-line="72" selection-end-column="13" />
             </state>
           </provider>
@@ -25,22 +25,40 @@
         <entry file="file://$PROJECT_DIR$/src/com/code/README.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="FIRST">
-              <first_editor relative-caret-position="542">
-                <caret line="25" column="2" lean-forward="true" selection-start-line="22" selection-end-line="25" selection-end-column="2" />
+              <first_editor relative-caret-position="550">
+                <caret line="25" column="2" selection-start-line="22" selection-end-line="25" selection-end-column="2" />
               </first_editor>
               <second_editor />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="readme.md" pinned="false" current-in-tab="true">
+      <file leaf-file-name="readme.md" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/code/array/readme.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="279">
-                <caret line="18" column="10" lean-forward="true" selection-start-line="18" selection-start-column="3" selection-end-line="18" selection-end-column="10" />
+              <first_editor relative-caret-position="440">
+                <caret line="20" column="14" selection-start-line="20" selection-start-column="14" selection-end-line="20" selection-end-column="14" />
               </first_editor>
               <second_editor />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="NumbersAppearOnce_5601.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/com/code/array/NumbersAppearOnce_5601.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="616">
+              <caret line="28" column="9" lean-forward="true" selection-start-line="5" selection-start-column="8" selection-end-line="28" selection-end-column="9" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Arrays.java" pinned="false" current-in-tab="false">
+        <entry file="jar:///Library/Java/JavaVirtualMachines/jdk-11.0.1.jdk/Contents/Home/lib/src.zip!/java.base/java/util/Arrays.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="88506">
+              <caret line="4097" column="24" selection-start-line="4097" selection-start-column="24" selection-end-line="4097" selection-end-column="24" />
             </state>
           </provider>
         </entry>
@@ -48,12 +66,10 @@
       <file leaf-file-name="SortArrayForMinNumber_45.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/code/array/SortArrayForMinNumber_45.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="264">
-              <caret line="12" column="23" lean-forward="true" selection-start-line="12" selection-start-column="23" selection-end-line="12" selection-end-column="23" />
+            <state relative-caret-position="242">
+              <caret line="12" column="23" selection-start-line="12" selection-start-column="23" selection-end-line="12" selection-end-column="23" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#522#756#0" expanded="true" />
-                <element signature="e#755#756#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -76,9 +92,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/com/code/highQuality/README.md" />
-        <option value="$PROJECT_DIR$/src/com/code/highQuality/Power_16.java" />
-        <option value="$PROJECT_DIR$/src/com/code/highQuality/Print1ToMaxOfNDigits_17.java" />
         <option value="$PROJECT_DIR$/src/com/code/linkedList/DeleteNodeInList_18.java" />
         <option value="$PROJECT_DIR$/src/com/code/array/FindDuplicate.java" />
         <option value="$PROJECT_DIR$/src/com/code/array/MinPath_2.java" />
@@ -125,8 +138,11 @@
         <option value="$PROJECT_DIR$/src/com/code/highQuality/KLeastNumbers_40.java" />
         <option value="$PROJECT_DIR$/src/com/code/array/ReorderArray_21.java" />
         <option value="$PROJECT_DIR$/src/com/code/array/GreatestSumOfSubarrays_42.java" />
-        <option value="$PROJECT_DIR$/src/com/code/array/readme.md" />
         <option value="$PROJECT_DIR$/src/com/code/array/SortArrayForMinNumber_45.java" />
+        <option value="$PROJECT_DIR$/src/com/code/sort/MergeSort.java" />
+        <option value="$PROJECT_DIR$/src/com/code/array/InversePairs_51.java" />
+        <option value="$PROJECT_DIR$/src/com/code/array/readme.md" />
+        <option value="$PROJECT_DIR$/src/com/code/array/NumbersAppearOnce_5601.java" />
       </list>
     </option>
   </component>
@@ -150,6 +166,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="PackagesPane" />
+      <pane id="AndroidView" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -229,8 +247,7 @@
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="com" type="462c0819:PsiDirectoryNode" />
               <item name="code" type="462c0819:PsiDirectoryNode" />
-              <item name="linkedList" type="462c0819:PsiDirectoryNode" />
-              <item name="PrintListInReversedOrder_06.java" type="529ef68f:ClassesTreeStructureProvider$PsiClassOwnerTreeNode" />
+              <item name="sort" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="CodingInterview" type="b2602c69:ProjectViewProjectNode" />
@@ -269,8 +286,6 @@
         </subPane>
       </pane>
       <pane id="Scope" />
-      <pane id="PackagesPane" />
-      <pane id="AndroidView" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -302,7 +317,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.KthNodeInBST_54">
+  <component name="RunManager" selected="Application.MergeSort">
     <configuration name="ConstructBinaryTree_07" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.code.tree.ConstructBinaryTree_07" />
       <module name="CodingInterview" />
@@ -333,6 +348,16 @@
         </pattern>
       </extension>
     </configuration>
+    <configuration name="MergeSort" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.code.sort.MergeSort" />
+      <module name="CodingInterview" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.code.sort.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+    </configuration>
     <configuration name="ReplaceSpaces_05" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.code.string.ReplaceSpaces_05" />
       <module name="CodingInterview" />
@@ -343,30 +368,20 @@
         </pattern>
       </extension>
     </configuration>
-    <configuration name="SquenceOfBST_33" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.code.tree.SquenceOfBST_33" />
-      <module name="CodingInterview" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.code.tree.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-    </configuration>
     <list>
-      <item itemvalue="Application.SquenceOfBST_33" />
       <item itemvalue="Application.CopyList_35" />
       <item itemvalue="Application.ReplaceSpaces_05" />
       <item itemvalue="Application.ConstructBinaryTree_07" />
       <item itemvalue="Application.KthNodeInBST_54" />
+      <item itemvalue="Application.MergeSort" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.MergeSort" />
         <item itemvalue="Application.KthNodeInBST_54" />
         <item itemvalue="Application.ConstructBinaryTree_07" />
         <item itemvalue="Application.ReplaceSpaces_05" />
         <item itemvalue="Application.CopyList_35" />
-        <item itemvalue="Application.SquenceOfBST_33" />
       </list>
     </recent_temporary>
   </component>
@@ -385,12 +400,14 @@
       <workItem from="1554263100265" duration="106000" />
       <workItem from="1554264184443" duration="3101000" />
       <workItem from="1554342313003" duration="123145000" />
-      <workItem from="1555724379615" duration="11515000" />
+      <workItem from="1555724379615" duration="12688000" />
+      <workItem from="1555815150869" duration="253000" />
+      <workItem from="1555856190927" duration="1715000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="140585000" />
+    <option name="totallyTimeSpent" value="143726000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
@@ -415,8 +432,8 @@
       <window_info anchor="right" id="Capture Analysis" order="3" />
       <window_info anchor="bottom" id="Version Control" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.32848486" />
-      <window_info anchor="bottom" id="Terminal" order="7" visible="true" weight="0.32969698" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.26752505" />
+      <window_info anchor="bottom" id="Terminal" order="7" weight="0.32969698" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2746781" />
       <window_info anchor="bottom" id="JProfiler" order="7" />
       <window_info anchor="right" id="SciView" order="3" />
       <window_info anchor="right" id="Theme Preview" order="3" />
@@ -433,9 +450,8 @@
       <window_info anchor="bottom" id="FindBugs-IDEA" order="7" />
       <window_info id="Designer" order="2" />
       <window_info anchor="right" id="Palette" order="3" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.32848486" />
       <window_info id="Image Layers" order="3" />
-      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32848486" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info id="Capture Tool" order="4" />
@@ -444,6 +460,7 @@
       <window_info anchor="bottom" id="Terminal" order="8" visible="true" weight="0.32969698" />
       <window_info anchor="bottom" id="Docker" order="9" show_stripe_button="false" />
       <window_info anchor="right" id="Capture Analysis" order="4" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Messages" order="11" weight="0.32848486" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -451,7 +468,6 @@
       <window_info anchor="bottom" id="Database Changes" order="13" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="14" show_stripe_button="false" />
       <window_info anchor="right" id="Maven Projects" order="5" />
-      <window_info anchor="bottom" id="Find" order="1" />
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.26752505" />
       <window_info anchor="right" id="SciView" order="6" />
       <window_info anchor="right" id="Database" order="7" />
@@ -461,6 +477,7 @@
       <window_info anchor="right" id="Theme Preview" order="9" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
     </layout-to-restore>
   </component>
@@ -689,27 +706,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/com/code/linkedList/EnterNodeInLink_23.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="317">
-          <caret line="21" column="5" lean-forward="true" selection-start-line="17" selection-start-column="4" selection-end-line="21" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/code/linkedList/ReverseList_24.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="286">
-          <caret line="13" column="5" lean-forward="true" selection-start-line="10" selection-start-column="4" selection-end-line="13" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/code/linkedList/MergeList_25.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="486">
-          <caret line="24" column="27" selection-start-line="24" selection-start-column="27" selection-end-line="24" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar:///Library/Java/JavaVirtualMachines/jdk-11.0.1.jdk/Contents/Home/lib/src.zip!/java.base/java/util/Stack.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="250">
@@ -881,7 +877,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/code/array/DuplicationInArray_0301.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
+        <state relative-caret-position="1584">
           <caret line="72" column="13" selection-start-line="72" selection-start-column="13" selection-end-line="72" selection-end-column="13" />
         </state>
       </provider>
@@ -953,10 +949,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="568">
           <caret line="805" column="25" selection-start-line="805" selection-start-column="25" selection-end-line="805" selection-end-column="25" />
-          <folding>
-            <element signature="e#33242#33243#0" expanded="true" />
-            <element signature="e#33327#33328#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1002,8 +994,8 @@
     <entry file="file://$PROJECT_DIR$/src/com/code/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="FIRST">
-          <first_editor relative-caret-position="542">
-            <caret line="25" column="2" lean-forward="true" selection-start-line="22" selection-end-line="25" selection-end-column="2" />
+          <first_editor relative-caret-position="550">
+            <caret line="25" column="2" selection-start-line="22" selection-end-line="25" selection-end-column="2" />
           </first_editor>
           <second_editor />
         </state>
@@ -1049,35 +1041,54 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk-11.0.1.jdk/Contents/Home/lib/src.zip!/java.base/java/util/Arrays.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="211">
-          <caret line="1435" column="20" lean-forward="true" selection-start-line="1435" selection-start-column="20" selection-end-line="1435" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/code/array/SortArrayForMinNumber_45.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="264">
-          <caret line="12" column="23" lean-forward="true" selection-start-line="12" selection-start-column="23" selection-end-line="12" selection-end-column="23" />
+        <state relative-caret-position="242">
+          <caret line="12" column="23" selection-start-line="12" selection-start-column="23" selection-end-line="12" selection-end-column="23" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#522#756#0" expanded="true" />
-            <element signature="e#755#756#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk-11.0.1.jdk/Contents/Home/lib/src.zip!/java.base/java/util/Arrays.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="88506">
+          <caret line="4097" column="24" selection-start-line="4097" selection-start-column="24" selection-end-line="4097" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/code/sort/MergeSort.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="198">
+          <caret line="9" column="40" lean-forward="true" selection-start-line="9" selection-start-column="40" selection-end-line="9" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/code/array/InversePairs_51.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="154">
+          <caret line="7" lean-forward="true" selection-start-line="7" selection-end-line="7" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/code/array/readme.md">
+      <provider editor-type-id="text-editor" />
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="279">
-            <caret line="18" column="10" lean-forward="true" selection-start-line="18" selection-start-column="3" selection-end-line="18" selection-end-column="10" />
+          <first_editor relative-caret-position="440">
+            <caret line="20" column="14" selection-start-line="20" selection-start-column="14" selection-end-line="20" selection-end-column="14" />
           </first_editor>
           <second_editor />
         </state>
       </provider>
-      <provider editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/code/array/NumbersAppearOnce_5601.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="616">
+          <caret line="28" column="9" lean-forward="true" selection-start-line="5" selection-start-column="8" selection-end-line="28" selection-end-column="9" />
+        </state>
+      </provider>
     </entry>
   </component>
 </project>
