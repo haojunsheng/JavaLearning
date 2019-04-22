@@ -25,7 +25,7 @@
         <entry file="file://$PROJECT_DIR$/src/com/code/README.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="FIRST">
-              <first_editor relative-caret-position="550">
+              <first_editor relative-caret-position="455">
                 <caret line="25" column="2" selection-start-line="22" selection-end-line="25" selection-end-column="2" />
               </first_editor>
               <second_editor />
@@ -37,40 +37,28 @@
         <entry file="file://$PROJECT_DIR$/src/com/code/array/readme.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="440">
-                <caret line="20" column="14" selection-start-line="20" selection-start-column="14" selection-end-line="20" selection-end-column="14" />
+              <first_editor relative-caret-position="306">
+                <caret line="21" lean-forward="true" selection-start-line="21" selection-end-line="21" />
               </first_editor>
               <second_editor />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="NumbersAppearOnce_5601.java" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/com/code/array/NumbersAppearOnce_5601.java">
+      <file leaf-file-name="IntegerIdenticalToIndex_5303.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/code/array/IntegerIdenticalToIndex_5303.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="616">
-              <caret line="28" column="9" lean-forward="true" selection-start-line="5" selection-start-column="8" selection-end-line="28" selection-end-column="9" />
+            <state relative-caret-position="44">
+              <caret line="2" column="41" selection-start-line="2" selection-start-column="41" selection-end-line="2" selection-end-column="41" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Arrays.java" pinned="false" current-in-tab="false">
-        <entry file="jar:///Library/Java/JavaVirtualMachines/jdk-11.0.1.jdk/Contents/Home/lib/src.zip!/java.base/java/util/Arrays.java">
+      <file leaf-file-name="NumberOfK_5301.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/com/code/array/NumberOfK_5301.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="88506">
-              <caret line="4097" column="24" selection-start-line="4097" selection-start-column="24" selection-end-line="4097" selection-end-column="24" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="SortArrayForMinNumber_45.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/com/code/array/SortArrayForMinNumber_45.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="242">
-              <caret line="12" column="23" selection-start-line="12" selection-start-column="23" selection-end-line="12" selection-end-column="23" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
+            <state relative-caret-position="88">
+              <caret line="4" column="3" selection-start-line="4" selection-start-column="3" selection-end-line="4" selection-end-column="3" />
             </state>
           </provider>
         </entry>
@@ -92,9 +80,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/com/code/linkedList/DeleteNodeInList_18.java" />
-        <option value="$PROJECT_DIR$/src/com/code/array/FindDuplicate.java" />
-        <option value="$PROJECT_DIR$/src/com/code/array/MinPath_2.java" />
         <option value="$PROJECT_DIR$/src/com/code/array/Cattle_3.java" />
         <option value="$PROJECT_DIR$/src/com/code/linkedList/DeleteNodeOfDuplication_1802.java" />
         <option value="$PROJECT_DIR$/src/com/code/string/RegularMatch_19.java" />
@@ -141,8 +126,11 @@
         <option value="$PROJECT_DIR$/src/com/code/array/SortArrayForMinNumber_45.java" />
         <option value="$PROJECT_DIR$/src/com/code/sort/MergeSort.java" />
         <option value="$PROJECT_DIR$/src/com/code/array/InversePairs_51.java" />
-        <option value="$PROJECT_DIR$/src/com/code/array/readme.md" />
         <option value="$PROJECT_DIR$/src/com/code/array/NumbersAppearOnce_5601.java" />
+        <option value="$PROJECT_DIR$/src/com/code/array/NumbersAppearOnce_5602.java" />
+        <option value="$PROJECT_DIR$/src/com/code/array/readme.md" />
+        <option value="$PROJECT_DIR$/src/com/code/array/MissingNumber_5302.java" />
+        <option value="$PROJECT_DIR$/src/com/code/array/NumberOfK_5301.java" />
       </list>
     </option>
   </component>
@@ -295,14 +283,15 @@
     <property name="settings.editor.selected.configurable" value="preferences.keymap" />
   </component>
   <component name="RecentsManager">
-    <key name="CreateClassDialog.RecentsKey">
-      <recent name="com.code.tree" />
-    </key>
-    <key name="CopyClassDialog.RECENTS_KEY">
-      <recent name="com.code.tree" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/com/code/linkedList" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.code.array" />
+      <recent name="com.code.tree" />
+    </key>
+    <key name="CreateClassDialog.RecentsKey">
+      <recent name="com.code.tree" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -317,23 +306,13 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.MergeSort">
+  <component name="RunManager" selected="Application.NumberOfK_5301">
     <configuration name="ConstructBinaryTree_07" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.code.tree.ConstructBinaryTree_07" />
       <module name="CodingInterview" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="com.code.tree.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-    </configuration>
-    <configuration name="CopyList_35" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.code.linkedList.CopyList_35" />
-      <module name="CodingInterview" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.code.linkedList.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -358,6 +337,16 @@
         </pattern>
       </extension>
     </configuration>
+    <configuration name="NumberOfK_5301" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.code.array.NumberOfK_5301" />
+      <module name="CodingInterview" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.code.array.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+    </configuration>
     <configuration name="ReplaceSpaces_05" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.code.string.ReplaceSpaces_05" />
       <module name="CodingInterview" />
@@ -369,19 +358,19 @@
       </extension>
     </configuration>
     <list>
-      <item itemvalue="Application.CopyList_35" />
       <item itemvalue="Application.ReplaceSpaces_05" />
       <item itemvalue="Application.ConstructBinaryTree_07" />
       <item itemvalue="Application.KthNodeInBST_54" />
       <item itemvalue="Application.MergeSort" />
+      <item itemvalue="Application.NumberOfK_5301" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.NumberOfK_5301" />
         <item itemvalue="Application.MergeSort" />
         <item itemvalue="Application.KthNodeInBST_54" />
         <item itemvalue="Application.ConstructBinaryTree_07" />
         <item itemvalue="Application.ReplaceSpaces_05" />
-        <item itemvalue="Application.CopyList_35" />
       </list>
     </recent_temporary>
   </component>
@@ -402,12 +391,12 @@
       <workItem from="1554342313003" duration="123145000" />
       <workItem from="1555724379615" duration="12688000" />
       <workItem from="1555815150869" duration="253000" />
-      <workItem from="1555856190927" duration="1715000" />
+      <workItem from="1555856190927" duration="7266000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="143726000" />
+    <option name="totallyTimeSpent" value="149277000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
@@ -427,18 +416,18 @@
       <window_info id="UI Designer" order="2" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Messages" order="7" weight="0.32848486" />
       <window_info anchor="right" id="Palette&#9;" order="3" />
       <window_info id="Image Layers" order="2" />
       <window_info anchor="right" id="Capture Analysis" order="3" />
       <window_info anchor="bottom" id="Version Control" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.32848486" />
+      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.32848486" />
       <window_info anchor="bottom" id="Terminal" order="7" weight="0.32969698" />
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2746781" />
       <window_info anchor="bottom" id="JProfiler" order="7" />
       <window_info anchor="right" id="SciView" order="3" />
       <window_info anchor="right" id="Theme Preview" order="3" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Messages" order="7" weight="0.32848486" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
@@ -698,42 +687,68 @@
           <properties />
           <option name="timeStamp" value="63" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/com/code/array/NumberOfK_5301.java</url>
+          <line>14</line>
+          <properties />
+          <option name="timeStamp" value="68" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/com/code/array/NumberOfK_5301.java</url>
+          <line>13</line>
+          <properties />
+          <option name="timeStamp" value="69" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/com/code/array/NumberOfK_5301.java</url>
+          <line>18</line>
+          <properties />
+          <option name="timeStamp" value="70" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/com/code/array/NumberOfK_5301.java</url>
+          <line>15</line>
+          <properties />
+          <option name="timeStamp" value="71" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/com/code/array/NumberOfK_5301.java</url>
+          <line>30</line>
+          <properties />
+          <option name="timeStamp" value="72" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/com/code/array/NumberOfK_5301.java</url>
+          <line>32</line>
+          <properties />
+          <option name="timeStamp" value="73" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/com/code/array/NumberOfK_5301.java</url>
+          <line>40</line>
+          <properties />
+          <option name="timeStamp" value="75" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/com/code/array/NumberOfK_5301.java</url>
+          <line>42</line>
+          <properties />
+          <option name="timeStamp" value="76" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/com/code/array/NumberOfK_5301.java</url>
+          <line>37</line>
+          <properties />
+          <option name="timeStamp" value="77" />
+        </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="67" />
+      <option name="time" value="78" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk-11.0.1.jdk/Contents/Home/lib/src.zip!/java.base/java/util/Stack.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="250">
-          <caret line="97" column="26" selection-start-line="97" selection-start-column="26" selection-end-line="97" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/code/stack/CustomStack_30.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-684">
-          <caret line="12" column="62" selection-start-line="12" selection-start-column="62" selection-end-line="12" selection-end-column="62" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/code/array/PrintMatrix_29.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="249">
-          <caret line="39" column="8" lean-forward="true" selection-start-line="39" selection-start-column="8" selection-end-line="39" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/code/stack/StackSequence_31.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="220">
-          <caret line="10" column="300" selection-start-line="10" selection-start-column="300" selection-end-line="10" selection-end-column="300" />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar:///Library/Java/JavaVirtualMachines/jdk-11.0.1.jdk/Contents/Home/lib/src.zip!/java.base/java/lang/StringBuffer.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="100">
@@ -875,13 +890,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/code/array/DuplicationInArray_0301.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1584">
-          <caret line="72" column="13" selection-start-line="72" selection-start-column="13" selection-end-line="72" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/code/tree/readme.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="FIRST">
@@ -991,16 +999,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/code/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="FIRST">
-          <first_editor relative-caret-position="550">
-            <caret line="25" column="2" selection-start-line="22" selection-end-line="25" selection-end-column="2" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/code/sortAndFind/Fibonacci_10.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="242">
@@ -1041,16 +1039,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/code/array/SortArrayForMinNumber_45.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="242">
-          <caret line="12" column="23" selection-start-line="12" selection-start-column="23" selection-end-line="12" selection-end-column="23" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="jar:///Library/Java/JavaVirtualMachines/jdk-11.0.1.jdk/Contents/Home/lib/src.zip!/java.base/java/util/Arrays.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="88506">
@@ -1072,21 +1060,76 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/code/array/readme.md">
-      <provider editor-type-id="text-editor" />
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="440">
-            <caret line="20" column="14" selection-start-line="20" selection-start-column="14" selection-end-line="20" selection-end-column="14" />
-          </first_editor>
-          <second_editor />
+    <entry file="file://$PROJECT_DIR$/src/com/code/array/SortArrayForMinNumber_45.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="112">
+          <caret line="6" column="10" selection-start-line="6" selection-start-column="3" selection-end-line="6" selection-end-column="10" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/code/array/NumbersAppearOnce_5601.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="616">
-          <caret line="28" column="9" lean-forward="true" selection-start-line="5" selection-start-column="8" selection-end-line="28" selection-end-column="9" />
+        <state relative-caret-position="299">
+          <caret line="14" column="125" selection-start-line="14" selection-start-column="125" selection-end-line="14" selection-end-column="125" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/code/array/NumbersAppearOnce_5602.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="110">
+          <caret line="5" column="2" selection-start-line="5" selection-start-column="2" selection-end-line="5" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/code/array/DuplicationInArray_0301.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1584">
+          <caret line="72" column="13" selection-start-line="72" selection-start-column="13" selection-end-line="72" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/code/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="FIRST">
+          <first_editor relative-caret-position="455">
+            <caret line="25" column="2" selection-start-line="22" selection-end-line="25" selection-end-column="2" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/code/array/MissingNumber_5302.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="22" column="18" selection-start-line="22" selection-start-column="18" selection-end-line="22" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/code/array/readme.md">
+      <provider editor-type-id="text-editor" />
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="306">
+            <caret line="21" lean-forward="true" selection-start-line="21" selection-end-line="21" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/code/array/IntegerIdenticalToIndex_5303.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="44">
+          <caret line="2" column="41" selection-start-line="2" selection-start-column="41" selection-end-line="2" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/code/array/NumberOfK_5301.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="88">
+          <caret line="4" column="3" selection-start-line="4" selection-start-column="3" selection-end-line="4" selection-end-column="3" />
         </state>
       </provider>
     </entry>
