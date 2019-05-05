@@ -1,6 +1,8 @@
 package com.code.linkedList;// 定义链表结构
 
 
+import java.util.List;
+
 /**
  * 题目描述：
  * 定义一个函数，输入一个链表的头结点，反转该链表并输出反转后的链表的头结点。链表结点如下：
@@ -36,13 +38,12 @@ public class ReverseList_24 {
 
     //使用递归的方法
     public ListNode reverse(ListNode head){
-        if(head==null||head.next==null){
+        if(head==null||head.next==null)
             return head;
-        }
         ListNode secNode=head.next;
         head.next=null;
         ListNode revNode=reverse(secNode);
         secNode.next=head;
-        return revNode;
+        return revNode;//最后的节点
     }
 }

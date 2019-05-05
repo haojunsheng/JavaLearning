@@ -27,6 +27,7 @@ public class DeleteNodeInList_18 {
     }
 
     /**
+     * 复制后一个节点的值到当前节点，注意处理只有一个节点和删除尾节点的情况
      * @param head 链表的头结点
      * @param toBeDeleted 待删除的节点
      */

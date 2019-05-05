@@ -15,13 +15,30 @@ public class MergeList_25 {
 
     //采用递归的方法实现
 
+//    private ListNode merge(ListNode list1,ListNode list2){
+//        //递归边界
+//        if(list1==null)
+//            return list2;
+//        else if(list2==null)
+//            return list1;
+//
+//        ListNode merge=null;
+//        if(list1.value<list2.value){
+//            merge=list1;
+//            merge.next=merge(list1.next,list2);
+//        }else {
+//            merge=list2;
+//            merge.next=merge(list1,list2.next);
+//        }
+//        return merge;
+//    }
+
+
     private ListNode merge(ListNode list1,ListNode list2){
-        //递归边界
         if(list1==null)
             return list2;
-        else if(list2==null)
+        if(list2==null)
             return list1;
-
         ListNode merge=null;
         if(list1.value<list2.value){
             merge=list1;
@@ -32,7 +49,6 @@ public class MergeList_25 {
         }
         return merge;
     }
-
 
     //采用循环的方法实现
 //    private ListNode merge(ListNode list1,ListNode list2){
@@ -70,9 +86,6 @@ public class MergeList_25 {
 //        }
 //        return merge;
 //    }
-
-
-
 }
 
 

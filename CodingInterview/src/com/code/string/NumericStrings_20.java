@@ -18,7 +18,7 @@ public class NumericStrings_20 {
         boolean flag=scanInteger(str);//扫描小数点前
         if(index<str.length&&str[index]=='.'){//小数点后
             index++;
-            flag=scanUnsignedInteger(str)||flag;
+            flag=scanUnsignedInteger(str)||flag;// 原因是因为小数可以没有整数部分
         }
         if(index<str.length&&(str[index]=='e' || str[index]=='E')){
             index++;
@@ -43,6 +43,4 @@ public class NumericStrings_20 {
         }
         return start<index;
     }
-
-
 }

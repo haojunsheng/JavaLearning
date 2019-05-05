@@ -13,7 +13,6 @@ package com.code.array;
 public class DuplicationInArray_0301 {
 
     public static int duplication;
-
 // 参数:
 //        numbers:     一个整数数组
 //        length:      数组的长度
