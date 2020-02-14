@@ -38,6 +38,13 @@ JSP的学习总结
 
 ## Spring
 
+**Spring** vs **spring mvc** vs **spring boot** vs **spring cloud**
+
+- spring 主要实现了IOC和AOP，是SSH框架（Struts+Spring+Hibernate）中的一员
+- spring mvc在spring的基础上实现了mvc框架（添加了web功能）
+- spring boot：简化了配置
+- spring cloud：大数据，云计算
+
  [Spring学习(1)——快速入门.md](Spring/Spring学习(1)——快速入门.md) 
 
  [Spring(2)——Spring IoC 详解.md](Spring/Spring(2)——Spring IoC 详解.md) 

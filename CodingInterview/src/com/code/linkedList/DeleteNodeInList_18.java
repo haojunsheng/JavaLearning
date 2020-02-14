@@ -2,7 +2,6 @@ package com.code.linkedList;
 
 /**
  * 在O(1)时间内删除链表节点
- *
  */
 
 /**

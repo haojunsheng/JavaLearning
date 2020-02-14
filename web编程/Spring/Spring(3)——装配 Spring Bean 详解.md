@@ -349,7 +349,7 @@ c-命名空间通过构造器注入的方式来配置 bean，p-命名空间则�
 
 3.运行测试代码，仍然能正确获取到 bean:
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-9636b07a81db1c16.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214194727421.png)
 
 # 3. 通过注解装配 Bean
 
@@ -544,7 +544,7 @@ public class TestSpring {
 
 运行代码：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-abfe633e2b86f389.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214194719236.png)
 
 - **再次理解：** `@Autowired` 注解表示在 Spring IoC 定位所有的 Bean 后，再根据类型寻找资源，然后将其注入。
 - **过程：** 定义 Bean ——》 初始化 Bean（扫描） ——》 根据属性需要从 Spring IoC 容器中搜寻满足要求的 Bean ——》 满足要求则注入

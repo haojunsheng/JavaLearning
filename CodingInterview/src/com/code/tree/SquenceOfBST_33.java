@@ -39,25 +39,25 @@ public class SquenceOfBST_33 {
 
 
     public static boolean VerifySquenceOfBST(int [] sequence) {
-        if(sequence.length==0)
+        if(sequence.length == 0)
             return false;
-        if(sequence.length==1)
+        if(sequence.length == 1)
             return true;
         return judce(sequence,0,sequence.length-1);
     }
 
     private static boolean judce(int[] sequence,int start,int end) {
-        if(start>=end)
+        if(start >= end)
             return true;
-        int i=start;
-        while (sequence[i]<sequence[end]){
+        int i = start;
+        while (sequence[i] < sequence[end]){
             i++;
         }
-        for(int j=i;j<end;++j){
-            if(sequence[j]<sequence[end])
+        for(int j = i;j < end;++j){
+            if(sequence[j ]< sequence[end])
                 return false;
         }
-        return judce(sequence,start,i-1)&&judce(sequence,i,end-1);
+        return judce(sequence,start,i-1) && judce(sequence,i,end-1);
     }
 
     public static void main(String args[]){

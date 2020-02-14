@@ -385,7 +385,7 @@ public void selector() throws IOException {
 
 下图是描述了基于 NIO 工作方式的 Socket 请求的处理过程：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-2ebbc00c67778d91.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214195446760.png)
 
 上图中的 Selector 可以同时监听一组通信信道（Channel）上的 I/O 状态，前提是这个 Selector 要已经注册到这些通信信道中。选择器 Selector 可以调用 select() 方法检查已经注册的通信信道上的是否有 I/O 已经准备好，如果没有至少一个信道 I/O 状态有变化，那么 select 方法会阻塞等待或在超时时间后会返回 0。上图中如果有多个信道有数据，那么将会将这些数据分配到对应的数据 Buffer 中。所以关键的地方是有一个线程来处理所有连接的数据交互，每个连接的数据交互都不是阻塞方式，所以可以同时处理大量的连接请求。
 
@@ -404,11 +404,11 @@ Buffer 可以简单的理解为一组基本数据类型的元素列表，它通�
 
 在实际操作数据时它们有如下关系图：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-e5a91320976c24f6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214195450300.png)
 
 我们通过 ByteBuffer.allocate(11) 方法创建一个 11 个 byte 的数组缓冲区，初始状态如上图所示，position 的位置为 0，capacity 和 limit 默认都是数组长度。当我们写入 5 个字节时位置变化如下图所示：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-f6f473827be537e6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214195453182.png)
 
 这时底层操作系统就可以从缓冲区中正确读取这 5 个字节数据发送出去了。在下一次写数据之前我们在调一下 clear() 方法。缓冲区的索引状态又回到初始位置。
 

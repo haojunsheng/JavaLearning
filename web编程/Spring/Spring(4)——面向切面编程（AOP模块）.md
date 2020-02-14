@@ -129,7 +129,7 @@ public class TestSpring {
 
 5.执行看到效果：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-a7dc802dcfd2f1a2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214194647391.png)
 
 这个例子使用了一些注解，现在看不懂没有关系，但我们可以从上面可以看到，我们在 Landlord 的 service() 方法中仅仅实现了核心的业务代码，其余的关注点功能是根据我们设置的切面**自动补全**的。
 
@@ -298,7 +298,7 @@ class Broker {
 
 运行测试代码，结果仍然正确：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-176d8956fd7ee8fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214194654558.png)
 
 ------
 
@@ -341,7 +341,7 @@ class Broker {
 
 运行测试程序，看到正确结果：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-176d8956fd7ee8fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214194657060.png)
 
 > 扩展阅读：[Spring【AOP模块】就这么简单](https://mp.weixin.qq.com/s?__biz=MzI4Njg5MDA5NA==&mid=2247483954&idx=1&sn=b34e385ed716edf6f58998ec329f9867&chksm=ebd74333dca0ca257a77c02ab458300ef982adff3cf37eb6d8d2f985f11df5cc07ef17f659d4#rd) 、 [关于 Spring AOP(AspectJ)你该知晓的一切（慎独读，有些深度...）](https://zhuanlan.zhihu.com/p/25522841)
 

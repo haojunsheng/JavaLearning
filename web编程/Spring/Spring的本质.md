@@ -1,10 +1,12 @@
+# java bean
+
 首先，一个java bean 其实就是一个普通的java 类， 但我们对这个类有些要求： 
 
 1. 这个类需要是public 的， 然后需要有个无参数的构造函数
 2. 这个类的属性应该是private 的， 通过setXXX()和getXXX()来访问
 3.  这个类需要能支持“事件”， 例如addXXXXListener(XXXEvent e),  事件可以是Click事件，Keyboard事件等等， 当然咱们也支持自定义的事件。 
 4. 我们得提供一个所谓的自省/反射机制， 这样能在运行时查看java bean 的各种信息
-5. 这个类应该是可以序列化的， 即可以把bean的状态保存的硬盘上， 以便以后来恢复。 
+5. 这个类应 该是可以序列化的， 即可以把bean的状态保存的硬盘上， 以便以后来恢复。 
 
 
 
@@ -13,8 +15,6 @@ JSP + Servlet+Java Bean
 用java bean 来封装业务逻辑，保存数据到数据库， 像这样：
 
 ![image-20190301192257058](https://ws4.sinaimg.cn/large/006tKfTcly1g0nikejfzyj31360fogqb.jpg)
-
-
 
 
 
@@ -46,7 +46,7 @@ Fruit f3 = ......
 
 解决办法也很简单， 前辈们早就总结好了：工厂模式 
 
-![image-20190302100858973](https://ws3.sinaimg.cn/large/006tKfTcly1g0o86bcqbhj30s60h4tfo.jpg)
+ ![image-20190302100858973](https://ws3.sinaimg.cn/large/006tKfTcly1g0o86bcqbhj30s60h4tfo.jpg)
 
 工厂模式，以及其他模式像抽象工厂， Builder模式提供的都是创建对象的方法。
 
@@ -59,8 +59,6 @@ Fruit f3 = ......
 # 2. 解除依赖
 
 我们再来看一个稍微复杂一点， 更加贴近实际项目的例子：
-
-
 
 一个订单处理类，它会被定时调用：  查询数据库中订单的处理情况， 必要时给下订单的用户发信。
 
@@ -156,13 +154,11 @@ MockEmailService 也不会真的发邮件， 而是把代码中试图发的邮�
 
 这个xml 挺容易理解的， 但是仅仅有它还不够， 还缺一个解析器（假设叫做XmlAppContext）来解析，处理这个文件，基本过程是：
 
-\0. 解析xml, 获取各种元素
+0. 解析xml, 获取各种元素
 
-\1. 通过**Java反射**把各个bean 的实例创建起来： com.coderising.OrderProcessor   , OrderServiceImpl, EmailServiceImpl. 
+1. 通过**Java反射**把各个bean 的实例创建起来： com.coderising.OrderProcessor   , OrderServiceImpl, EmailServiceImpl. 
 
-
-
-\2. 还是通过**Java反射**调用OrderProcessor的两个方法：setOrderService(....)  和 setEmailService(...) 把orderService , emailService 实例 注入进去。
+2. 还是通过**Java反射**调用OrderProcessor的两个方法：setOrderService(....)  和 setEmailService(...) 把orderService , emailService 实例 注入进去。
 
 
 
@@ -524,26 +520,3 @@ account.withdraw();
 
 
 这个从Spring容器出来的Bean哈哈大笑：“瞧瞧，估计你们都是在一个for循环中生成的临时对象，生命短暂，很快被垃圾回收了！ ”
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

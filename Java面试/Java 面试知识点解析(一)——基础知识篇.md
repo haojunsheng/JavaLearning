@@ -26,7 +26,7 @@
 
 面向过程的设计：最小的程序单元是函数，每个函数负责完成某一个功能，用以接受输入数据，函数对输入数据进行处理，然后输出结果数据。整个软件系统由一个个的函数组成，其中作为程序入口的函数称之为主函数，主函数依次调用其他函数，普通函数之间可以相互调用，从而实现整个系统功能。
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-e6027912a8d8c7b6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214195629656.png)
 
 - **面向过程的缺陷：**
   向过程的设计,是**采用置顶而下的设计方式**，在设计阶段就需要考虑每一个模块应该分解成哪些子模块，每一个子模块有细分为更小的子模块，如此类推，直到将模块细化为一个个函数。
@@ -36,7 +36,7 @@
 
 面向对象是一种基于面向过程的新的编程思想，是**一种站在对象的角度思考问题**的思想，我们把多个功能合理的放到不同对象里，**强调的是具备某些功能的对象。**
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-521c9e98caea7217.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214195632763.png)
 
 - 面向对象更加符合我们常规的思维方式，稳定性好，可重用性强，易于开发大型软件产品，有良好的可维护性。在软件工程上，面向对象可以使工程更加模块化，实现更低的耦合和更高的内聚。
 - **注意：** 不要粗浅的认为面向对象一定就优于面向过程的设计
@@ -62,7 +62,7 @@ Java 开发工具包（JDK）是完整的 Java 软件开发包，包含了 JRE�
 
 > - 还有其他的一些名词也可以再看一下：
 >
-> ![img](https://upload-images.jianshu.io/upload_images/7896890-8672d90bb496f196.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+> ![img](img/1240-20200214195636800.png)
 
 #### 4）Java 中覆盖和重载是什么意思？
 
@@ -104,7 +104,7 @@ f();
 3. 抽象类只能单继承，接口可以继承多个父接口；
 4. Java 8 中接口中会有 default 方法，即方法可以被实现。
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-dc431887834333f7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214195640049.png)
 
 **面试官：抽象类和接口如何选择？**
 
@@ -146,7 +146,7 @@ Java 中也不可以覆盖 private 的方法，因为 private 修饰的变量和
 
 > - 我们先来看一个例子：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-89340c032fb5b240.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214195643991.png)
 
 这是一个很经典的例子，我们希望在调用了 swap() 方法之后交换 arg1 和 arg2 的值，但事实上并没有，为什么会这样？
 
@@ -154,7 +154,7 @@ Java 中也不可以覆盖 private 的方法，因为 private 修饰的变量和
 
 > - 再来看一个例子：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-75c3162752d36403.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214195646212.png)
 
 我们自己定义了一个内部类 Person ，该类只有一个 int 类型的 age 属性，然后有 getter/setter ，我们希望通过 changeAge() 函数来改变 Person 对象的 age 属性，为什么这次成功了呢？
 
@@ -176,9 +176,9 @@ JVM 是 Java 虚拟机，当我们运行一个程序时，JVM 负责将字节码
 
 区别：
 
-  1. JDK 用于开发，JRE 用于运行 Java 程序；
-  2. JDK 和 JRE 中都包含 JVM；
-  3. JVM 是 Java 编程语言的核心并且具有平台独立性。
+       1. JDK 用于开发，JRE 用于运行 Java 程序；
+       2. JDK 和 JRE 中都包含 JVM；
+       3. JVM 是 Java 编程语言的核心并且具有平台独立性。
 
 #### 11）Integer 的缓存机制
 
@@ -186,7 +186,7 @@ JVM 是 Java 虚拟机，当我们运行一个程序时，JVM 负责将字节码
 
 > - 看一个例子：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-90331ba04ebe13fc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214195649187.png)
 
 > 第一个返回true很好理解，就像上面讲的，a和b指向相同的地址。
 >
@@ -196,7 +196,7 @@ JVM 是 Java 虚拟机，当我们运行一个程序时，JVM 负责将字节码
 
 我们可以跟踪一下Integer的源码，看看到底怎么回事。在IDEA中，你只需要按住Ctrl然后点击Integer，就会自动进入jar包中对应的类文件。
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-bd248da68e02bb2e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214195653716.png)
 
 跟踪到文件的700多行，你会看到这么一段，感兴趣可以仔细读一下，不用去读也没有关系，因为你只需要知道这是 Java 的一个缓存机制。Integer 类的内部类缓存了 -128 到 127 的所有数字。（事实上，Integer类的缓存上限是可以通过修改系统来更改的，了解就行了，不必去深究。）
 
@@ -217,7 +217,7 @@ String str2 = new String("ABCD");
 
 > 我们来看图理解一下：
 >
-> ![img](https://upload-images.jianshu.io/upload_images/7896890-70af9f49c51c9902.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+> ![img](img/1240-20200214195657970.png)
 
 - 当执行第一句话的时候，会在常量池中添加一个新的ABCD字符，str1指向常量池的ABCD
 - 当执行第二句话的时候，因为有new操作符，所以会在堆空间新开辟一块空间用来存储新的String对象，因为此时常量池中已经有了ABCD字符，所以堆中的String对象指向常量池中的ABCD，而str2则指向堆空间中的String对象。
@@ -230,7 +230,7 @@ String 对象是一个特殊的存在，需要注意的知识点也比较多，�
 
 答：实际上，不管是前置 ++，还是后置 ++，都是先将变量的值加 1，然后才继续计算的。**二者之间真正的区别是：前置 ++ 是将变量的值加 1 后，使用增值后的变量进行运算的，而后置 ++ 是首先将变量赋值给一个临时变量，接下来对变量的值加 1，然后使用那个临时变量进行运算。**
 
-![img](https://images2018.cnblogs.com/blog/1120515/201805/1120515-20180518171911113-1676275748.png)
+![img](img/1120515-20180518171911113-1676275748.png)
 
 #### 14）交换变量的三种方式
 
@@ -466,7 +466,7 @@ exception 表示一种设计或设计的问题，也就是说只要程序正常�
 
 答：在Java8之前，其底层实现是数组+链表实现，Java8使用了数组+链表+红黑树实现。此时你可以简单的在纸上画图分析：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-47e48966bd6fec65.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214195719504.png)
 
 #### 4）ConcurrentHashMap 和 Hashtable 的区别？（必问）
 

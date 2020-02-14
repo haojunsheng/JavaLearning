@@ -180,7 +180,9 @@ Tomcat 是一个Web容器（Apache是服务器）, 当一个请求从客户端�
 
 # Web应用程序目录结构
 
-Java Web应用程序被打成war包（有固定的结构），你可以把上面的程序解压出来看看目录结构，内容应该像下面的图片一样：![enter image description here](http://www.journaldev.com/wp-content/uploads/2013/08/WAR-directory-structure.png)
+Java Web应用程序被打成war包（有固定的结构），你可以把上面的程序解压出来看看目录结构，内容应该像下面的图片一样：
+
+![enter image description here](http://www.journaldev.com/wp-content/uploads/2013/08/WAR-directory-structure.png)
 
 # 部署文件
 

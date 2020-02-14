@@ -1,6 +1,7 @@
 package com.code.array;
 
 import java.util.ArrayList;
+import java.util.Stack;
 
 public class PrintMatrix_29 {
     private static ArrayList<Integer> printMatrixClockwisely(int nums[][],int rows,int columns){
@@ -34,7 +35,7 @@ public class PrintMatrix_29 {
         if(endy>start && endx>start){
             for(int i=endx-1;i>=start;--i)
                 result.add(nums[endy][i]);
-            }
+        }
         //从下向上打印
         if(endy-1>start && endx>start){
             for(int i=endy-1;i>=start+1;--i)
@@ -49,4 +50,7 @@ public class PrintMatrix_29 {
             System.out.print(arrayList.get(i));
         }
     }
+
+
+
 }

@@ -308,7 +308,7 @@ System.out.println(student.getName());
 
 成功取出数据库中的数据：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-2e6b5f5a67fa9d55.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214194633509.png)
 
 ##### 使用第三方数据库连接池
 
@@ -397,7 +397,7 @@ public class JDBCtest {
 
 测试类不变，运行可以获得正确的结果：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-2e6b5f5a67fa9d55.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-1680786.png)
 
 但是好像并没有简单多少的样子，那我们来看看其他 CRUD 的例子：
 

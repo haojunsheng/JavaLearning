@@ -1,5 +1,7 @@
 package com.code.array;
 
+import netscape.javascript.JSObject;
+
 public class OverHalfInArray_39 {
     public int MoreThanHalfNum_Solution(int [] array) {
         if(array.length==0)

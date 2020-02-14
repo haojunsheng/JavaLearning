@@ -31,7 +31,7 @@ Servlet技术的诞生克服了很多CGI技术的缺点：
 
 在本节中，我们将学习重要Servlet API接口，类和注释。下面的图显示了servlet API层次结构。
 
-![servlet api](http://www.hollischuang.com/wp-content/uploads/2016/02/Servlet-Hierarchy-450x182.png)
+![servlet api](img/Servlet-Hierarchy-450x182.png)
 
 ### Servlet 接口
 
@@ -197,7 +197,7 @@ servlet 3 中主要的注解：
 
 这个Web项目的代码结构应该如下图所示。这里使用Eclipse+Tomcat进行开发及运行。创建项目的过程参见[Java Web应用程序初级知识](http://www.hollischuang.com/archives/339)
 
-![path](http://www.hollischuang.com/wp-content/uploads/2016/02/Servlet-Login-Example.png)
+![path](img/Servlet-Login-Example.png)
 
 这是登录页面的代码。我们会把它配置在web.xml 的中`<welcome-file-list>`标签下。这样，我们一访问这个应用就能跳转到该页面。
 
@@ -340,7 +340,7 @@ public class LoginServlet extends HttpServlet {
 }
 ```
 
-下面是页面展示，包括登录成功及失败两种情况。![login](http://www.hollischuang.com/wp-content/uploads/2016/02/login-page-html.png)![login-success](http://www.hollischuang.com/wp-content/uploads/2016/02/servlet-login-success.png)![login-fail](http://www.hollischuang.com/wp-content/uploads/2016/02/servlet-login-failure.png)
+下面是页面展示，包括登录成功及失败两种情况。![login](img/login-page-html.png)![login-success](img/servlet-login-success.png)![login-fail](img/servlet-login-failure.png)
 
 Servlet的初级教程就介绍到这里了，下一篇文章会介绍session管理、Servlet过滤器和监听器。
 

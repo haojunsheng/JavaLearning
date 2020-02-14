@@ -13,6 +13,9 @@ public class ReverseList_24 {
     static class ListNode {
         int value;
         ListNode next;
+        ListNode(int value){
+            this.value=value;
+        }
     }
 
     //使用循环的方法
@@ -37,13 +40,24 @@ public class ReverseList_24 {
 //    }
 
     //使用递归的方法
-    public ListNode reverse(ListNode head){
+    public static ListNode reverse(ListNode head){
         if(head==null||head.next==null)
             return head;
         ListNode secNode=head.next;
         head.next=null;
-        ListNode revNode=reverse(secNode);
+        ListNode revNode=reverse(secNode);//递归去寻找最后的节点
         secNode.next=head;
         return revNode;//最后的节点
+    }
+
+    public static void main(String[] args){
+        ListNode head=new ListNode(1);
+        ListNode cur=head;
+        for(int i=2;i<5;++i){
+            ListNode temp=new ListNode(i);
+            cur.next=temp;
+            cur=temp;
+        }
+        reverse(head);
     }
 }

@@ -92,7 +92,7 @@ Spring 框架是 Java 应用最广的框架，它的**成功来源于理念，�
 1. 新建一个空的 Java 项目，命名为【spring】
 2. 新建一个名为【lib】的目录，并添加进必要的 jar 包，导入项目
 
-![仅仅为一部分，下方还有一些包](https://upload-images.jianshu.io/upload_images/7896890-dada8347bc57dc1c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![仅仅为一部分，下方还有一些包](img/1240.png)
 
 1. 在 Packge【pojo】下新建一个【Source】类：
 
@@ -151,14 +151,14 @@ public class TestSpring {
 
 1. 运行测试代码，可以正常拿到 xml 配置的 bean
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-f9923130c12739cb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200214173136100.png)
 
 - **总结：**
 - **传统的方式：**
   通过new 关键字主动创建一个对象
 - **IOC方式：**
   对象的生命周期由Spring来管理，直接从Spring那里去获取一个对象。 IOC是反转控制 (Inversion Of Control)的缩写，就像控制权从本来在自己手里，交给了Spring。
-  ![获取对象方式的转变](https://upload-images.jianshu.io/upload_images/7896890-bb752724e10e0df2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+  ![获取对象方式的转变](img/1240-20200214173138155.png)
 
 > 参考地址：[这里](http://how2j.cn/k/spring/spring-ioc-di/87.html#nowhere)
 
@@ -377,5 +377,3 @@ public class LoggerAspect {
 1. 再次运行 TestSpring 中的测试代码，代码并没有改变，但是在业务方法运行之前和运行之后，都分别输出了日志信息：
 
 ![img](https://ws4.sinaimg.cn/large/006tKfTcly1g0kz61pdhoj30qh0f3gn2.jpg)
-
-> 
