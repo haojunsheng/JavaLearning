@@ -8,7 +8,7 @@ List 是一个接口，它继承于Collection的接口。它代表着有序的�
 
 下面是Java中的集合类的关系图。从中可以大致了解集合类之间的关系
 
-![java-collection-hierarchy](https://ws2.sinaimg.cn/large/006tKfTcly1g0eado6eqdj30s00glmxx.jpg)
+![java-collection-hierarchy](img/java-collection-hierarchy.jpeg)
 
 ## ArrayList、 LinkedList 和 Vector之间的区别
 
@@ -120,7 +120,7 @@ ArrayList remove:  199961301
 LinkedList remove: 85768810
 ```
 
-![arraylist-vs-linkedlist1](https://ws3.sinaimg.cn/large/006tKfTcly1g0edg2dymbj30go0abweh.jpg)
+![arraylist-vs-linkedlist1](img/arraylist-vs-linkedlist1.png)
 
 他们的表现的差异是显而易见的。在添加和删除操作上LinkedList更快,但在查询速度较慢。
 

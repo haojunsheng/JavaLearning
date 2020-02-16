@@ -1,3 +1,12 @@
+<!--ts-->
+      * [一、TreeSet定义](TreeSet.md#一treeset定义)
+      * [二、TreeSet主要方法](TreeSet.md#二treeset主要方法)
+      * [三、最后](TreeSet.md#三最后)
+
+<!-- Added by: anapodoton, at: Sun Feb 16 15:20:37 CST 2020 -->
+
+<!--te-->
+
 与HashSet是基于HashMap实现一样，TreeSet同样是基于TreeMap实现的。在《Java提高篇（二七）—–TreeMap》中LZ详细讲解了TreeMap实现机制，如果客官详情看了这篇博文或者多TreeMap有比较详细的了解，那么TreeSet的实现对您是喝口水那么简单。
 
 ## 一、TreeSet定义
@@ -11,7 +20,7 @@
 
 同时在TreeSet中定义了如下几个变量。
 
-```
+```java
  private transient NavigableMap<E,Object> m;
 
 //PRESENT会被当做Map的value与key构建成键值对
@@ -20,7 +29,7 @@
 
 其构造方法：
 
-```
+```java
 //默认构造方法，根据其元素的自然顺序进行排序
     public TreeSet() {
         this(new TreeMap<E,Object>());

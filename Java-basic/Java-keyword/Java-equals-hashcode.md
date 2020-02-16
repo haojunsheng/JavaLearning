@@ -1,4 +1,14 @@
-[TOC]
+<!--ts-->
+   * [前言](#前言)
+   * [一个常犯的错误](#一个常犯的错误)
+   * [hashcode()惹的祸](#hashcode惹的祸)
+   * [总结](#总结)
+   * [equals()](#equals)
+   * [在equals()中使用getClass进行类型判断](#在equals中使用getclass进行类型判断)
+
+<!-- Added by: anapodoton, at: Sat Feb 15 21:46:38 CST 2020 -->
+
+<!--te-->
 
 # 前言
 
@@ -59,7 +69,7 @@ public class Apple {
 
 如果你了解Map的工作原理，那么你一定知道，它是通过把key值进行hash来定位对象的，这样可以提供比线性存储更好的性能。实际上，Map的底层数据结构就是一个数组的数组（准确的说其实是一个链表+数组）。第一个数组的索引值是key的哈希码。通过这个索引可以定位到第二个数组，第二个数组通过使用equals方法进行线性搜索的方式来查找对象。([HashMap完全解读](http://www.hollischuang.com/archives/82))
 
-![image](https://ws3.sinaimg.cn/large/006tNc79gy1fzq0nxam2tj30sg0hamyg.jpg)
+![image](img/image-1024x622-20200215214930248.jpg)
 
 其实，一个哈希码可以映射到一个桶（bucket）中，`hashcode`的作用就是先确定对象是属于哪个桶的。如果多个对象有相同的哈希值，那么他们可以放在同一个桶中。如果有不同的哈希值，则需要放在不同的桶中。至于同一个桶中的各个对象之前如何区分就需要使用`equals`方法了。
 

@@ -1,16 +1,23 @@
+<!--ts-->
+   * [1. transient的作用及使用方法](#1-transient的作用及使用方法)
+   * [2. transient使用小结](#2-transient使用小结)
+   * [3. transient使用细节——被transient关键字修饰的变量真的不能被序列化吗？](#3-transient使用细节被transient关键字修饰的变量真的不能被序列化吗)
+
+<!-- Added by: anapodoton, at: Sat Feb 15 20:58:33 CST 2020 -->
+
+<!--te-->
+
 # 1. transient的作用及使用方法
 
 ​      我们都知道一个对象只要实现了Serilizable接口，这个对象就可以被序列化，java的这种序列化模式为开发者提供了很多便利，我们可以不必关系具体序列化的过程，只要这个类实现了Serilizable接口，这个类的所有属性和方法都会自动序列化。
 
-​      然而在实际开发过程中，我们常常会遇到这样的问题，这个类的有些属性需要序列化，而其他属性不需要被序列化，打个比方，如果一个用户有一些敏感信息（如密码，银行卡号等），为了安全起见，不希望在网络操作（主要涉及到序列化操作，本地序列化缓存也适用）中被传输，这些信息对应的变量就可以加上transient关键字。换句话说，这个字段的生命周期仅存于调用者的内存中而不会写到磁盘里持久化。
+​      然而在实际开发过程中，我们常常会遇到这样的问题，这个类的有些属性需要序列化，而其他属性不需要被序列化，打个比方，如果一个用户有一些敏感信息（如密码，银行卡号等），为了安全起见，不希望在网络操作（主要涉及到序列化操作，本地序列化缓存也适用）中被传输，这些信息对应的变量就可以加上transient关键字。换句话说，**这个字段的生命周期仅存于调用者的内存中而不会写到磁盘里持久化**。
 
-​      总之，java 的transient关键字为我们提供了便利，你只需要实现Serilizable接口，将不需要序列化的属性前添加关键字transient，序列化对象的时候，这个属性就不会序列化到指定的目的地中。
-
- 
+​      总之，java 的transient关键字为我们提供了便利，你只需要实现Serilizable接口，将不需要序列化的属性前添加关键字transient，序列化对象的时候，这个属性就不会序列化到指定的目的地中。 
 
 示例code如下：
 
-```
+```java
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -118,7 +125,7 @@ password: null
 
 第三点可能有些人很迷惑，因为发现在User类中的username字段前加上static关键字后，程序运行结果依然不变，即static类型的username也读出来为“Alexia”了，这不与第三点说的矛盾吗？实际上是这样的：第三点确实没错（一个静态变量不管是否被transient修饰，均不能被序列化），反序列化后类中static型变量username的值为当前JVM中对应static变量的值，这个值是JVM中的不是反序列化得出的，不相信？好吧，下面我来证明：
 
-```
+```java
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -207,8 +214,6 @@ class User implements Serializable {
 
 运行结果为：
 
-
-
 ```
 read before Serializable: 
 username: Alexia
@@ -225,9 +230,7 @@ password: null
 
 思考下面的例子：
 
-
-
-```
+```java
 import java.io.Externalizable;
 import java.io.File;
 import java.io.FileInputStream;

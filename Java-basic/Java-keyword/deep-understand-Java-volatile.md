@@ -1,3 +1,21 @@
+<!--ts-->
+         * [volatile的用法](#volatile的用法)
+         * [volatile的原理](#volatile的原理)
+         * [volatile与可见性](#volatile与可见性)
+         * [volatile与有序性](#volatile与有序性)
+         * [volatile与原子性](#volatile与原子性)
+         * [总结与思考](#总结与思考)
+         * [volatile与有序性](#volatile与有序性-1)
+         * [volatile与可见性](#volatile与可见性-1)
+         * [内存屏障](#内存屏障)
+         * [volatile与原子性](#volatile与原子性-1)
+         * [总结](#总结)
+         * [参考资料](#参考资料)
+
+<!-- Added by: anapodoton, at: Sat Feb 15 21:08:55 CST 2020 -->
+
+<!--te-->
+
 在[再有人问你Java内存模型是什么，就把这篇文章发给他](http://www.hollischuang.com/archives/2550)中我们曾经介绍过，Java语言为了解决并发编程中存在的原子性、可见性和有序性问题，提供了一系列和并发处理相关的关键字，比如`synchronized`、`volatile`、`final`、`concurren包`等。在[前一篇](http://www.hollischuang.com/archives/2637)文章中，我们也介绍了`synchronized`的用法及原理。本文，来分析一下另外一个关键字——`volatile`。
 
 本文就围绕`volatile`展开，主要介绍`volatile`的用法、`volatile`的原理，以及`volatile`是如何提供可见性和有序性保障的等。

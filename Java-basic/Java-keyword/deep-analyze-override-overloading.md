@@ -1,8 +1,23 @@
-[TOC]
+<!--ts-->
+   * [前言](#前言)
+   * [定义](#定义)
+      * [重载](#重载)
+      * [重写](#重写)
+   * [重载 VS 重写](#重载-vs-重写)
+   * [重写的例子](#重写的例子)
+   * [重写的条件](#重写的条件)
+   * [重载的例子](#重载的例子)
+   * [重载的条件](#重载的条件)
+   * [参考资料](#参考资料)
+         * [成员变量可以被重写吗](#成员变量可以被重写吗)
+
+<!-- Added by: anapodoton, at: Sat Feb 15 15:31:43 CST 2020 -->
+
+<!--te-->
 
 # 前言
 
-![overloading-vs-overriding](https://ws2.sinaimg.cn/large/006tNc79gy1fzra9wzsgpj30ka08hwh3.jpg)
+![overloading-vs-overriding](img/overloading-vs-overriding.png)
 
 重载（Overloading）和重写（Overriding）是Java中两个比较重要的概念。但是对于新手来说也比较容易混淆。本文通过两个简单的例子说明了他们之间的区别。
 
@@ -119,8 +134,6 @@ class Dog{
 # 参考资料
 
 [Overriding vs. Overloading in Java](http://www.programcreek.com/2009/02/overriding-and-overloading-in-java-with-examples/)
-
-
 
 ### 成员变量可以被重写吗
 

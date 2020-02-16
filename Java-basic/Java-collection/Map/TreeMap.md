@@ -1,3 +1,16 @@
+<!--ts-->
+   * [1.红黑树简介](TreeMap.md#1红黑树简介)
+   * [2. TreeMap数据结构](TreeMap.md#2-treemap数据结构)
+   * [3. TreeMap put()方法](TreeMap.md#3-treemap-put方法)
+      * [3.1 红黑树增加节点](TreeMap.md#31-红黑树增加节点)
+      * [3.2 TreeMap put()方法实现分析](TreeMap.md#32-treemap-put方法实现分析)
+      * [3.3 TreeMap delete()方法](TreeMap.md#33-treemap-delete方法)
+   * [4. 写在最后](TreeMap.md#4-写在最后)
+
+<!-- Added by: anapodoton, at: Sun Feb 16 15:39:14 CST 2020 -->
+
+<!--te-->
+
 TreeMap的实现是红黑树算法的实现，所以要了解TreeMap就必须对红黑树有一定的了解,其实这篇博文的名字叫做：根据红黑树的算法来分析TreeMap的实现，但是为了与Java提高篇系列博文保持一致还是叫做TreeMap比较好。通过这篇博文你可以获得如下知识点：
 
 1. 红黑树的基本概念。

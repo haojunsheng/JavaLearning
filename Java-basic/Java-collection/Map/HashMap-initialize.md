@@ -1,4 +1,13 @@
-[TOC]
+<!--ts-->
+   * [前言](HashMap-initialize.md#前言)
+   * [1.为什么要设置HashMap的初始化容量](HashMap-initialize.md#1为什么要设置hashmap的初始化容量)
+   * [2. HashMap中容量的初始化](HashMap-initialize.md#2-hashmap中容量的初始化)
+   * [3. HashMap中初始容量的合理值](HashMap-initialize.md#3-hashmap中初始容量的合理值)
+   * [4. 总结](HashMap-initialize.md#4-总结)
+
+<!-- Added by: anapodoton, at: Sun Feb 16 15:39:04 CST 2020 -->
+
+<!--te-->
 
 # 前言
 

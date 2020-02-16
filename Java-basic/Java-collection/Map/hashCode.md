@@ -1,4 +1,11 @@
-[TOC]
+<!--ts-->
+      * [hashCode的作用](hashCode.md#hashcode的作用)
+      * [hashCode对于一个对象的重要性](hashCode.md#hashcode对于一个对象的重要性)
+      * [hashCode与equals](hashCode.md#hashcode与equals)
+
+<!-- Added by: anapodoton, at: Sun Feb 16 15:39:57 CST 2020 -->
+
+<!--te-->
 
 ## hashCode的作用
 

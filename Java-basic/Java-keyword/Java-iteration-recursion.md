@@ -1,4 +1,13 @@
-[TOC]
+<!--ts-->
+   * [前言](#前言)
+   * [递归](#递归)
+   * [迭代](#迭代)
+   * [迭代 VS 递归](#迭代-vs-递归)
+   * [数形递归](#数形递归)
+
+<!-- Added by: anapodoton, at: Sat Feb 15 21:49:00 CST 2020 -->
+
+<!--te-->
 
 # 前言
 
@@ -60,7 +69,7 @@ int factorial (int n) {
 
 前面介绍过，树递归随输入的增长的信息量呈指数级增长。比较典型的就是斐波那契数列：
 
-![recursion-iteration-java](https://ws4.sinaimg.cn/large/006tNc79gy1fzs1z4h8llj30ar02agld.jpg)
+![recursion-iteration-java](img/recursion-iteration-java.png)
 
 用文字描述就是斐波那契数列中前两个数字的和等于第三个数字：`0,1,1,2,3,5,8,13,21……`
 

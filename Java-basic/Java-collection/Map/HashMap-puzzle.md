@@ -1,3 +1,12 @@
+<!--ts-->
+         * [size 和 capacity](HashMap-puzzle.md#size-和-capacity)
+         * [loadFactor 和 threshold](HashMap-puzzle.md#loadfactor-和-threshold)
+         * [总结](HashMap-puzzle.md#总结)
+
+<!-- Added by: anapodoton, at: Sun Feb 16 15:39:16 CST 2020 -->
+
+<!--te-->
+
 很多人在通过阅读源码的方式学习Java，这是个很好的方式。而JDK的源码自然是首选。在JDK的众多类中，我觉得HashMap及其相关的类是设计的比较好的。很多人读过HashMap的代码，不知道你们有没有和我一样，觉得HashMap中关于容量相关的参数定义的太多了，傻傻分不清楚。
 
 其实，这篇文章介绍的内容比较简单，只要认真的看看HashMap的原理还是可以理解的，单独写一篇文章的原因是因为我后面还有几篇关于HashMap源码分析的文章，这些概念不熟悉的话阅读后面的文章会很吃力。

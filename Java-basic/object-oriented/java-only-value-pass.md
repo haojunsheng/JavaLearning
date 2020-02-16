@@ -1,16 +1,12 @@
-[TOC]
+<!--ts-->
+
+<!--te-->
 
 最近，在我的知识星球的<直面Java>板块中，给球友们出了这么一道题：
 
 ![question](https://ws2.sinaimg.cn/large/006tKfTcly1g0cw2ka7bjj30h908eq3g.jpg)
 
 对于初学者来说，要想把这个问题回答正确，是比较难的。在第二天整理答案的时候，我发现我竟然无法通过简单的语言把这个事情描述的很容易理解，遗憾的是，我也没有在网上找到哪篇文章可以把这个事情讲解的通俗易懂。所以，就有了我写这篇文章的初衷。这篇文章中，我从什么是方法的实际参数和形式参数开始，给你讲解为什么说Java中只有值传递。
-
-
-
-**参数是值传递，对象是引用传递。**
-
-
 
 ### 辟谣时间
 
@@ -57,7 +53,7 @@ public void sout(String name) { //形式参数为 name
 
 有了上面的概念，然后大家就可以写代码实践了，来看看Java中到底是值传递还是引用传递 ，于是，最简单的一段代码出来了：
 
-```
+```java
 public static void main(String[] args) {
     ParamTest pt = new ParamTest();
 
@@ -83,7 +79,7 @@ print in main , i is 10
 
 但是，很快就有人提出质疑了（哈哈，所以，不要轻易下结论咯。）。然后，他们会搬出以下代码：
 
-```
+```java
 public static void main(String[] args) {
     ParamTest pt = new ParamTest();
 
@@ -107,11 +103,11 @@ print in pass , user is User{name='hollischuang', gender='Male'}
 print in main , user is User{name='hollischuang', gender='Male'}
 ```
 
-经过pass方法执行后，实参的值竟然被改变了，那按照上面的引用传递的定义，实际参数的值被改变了，这不就是引用传递了么。于是，根据上面的两段代码，有人得出一个新的结论：Java的方法中，在传递普通类型的时候是值传递，在传递对象类型的时候是引用传递。
+经过pass方法执行后，实参的值竟然被改变了，那按照上面的引用传递的定义，实际参数的值被改变了，这不就是引用传递了么。于是，根据上面的两段代码，有人得出一个新的结论：**Java的方法中，在传递普通类型的时候是值传递，在传递对象类型的时候是引用传递。**
 
 但是，这种表述仍然是错误的。不信你看下面这个参数类型为对象的参数传递：
 
-```
+```java
 public static void main(String[] args) {
     ParamTest pt = new ParamTest();
 
@@ -119,7 +115,7 @@ public static void main(String[] args) {
     pt.pass(name);
     System.out.println("print in main , name is " + name);
 }
-
+// String重新赋值后，会生成一个新的地址
 public void pass(String name) {
     name = "hollischuang";
     System.out.println("print in pass , name is " + name);
@@ -147,7 +143,7 @@ print in main , name is Hollis
 
 那么，我来给大家总结一下，值传递和引用传递之前的区别的重点是什么。
 
-[![pass](http://www.hollischuang.com/wp-content/uploads/2018/04/pass.jpg)](http://www.hollischuang.com/wp-content/uploads/2018/04/pass.jpg)
+![pass](img/pass.jpg)
 
 我们上面看过的几个pass的例子中，都只关注了实际参数内容是否有改变。如传递的是User对象，我们试着改变他的name属性的值，然后检查是否有改变。其实，在实验方法上就错了，当然得到的结论也就有问题了。
 
@@ -161,7 +157,7 @@ print in main , name is Hollis
 
 还拿上面的一个例子来举例，我们`真正的改变参数`，看看会发生什么？
 
-```
+```java
 public static void main(String[] args) {
     ParamTest pt = new ParamTest();
 
@@ -182,14 +178,14 @@ public void pass(User user) {
 
 上面的代码中，我们在pass方法中，改变了user对象，输出结果如下：
 
-```
+```java
 print in pass , user is User{name='hollischuang', gender='Male'}
 print in main , user is User{name='Hollis', gender='Male'}
 ```
 
 我们来画一张图，看一下整个过程中发生了什么，然后我再告诉你，为啥Java中只有值传递。
 
-[![pass1](http://www.hollischuang.com/wp-content/uploads/2018/04/pass1.png)](http://www.hollischuang.com/wp-content/uploads/2018/04/pass1.png)
+![pass1](img/pass1.png)
 
 稍微解释下这张图，当我们在main中创建一个User对象的时候，在堆中开辟一块内存，其中保存了name和gender等数据。然后hollis持有该内存的地址`0x123456`（图1）。当尝试调用pass方法，并且hollis作为实际参数传递给形式参数user的时候，会把这个地址`0x123456`交给user，这时，user也指向了这个地址（图2）。然后在pass方法内对参数进行修改的时候，即`user = new User();`，会重新开辟一块`0X456789`的内存，赋值给user。后面对user的任何修改都不会改变内存`0X123456`的内容（图3）。
 
@@ -199,7 +195,7 @@ print in main , user is User{name='Hollis', gender='Male'}
 
 我们再来回顾下之前的那个“砸电视”的例子，看那个例子中的传递过程发生了什么。
 
-[![pass2](http://www.hollischuang.com/wp-content/uploads/2018/04/pass21.png)](http://www.hollischuang.com/wp-content/uploads/2018/04/pass21.png)
+![pass2](img/pass21.png)
 
 同样的，在参数传递的过程中，实际参数的地址`0X1213456`被拷贝给了形参，只是，在这个方法中，并没有对形参本身进行修改，而是修改的形参持有的地址中存储的内容。
 
@@ -207,7 +203,7 @@ print in main , user is User{name='Hollis', gender='Male'}
 
 那么，既然这样，为啥上面同样是传递对象，传递的String对象和User对象的表现结果不一样呢？我们在pass方法中使用`name = "hollischuang";`试着去更改name的值，阴差阳错的直接改变了name的引用的地址。因为这段代码，会new一个String，在把引用交给name，即等价于`name = new String("hollischuang");`。而原来的那个”Hollis”字符串还是由实参持有着的，所以，并没有修改到实际参数的值。
 
-[![pass3](http://www.hollischuang.com/wp-content/uploads/2018/04/pass3.png)](http://www.hollischuang.com/wp-content/uploads/2018/04/pass3.png)
+![pass3](img/pass3.png)
 
 **所以说，Java中其实还是值传递的，只不过对于对象参数，值的内容是对象的引用。**
 

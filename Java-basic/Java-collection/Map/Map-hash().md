@@ -1,4 +1,18 @@
-[TOC]
+<!--ts-->
+   * [前言](Map-hash().md#前言)
+   * [1. 哈希](Map-hash().md#1-哈希)
+   * [2. HashMap 的数据结构](Map-hash().md#2-hashmap-的数据结构)
+   * [4. 源码解析](Map-hash().md#4-源码解析)
+      * [4.1 HashMap In Java 7](Map-hash().md#41-hashmap-in-java-7)
+      * [4.2 HashTable In Java 7](Map-hash().md#42-hashtable-in-java-7)
+      * [4.3 ConcurrentHashMap In Java 7](Map-hash().md#43-concurrenthashmap-in-java-7)
+      * [4.4 HashMap In Java 8](Map-hash().md#44-hashmap-in-java-8)
+      * [4.5 ConcurrentHashMap In Java 8](Map-hash().md#45-concurrenthashmap-in-java-8)
+   * [5. 总结](Map-hash().md#5-总结)
+
+<!-- Added by: anapodoton, at: Sun Feb 16 15:40:05 CST 2020 -->
+
+<!--te-->
 
 # 前言
 

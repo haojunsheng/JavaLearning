@@ -6,7 +6,7 @@ Vector是java.util包中的一个类。 SynchronizedList是java.util.Collections
 
 首先，我们知道Vector和Arraylist都是List的子类，他们底层的实现都是一样的。所以这里比较如下两个`list1`和`list2`的区别：
 
-```
+```java
 List<String> list = new ArrayList<String>();
 List list2 =  Collections.synchronizedList(list);
 Vector<String> list1 = new Vector<String>();
@@ -18,7 +18,7 @@ Vector<String> list1 = new Vector<String>();
 
 **Vector的实现：**
 
-```
+```java
 public void add(int index, E element) {
     insertElementAt(element, index);
 }
@@ -44,7 +44,7 @@ private void ensureCapacityHelper(int minCapacity) {
 
 **synchronizedList的实现：**
 
-```
+```java
 public void add(int index, E element) {
    synchronized (mutex) {
        list.add(index, element);
@@ -54,7 +54,7 @@ public void add(int index, E element) {
 
 这里，使用同步代码块的方式调用ArrayList的add()方法。ArrayList的add方法内容如下：
 
-```
+```java
 public void add(int index, E element) {
     rangeCheckForAdd(index);
     ensureCapacityInternal(size + 1);  // Increments modCount!!
@@ -89,7 +89,7 @@ public E remove(int index) {
 
 ArrayList类的remove方法内容如下：
 
-```
+```java
 public E remove(int index) {
     rangeCheck(index);
 
@@ -108,7 +108,7 @@ public E remove(int index) {
 
 **Vector的实现：**
 
-```
+```java
 public synchronized E remove(int index) {
         modCount++;
         if (index >= elementCount)

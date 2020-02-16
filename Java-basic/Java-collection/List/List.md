@@ -1,10 +1,12 @@
-[TOC]
+<!--ts-->
+
+<!--te-->
 
 # 1.List接口概述
 
 List接口，成为有序的Collection也就是序列。该接口可以对列表中的每一个元素的插入位置进行精确的控制，同时用户可以根据元素的整数索引（在列表中的位置）访问元素，并搜索列表中的元素。 下图是List接口的框架图：
 
-![20140712000001_thumb19](https://ws4.sinaimg.cn/large/006tKfTcly1g0edixugkaj30is0dcdgv.jpg)
+![20140712000001_thumb19](img/122311120359086.png)
 
 通过上面的框架图，可以对List的结构了然于心，其各个类. 接口如下：
 
@@ -23,7 +25,7 @@ List接口，成为有序的Collection也就是序列。该接口可以对列表
 - **Stack：** 后进先出（LIFO）的对象堆栈。它通过五个操作对类 Vector 进行了扩展 ，允许将向量视为堆栈。
 - **Enumeration：** 枚举，实现了该接口的对象，它生成一系列元素，一次生成一个。连续调用 nextElement 方法将返回一系列的连续元素。
 
-![20140712000002_thumb](https://ws3.sinaimg.cn/large/006tKfTcly1g0edjq1z5nj30mx0bqab5.jpg)
+![20140712000002_thumb](img/122311131294886.png)
 
 # 2. 使用场景
 
@@ -37,7 +39,7 @@ List接口，成为有序的Collection也就是序列。该接口可以对列表
 
 在List中我们使用最普遍的就是LinkedList和ArrayList，同时我们也了解了他们两者之间的使用场景和区别。
 
-```
+```java
 public class ListTest {
     private static final int COUNT = 100000;
 
@@ -214,5 +216,5 @@ public void add(int index, E element) {
 
 ## 2.2. Vector和ArrayList的区别
 
-![20140712000003_thumb](https://ws4.sinaimg.cn/large/006tKfTcly1g0edkkdeeoj30m70dnmz3.jpg)
+![20140712000003_thumb](https://images0.cnblogs.com/blog/381060/201407/122311141764700.png)
 

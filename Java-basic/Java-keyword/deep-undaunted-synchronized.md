@@ -1,4 +1,28 @@
-[TOC]
+<!--ts-->
+   * [前言](#前言)
+   * [1. 反编译](#1-反编译)
+   * [2. 同步方法](#2-同步方法)
+   * [3. 同步代码块](#3-同步代码块)
+      * [3.1 monitorenter](#31-monitorenter)
+      * [3.2 monitorexit](#32-monitorexit)
+   * [4. 总结](#4-总结)
+   * [<a href="https://www.hollischuang.com/archives/2637" rel="nofollow">再有人问你synchronized是什么，就把这篇文章发给他。</a>](#再有人问你synchronized是什么就把这篇文章发给他)
+   * [5.  synchronized的用法](#5--synchronized的用法)
+   * [6. synchronized的实现原理](#6-synchronized的实现原理)
+         * [synchronized与原子性](#synchronized与原子性)
+         * [synchronized与可见性](#synchronized与可见性)
+         * [synchronized与有序性](#synchronized与有序性)
+         * [synchronized与锁优化](#synchronized与锁优化)
+         * [反编译](#反编译)
+         * [同步方法](#同步方法)
+         * [同步代码块](#同步代码块)
+            * [monitorenter](#monitorenter)
+            * [monitorexit](#monitorexit)
+         * [总结](#总结)
+
+<!-- Added by: anapodoton, at: Sat Feb 15 21:04:22 CST 2020 -->
+
+<!--te-->
 
 # 前言
 

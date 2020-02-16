@@ -1,4 +1,12 @@
-[TOC]
+<!--ts-->
+   * [前言](#前言)
+   * [为什么数组有length属性？](#为什么数组有length属性)
+   * [Java中为什么没有定义一个类似String一样Array类](#java中为什么没有定义一个类似string一样array类)
+   * [为什么String有length()方法？](#为什么string有length方法)
+
+<!-- Added by: anapodoton, at: Sat Feb 15 21:13:02 CST 2020 -->
+
+<!--te-->
 
 # 前言
 

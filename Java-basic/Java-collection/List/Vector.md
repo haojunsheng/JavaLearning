@@ -1,3 +1,17 @@
+<!--ts-->
+   * [1.Vector简介](#1vector简介)
+   * [2.源码解析](#2源码解析)
+      * [2.1增加：add(E e)](#21增加adde-e)
+      * [2.2、remove(Object o)](#22removeobject-o)
+   * [3. Vector遍历](#3-vector遍历)
+      * [3.1、<strong>随机访问</strong>](#31随机访问)
+      * [3.2、迭代器](#32迭代器)
+      * [3.4、<strong>Enumeration循环</strong>](#34enumeration循环)
+
+<!-- Added by: anapodoton, at: Sun Feb 16 14:46:23 CST 2020 -->
+
+<!--te-->
+
 在[java提高篇（二一）—–ArrayList](http://www.cnblogs.com/chenssy/p/3498468.html)、[java提高篇（二二）—LinkedList](http://www.cnblogs.com/chenssy/p/3514524.html)，详细讲解了ArrayList、linkedList的原理和实现过程，对于List接口这里还介绍一个它的实现类Vector，Vector 类可以实现可增长的对象数组。
 
 # 1.Vector简介

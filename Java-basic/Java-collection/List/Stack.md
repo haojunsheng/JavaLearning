@@ -1,10 +1,8 @@
-[TOC]
-
 # 前言
 
 在Java中Stack类表示后进先出（LIFO）的对象堆栈。栈是一种非常常见的数据结构，它采用典型的先进后出的操作方式完成的。每一个栈都包含一个栈顶，每次出栈是将栈顶的数据取出，如下：
 
-![2014070800001_thumb_thumb](https://ws2.sinaimg.cn/large/006tKfTcly1g0ea8jr631j30n709ugma.jpg)
+![2014070800001_thumb_thumb](https://images0.cnblogs.com/blog/381060/201407/091242265826653.jpg)
 
 Stack通过五个操作对Vector进行扩展，允许将向量视为堆栈。这个五个操作如下：
 

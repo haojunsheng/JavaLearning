@@ -1,14 +1,40 @@
-[TOC]
+<!--ts-->
+   * [前言](#前言)
+   * [1. Collection接口](#1-collection接口)
+      * [1.1 List接口](#11-list接口)
+         * [1.1.1 ArrayList](#111-arraylist)
+         * [1.1.2 LinkedList](#112-linkedlist)
+         * [1.1.3 Vector](#113-vector)
+         * [1.1.4 Stack](#114-stack)
+      * [1.2  Set接口](#12--set接口)
+         * [1.2.1 EnumSet](#121-enumset)
+         * [1.2.2 HashSet](#122-hashset)
+         * [1.2.3 TreeSet](#123-treeset)
+      * [1.3 Queue](#13-queue)
+   * [2.  Map接口](#2--map接口)
+      * [2.1 HashMap](#21-hashmap)
+   * [3.  异同点](#3--异同点)
+      * [3.3. HashMap与TreeMap](#33-hashmap与treemap)
+      * [3.4. hashtable与hashmap](#34-hashtable与hashmap)
+   * [4.对集合的选择](#4对集合的选择)
+      * [4.1. 对List的选择](#41-对list的选择)
+      * [4.2. 对Set的选择](#42-对set的选择)
+      * [4.3. 对Map的选择](#43-对map的选择)
+   * [5. 实例](#5-实例)
+
+<!-- Added by: anapodoton, at: Sat Feb 15 23:07:00 CST 2020 -->
+
+<!--te-->
 
 # 前言
 
 在编写java程序中，我们最常用的除了八种基本数据类型，String对象外还有一个集合类，在我们的的程序中到处充斥着集合类的身影！java中集合大家族的成员实在是太丰富了，有常用的ArrayList. HashMap. HashSet，也有不常用的Stack. Queue，有线程安全的Vector，HashTable，也有线程不安全的LinkedList. TreeMap等等！
 
-简化版![image-20190221154003443](https://ws4.sinaimg.cn/large/006tKfTcly1g0e361ctjqj30ys0jwtf5.jpg)
+简化版
 
+![image-20200215230048825](img/image-20200215230048825.png)
 
-
-![image-20190221143152605](https://ws4.sinaimg.cn/large/006tKfTcly1g0e172vg74j30up0u0k34.jpg)
+![image-20200215230119952](img/image-20200215230119952.png)
 
 上面的图展示了整个集合大家族的成员以及他们之间的关系。下面就上面的各个接口. 基类做一些简单的介绍(主要介绍各个集合的特点。区别)，更加详细的介绍会在不久的将来一一讲解。
 
@@ -32,27 +58,55 @@
 
 # 1. Collection接口
 
-Collection接口是最基本的集合接口，它不提供直接的实现，Java SDK提供的类都是继承自Collection的“子接口”如List和Set。Collection所代表的是一种规则，它所包含的元素都必须遵循一条或者多条规则。如有些允许重复而有些则不能重复. 有些必须要按照顺序插入而有些则是散列，有些支持排序但是有些则不支持。
+Collection接口是最基本的集合接口，它不提供直接的实现，Java SDK提供的类都是继承自Collection的“子接口”如List和Set。Collection所代表的是一种规则，**它所包含的元素都必须遵循一条或者多条规则。如有些允许重复而有些则不能重复. 有些必须要按照顺序插入而有些则是散列，有些支持排序但是有些则不支持。**
 
 在Java中所有实现了Collection接口的类都必须提供两套标准的构造函数，一个是无参，用于创建一个空的Collection，一个是带有Collection参数的有参构造函数，用于创建一个新的Collection，这个新的Collection与传入进来的Collection具备相同的元素。
 
 实现了Iterator接口，便于打印元素。
 
+**Collection 和 Collections**
+
+首先要明确的是，Collection 和 Collections是两个不同的概念。Collection是一个接口，所有的集合类（除Map外）都要继承（实现）自该接口。它提供了对集合对象进行基本操作的通用接口方法。Collections是一个包装类，它包含有各种有关集合操作的静态多态方法。（Collections是一个工具类，不能实例化）
+
+![CollectionVsCollections](img/CollectionVsCollections.jpeg)
+
+**Collection家族关系图**
+
+![java-collection-hierarchy](img/java-collection-hierarchy-20200215230329912.jpeg)
+
+List,Set都是继承自Collection接口。都是用来存储一组相同类型的元素的。
+
+List特点：元素有放入顺序，元素可重复 。
+
+有顺序，即先放入的元素排在前面。
+
+Set特点：元素无放入顺序，元素不可重复。
+
+无顺序，即先放入的元素不一定排在前面。 不可重复，即相同元素在set中只会保留一份。所以，有些场景下，set可以用来去重。 不过需要注意的是，set在元素插入时是要有一定的方法来判断元素是否重复的。这个方法很重要，决定了set中可以保存哪些元素。
+
 ## 1.1 List接口
+
+ [List.md](List/List.md) 
 
 **可以将元素维护在特定的序列中**。
 
-List接口为Collection直接接口。**List所代表的是有序的Collection**，即它用某种特定的插入顺序来维护元素顺序。用户可以对列表中每个元素的插入位置进行精确地控制，同时可以根据元素的整数索引（在列表中的位置）访问元素，并搜索列表中的元素。实现List接口的集合主要有：ArrayList, LinkedList,Vector,Stack。
+List接口为Collection直接接口。**List所代表的是有序的可重复Collection**，即它用某种特定的插入顺序来维护元素顺序。用户可以对列表中每个元素的插入位置进行精确地控制，同时可以根据元素的整数索引（在列表中的位置）访问元素，并搜索列表中的元素。实现List接口的集合主要有：ArrayList, LinkedList,Vector,Stack。
+
+ [ArrayList-LinkedList-Vector.md](List/ArrayList-LinkedList-Vector.md) 
 
 ### 1.1.1 ArrayList
 
-ArrayList是一个动态数组，也是我们最常用的集合。它允许任何符合规则的元素插入甚至包括null。每一个ArrayList都有一个初始容量（10），该容量代表了数组的大小。随着容器中的元素不断增加，容器的大小也会随着增加。在每次向容器中增加元素的同时都会进行容量检查，当快溢出时，就会进行扩容操作。所以如果我们明确所插入元素的多少，最好指定一个初始容量值，避免过多的进行扩容操作而浪费时间. 效率。
+ [ArrayList.md](List/ArrayList.md) 
+
+ArrayList是一个**动态数组**，也是我们最常用的集合。它允许任何符合规则的元素插入甚至包括null。每一个ArrayList都有一个初始容量（10），该容量代表了数组的大小。随着容器中的元素不断增加，容器的大小也会随着增加。在每次向容器中增加元素的同时都会进行容量检查，当快溢出时，就会进行扩容操作。所以如果我们明确所插入元素的多少，最好指定一个初始容量值，避免过多的进行扩容操作而浪费时间. 效率。
 
 size. isEmpty. get. set. iterator 和 listIterator 操作都以固定时间运行。add 操作以分摊的固定时间运行，也就是说，添加 n 个元素需要 O(n) 时间（由于要考虑到扩容，所以这不只是添加元素会带来分摊固定时间开销那样简单）。
 
 ArrayList擅长于随机访问。同时ArrayList是非同步的。
 
 ### 1.1.2 LinkedList
+
+ [LinkedList.md](List/LinkedList.md) 
 
 同样实现List接口的LinkedList与ArrayList不同，ArrayList是一个动态数组，而LinkedList是一个双向链表。所以它除了有ArrayList的基本操作方法外还额外提供了get，remove，insert方法在LinkedList的首部或尾部。
 
@@ -63,17 +117,25 @@ List list = Collections.synchronizedList(new LinkedList(…));
 
 ### 1.1.3 Vector
 
+ [Vector.md](List/Vector.md) 
+
 与ArrayList相似，但是Vector是同步的。所以说Vector是线程安全的动态数组。它的操作与ArrayList几乎一样。
 
+那么Vector和SynchronizedList的区别是什么呢？
+
+ [SynchronizedList-vs-Vector.md](List/SynchronizedList-vs-Vector.md) 
+
 ### 1.1.4 Stack
+
+ [Stack.md](List/Stack.md) 
 
 Stack继承自Vector，实现一个后进先出的堆栈。Stack提供5个额外的方法使得Vector得以被当作堆栈使用。基本的push和pop 方法，还有peek方法得到栈顶的元素，empty方法测试堆栈是否为空，search方法检测一个元素在堆栈中的位置。Stack刚创建后是空栈。
 
 ## 1.2  Set接口
 
-**Set是一种不包括重复元素的Collection（相同对象的多个实例也不行）**。它维持它自己的内部排序，所以随机访问没有任何意义。与List一样，它同样运行null的存在但是仅有一个。由于Set接口的特殊性，所有传入Set集合中的元素都必须不同，同时要注意任何可变对象，如果在对集合中元素进行操作时，导致e1.equals(e2)==true，则必定会产生某些问题。实现了Set接口的集合有：EnumSet. HashSet. TreeSet。
+**Set是一种不包括重复元素的Collection（相同对象的多个实例也不行）**。它维持它自己的内部排序，所以随机访问没有任何意义。**与List一样，它同样运行null的存在但是仅有一个**。由于Set接口的特殊性，所有传入Set集合中的元素都必须不同，同时要注意任何可变对象，如果在对集合中元素进行操作时，导致e1.equals(e2)==true，则必定会产生某些问题。实现了Set接口的集合有：EnumSet. HashSet. TreeSet。
 
-常用来查找。
+**常用来查找。**
 
 ### 1.2.1 EnumSet
 
@@ -81,13 +143,15 @@ Stack继承自Vector，实现一个后进先出的堆栈。Stack提供5个额外
 
 ### 1.2.2 HashSet
 
+ [HashSet.md](Set/HashSet.md) 
+
 HashSet堪称查询速度最快的集合，因为其内部是以HashCode来实现的。它内部元素的顺序是由哈希码来决定的，所以它不保证set 的迭代顺序；特别是它不保证该顺序恒久不变。
 
 ### 1.2.3 TreeSet
 
+ [TreeSet.md](Set/TreeSet.md) 
+
 基于TreeMap，生成一个总是处于排序状态的set，内部以TreeMap来实现。它是使用元素的自然顺序对元素进行排序，或者根据创建Set 时提供的`Comparator`进行排序，具体取决于使用的构造方法。
-
-
 
  ## 1.3 Queue
 
@@ -97,11 +161,21 @@ HashSet堪称查询速度最快的集合，因为其内部是以HashCode来实�
 
 # 2.  Map接口
 
+ [Map.md](Map/Map.md) 
+
+无序不可重复。
+
 **允许使用键来查找值**。Map与List,Set接口不同，它是由一系列键值对组成的集合，提供了key到Value的映射。同时它也没有继承Collection。在Map中它保证了key与value之间的一一对应关系。也就是说一个key对应一个value，所以它不能存在相同的key值，当然value值可以相同。实现map的有：HashMap. TreeMap. HashTable. Properties. EnumMap。
+
+Map的家族关系图谱。
+
+![MapClassHierarchy-600x354](img/MapClassHierarchy-600x354.jpg)
+
+![collection-summary](img/collection-summary.png)
 
 ## 2.1 HashMap
 
-以哈希表数据结构实现，查找对象时通过哈希函数计算其位置，它是为快速查询而设计的，其内部定义了一个hash表数组（Entry[] table），元素会通过哈希转换函数将元素的哈希地址转换成数组中存放的索引，如果有冲突，则使用散列链表的形式将所有相同哈希地址的元素串起来，可能通过查看HashMap.Entry的源码它是一个单链表结构。
+以哈希表数据结构实现，查找对象时通过哈希函数计算其位置，它是为快速查询而设计的，其内部定义了一个hash表数组（Entry[] table），元素会通过哈希转换函数将元素的哈希地址转换成数组中存放的索引，如果有冲突，则使用散列链表的形式将所有相同哈希地址的元素串起来，可能通过查看HashMap.Entry的源码它是一个单链表结构。 [HashMap.md](Map/HashMap.md) 
 
 ##2.2. TreeMap
 
@@ -160,3 +234,55 @@ ArrayList 和Vector是采用数组方式存储数据，此数组元素数大于�
 
 1. HashMap与HashSet同样，支持快速查询。虽然HashTable速度的速度也不慢，但是在HashMap面前还是稍微慢了些，所以HashMap在查询方面可以取代HashTable。
 2. 由于TreeMap需要维持内部元素的顺序，所以它通常要比HashMap和HashTable慢。
+
+# 5. 实例
+
+下面是一个简单的例子来说明一些集合类型:
+
+```java
+List<String> a1 = new ArrayList<String>();
+a1.add("Program");
+a1.add("Creek");
+a1.add("Java");
+a1.add("Java");
+System.out.println("ArrayList Elements");
+System.out.print("\t" + a1 + "\n");
+
+List<String> l1 = new LinkedList<String>();
+l1.add("Program");
+l1.add("Creek");
+l1.add("Java");
+l1.add("Java");
+System.out.println("LinkedList Elements");
+System.out.print("\t" + l1 + "\n");
+
+Set<String> s1 = new HashSet<String>(); // or new TreeSet() will order the elements;
+s1.add("Program");
+s1.add("Creek");
+s1.add("Java");
+s1.add("Java");
+s1.add("tutorial");
+System.out.println("Set Elements");
+System.out.print("\t" + s1 + "\n");
+
+Map<String, String> m1 = new HashMap<String, String>(); // or new TreeMap() will order based on keys
+m1.put("Windows", "2000");
+m1.put("Windows", "XP");
+m1.put("Language", "Java");
+m1.put("Website", "programcreek.com");
+System.out.println("Map Elements");
+System.out.print("\t" + m1);
+```
+
+输出结果：
+
+```
+ArrayList Elements
+    [Program, Creek, Java, Java]
+LinkedList Elements
+    [Program, Creek, Java, Java]
+Set Elements
+    [tutorial, Creek, Program, Java]
+Map Elements
+    {Windows=XP, Website=programcreek.com, Language=Java}
+```

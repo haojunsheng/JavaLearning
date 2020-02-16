@@ -1,4 +1,18 @@
-[TOC]
+<!--ts-->
+   * [1. 什么是HashMap](HashMap.md#1-什么是hashmap)
+   * [2.HashMap和HashTable的区别](HashMap.md#2hashmap和hashtable的区别)
+   * [3. HashMap与HashSet的关系](HashMap.md#3-hashmap与hashset的关系)
+   * [3. HashMap 和 ConcurrentHashMap 的关系](HashMap.md#3-hashmap-和-concurrenthashmap-的关系)
+   * [4. HashMap实现原理分析](HashMap.md#4-hashmap实现原理分析)
+      * [4.1 定义](HashMap.md#41-定义)
+      * [4.2 构造函数](HashMap.md#42-构造函数)
+   * [5. HashMap的存取实现](HashMap.md#5-hashmap的存取实现)
+   * [6. 解决hash冲突的办法](HashMap.md#6-解决hash冲突的办法)
+   * [7. 再散列rehash过程](HashMap.md#7-再散列rehash过程)
+
+<!-- Added by: anapodoton, at: Sun Feb 16 15:40:14 CST 2020 -->
+
+<!--te-->
 
 # 1. 什么是HashMap
 

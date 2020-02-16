@@ -77,7 +77,7 @@ long long_max = Long.MAX_VALUE;
 
 另外因为浮点数在计算过程中会丢失精度，所以并不能使用浮点数来表示金额
 
-在Java中用来表示金额可以使用BigDecimal
+在Java中用来表示金额可以使用BigDecimal或者Long（单位为分）。
 
 
 

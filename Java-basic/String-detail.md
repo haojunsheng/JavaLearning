@@ -1,4 +1,62 @@
-[TOC]
+<!--ts-->
+
+   * [前言](#前言)
+   * [1. String的源码相关](#1-string的源码相关)
+      * [Class文件常量池，运行时常量池和字符串常量池的区别](#class文件常量池运行时常量池和字符串常量池的区别)
+   * [2. <a href="http://www.hollischuang.com/archives/2517" rel="nofollow">我终于搞清楚了和String有关的那点事儿</a>](#2-我终于搞清楚了和string有关的那点事儿)
+      * [2.1 字面量和运行时常量池](#21-字面量和运行时常量池)
+      * [2.2 new String创建了几个对象](#22-new-string创建了几个对象)
+      * [2.3 运行时常量池的动态扩展](#23-运行时常量池的动态扩展)
+      * [2.4 intern的正确用法](#24-intern的正确用法)
+      * [2.5 总结](#25-总结)
+   * [3. <a href="https://www.cnblogs.com/justcooooode/p/7603381.html" rel="nofollow">理解Java字符串常量池与intern()方法</a>](#3-理解java字符串常量池与intern方法)
+      * [3.1 Java内存区域](#31-java内存区域)
+      * [3.2 两种创建方式在内存中的区别](#32-两种创建方式在内存中的区别)
+         * [解释开头的例子](#解释开头的例子)
+      * [3.3 intern()方法](#33-intern方法)
+      * [熟悉Java String的使用](#熟悉java-string的使用)
+   * [4. <a href="https://www.hollischuang.com/archives/1230" rel="nofollow">三张图彻底了解Java中字符串的不变性</a>](#4-三张图彻底了解java中字符串的不变性)
+      * [4.1 定义一个字符串](#41-定义一个字符串)
+      * [4.2 使用变量来赋值变量](#42-使用变量来赋值变量)
+      * [4.3 字符串连接](#43-字符串连接)
+      * [4.4 总结](#44-总结)
+   * [5. <a href="https://www.hollischuang.com/archives/1246" rel="nofollow">为什么Java要把字符串设计成不可变的</a>](#5-为什么java要把字符串设计成不可变的)
+      * [5.1 字符串池](#51-字符串池)
+      * [5.2 缓存Hashcode](#52-缓存hashcode)
+      * [5.3 使其他类的使用更加便利](#53-使其他类的使用更加便利)
+      * [5.4 安全性](#54-安全性)
+      * [不可变对象天生就是线程安全的](#不可变对象天生就是线程安全的)
+   * [6. <a href="https://www.hollischuang.com/archives/1249" rel="nofollow">该如何创建字符串，使用” “还是构造函数？</a>](#6-该如何创建字符串使用-还是构造函数)
+      * [6.1 双引号 vs 构造函数](#61-双引号-vs-构造函数)
+      * [6.2 运行时字符串驻留](#62-运行时字符串驻留)
+      * [熟悉String的各种函数](#熟悉string的各种函数)
+   * [7. <a href="https://www.hollischuang.com/archives/1232" rel="nofollow">三张图彻底了解JDK 6和JDK 7中substring的原理及区别</a>](#7-三张图彻底了解jdk-6和jdk-7中substring的原理及区别)
+      * [7.1 substring() 的作用](#71-substring-的作用)
+      * [调用substring()时发生了什么？](#调用substring时发生了什么)
+      * [7.2 JDK 6中的substring](#72-jdk-6中的substring)
+      * [7.3 JDK 6中的substring导致的问题](#73-jdk-6中的substring导致的问题)
+      * [7.4 JDK 7 中的substring](#74-jdk-7-中的substring)
+   * [8. <a href="https://www.hollischuang.com/archives/1261" rel="nofollow">深入分析Java中的length和length()</a>](#8-深入分析java中的length和length)
+      * [8.1 为什么数组有length属性？](#81-为什么数组有length属性)
+      * [8.2 Java中为什么没有定义一个类似String一样Array类](#82-java中为什么没有定义一个类似string一样array类)
+      * [8.3 为什么String有length()方法？](#83-为什么string有length方法)
+   * [9. <a href="https://www.hollischuang.com/archives/1290" rel="nofollow">Java中的equals()和hashcode()之间关系</a>](#9-java中的equals和hashcode之间关系)
+      * [9.1 一个常犯的错误](#91-一个常犯的错误)
+      * [9.2 hashcode()惹的祸](#92-hashcode惹的祸)
+      * [总结](#总结)
+   * [10. <a href="https://www.hollischuang.com/archives/61" rel="nofollow">Java中的Switch对整型、字符型、字符串型的具体实现细节</a>](#10-java中的switch对整型字符型字符串型的具体实现细节)
+      * [10.1 switch对整型支持的实现](#101-switch对整型支持的实现)
+      * [10.2 switch对字符型支持的实现](#102-switch对字符型支持的实现)
+      * [10.3 switch对字符串支持的实现](#103-switch对字符串支持的实现)
+   * [11. String](#11-string)
+      * [11.1 StringBuffer](#111-stringbuffer)
+      * [11.3 StringBuilder](#113-stringbuilder)
+      * [11.4 正确使用String、StringBuffer、StringBuilder](#114-正确使用stringstringbufferstringbuilder)
+      * [11.5 字符串拼接方式](#115-字符串拼接方式)
+
+<!-- Added by: anapodoton, at: Sat Feb 15 19:02:17 CST 2020 -->
+
+<!--te-->
 
 # 前言
 
@@ -14,15 +72,13 @@
 
 # 1. String的源码相关
 
- [String源码阅读.md](java源码的阅读/String源码阅读.md) 
+ [String-sourcecode.md](java-source-code/String-sourcecode.md) 
 
 解决了substring的原理及区别、replaceFirst、replaceAll、replace区别，String对“+”的重载、String.valueOf和Integer.toString的区别（String.valueOf(i)`也是调用`Integer.toString(i)`来实现的）。
 
 ## Class文件常量池，运行时常量池和字符串常量池的区别
 
- [jvm常量池的区分.md](../jvmLearning/jvm常量池的区分.md) 
-
-
+  [Java-constant-pool.md](../jvmLearning/Java-constant-pool.md) 
 
 # 2. [我终于搞清楚了和String有关的那点事儿](http://www.hollischuang.com/archives/2517)
 
@@ -122,7 +178,7 @@ String str = “hello world！”; // str 为变量，hello world！为字面量
 
 运行时常量池属于方法区，是类私有的，字符串常量池属于全局共享的。
 
- [jvm常量池的区分.md](../jvmLearning/jvm常量池的区分.md) 
+ [Java-constant-pool.md](../jvmLearning/Java-constant-pool.md) 
 
 这段代码中，我们可以知道的是，在编译期，**符号引用**`s`和**字面量**`Hollis`会被加入到Class文件的常量池中，然后在类加载阶段（具体时间段参考Java 中[new String(“字面量”) 中 “字面量” 是何时进入字符串常量池的?](https://www.zhihu.com/question/55994121)），这两个常量会进入常量池。
 
@@ -140,7 +196,7 @@ System.out.println(s1 == s2);
 
 因为，`==`比较的是`s1`和`s2`在堆中创建的对象的地址，当然不同了。但是如果使用`equals`，那么比较的就是字面量的内容了，那就会得到`true`。
 
-![string](https://ws1.sinaimg.cn/large/006tNc79ly1fz8mvs80b6j30ox09dt9z.jpg)
+![string](img/string1.png)
 
 > 在不同版本的JDK中，Java堆和字符串常量池之间的关系也是不同的，这里为了方便表述，就画成两个独立的物理区域了。具体情况请参考Java虚拟机规范。
 
@@ -172,7 +228,7 @@ System.out.println(s1 == s2);
 
 你可以简单的理解为`String s1 = "Hollis";`和`String s3 = new String("Hollis").intern();`做的事情是一样的（但实际有些区别，这里暂不展开）。都是定义一个字符串对象，然后将其字符串字面量保存在字符串常量池中，并把这个字面量的引用返回给定义好的对象引用。
 
-![intern](http://www.hollischuang.com/wp-content/uploads/2018/06/intern2.png)
+![intern](img/intern2.png)
 
 对于`String s3 = new String("Hollis").intern();`，在不调用`intern`情况，s3指向的是JVM在堆中创建的那个对象的引用的（如图中的s2）。但是当执行了`intern`方法时，s3将指向字符串常量池中的那个字符串常量。
 
@@ -206,11 +262,7 @@ System.out.println(s1 == s2);
 
 如果你感兴趣，你还能发现，`String s3 = s1 + s2;` 经过编译之后，常量池中是有两个字符串常量的分别是 `Hollis`、`Chuang`（其实`Hollis`和`Chuang`是`String s1 = "Hollis";`和`String s2 = "Chuang";`定义出来的），拼接结果`HollisChuang`并不在常量池中。
 
-![image-20190117103905853](https://ws2.sinaimg.cn/large/006tNc79ly1fz9ds34fgoj30vk0iatbg.jpg)
-
 如果代码只有`String s4 = "Hollis" + "Chuang";`，那么常量池中将只有`HollisChuang`而没有”Hollis” 和 “Chuang”。
-
-![image-20190117103811036](https://ws1.sinaimg.cn/large/006tNc79ly1fz9dr6a4tzj30ve0aqdh1.jpg)
 
 **究其原因，是因为常量池要保存的是已确定的字面量值。也就是说，对于字符串的拼接，纯字面量和字面量的拼接，会把拼接结果作为常量保存到字符串池。**
 
@@ -246,8 +298,6 @@ public static void main(String[] args) throws Exception {
 
 在以上代码中，我们明确的知道，会有很多重复的相同的字符串产生，但是这些字符串的值都是只有在运行期才能确定的。所以，只能我们通过`intern`显示的将其加入常量池，这样可以减少很多字符串的重复创建。
 
-![image-20190117104709866](https://ws1.sinaimg.cn/large/006tNc79ly1fz9e0hlpq5j30re04675a.jpg)
-
 ## 2.5 总结
 
 我们再回到文章开头那个疑惑：按照上面的两个面试题的回答，就是说`new String`也会检查常量池，如果有的话就直接引用，如果不存在就要在常量池创建一个，那么还要`intern`干啥？难道以下代码是没有意义的吗？
@@ -262,11 +312,7 @@ String s = new String("Hollis").intern();
 
 之所以能有以上的疑惑，其实是对字符串常量池、字面量等概念没有真正理解导致的。有些问题其实就是这样，单个问题，自己都知道答案，但是多个问题综合到一起就蒙了。归根结底是知识的理解还停留在点上，没有串成面。
 
-
-
 # 3. [理解Java字符串常量池与intern()方法](https://www.cnblogs.com/justcooooode/p/7603381.html)
-
-
 
 ```java
 String s1 = "Hello";
@@ -307,7 +353,7 @@ String str = new String("Hello");
 
  要弄清楚这两种方式的区别，首先要知道他们在内存中的存储位置。
 
-![](https://ws1.sinaimg.cn/large/006tNc79ly1fz8tkt2dolj30ml0fwta4.jpg)
+![img](img/1177828-20170929204305559-896175948.png)
 
 我们平时所说的内存就是图中的**运行时数据区（Runtime Data Area）**，其中与字符串的创建有关的是**方法区（Method Area）**、**堆区（Heap Area）**和**栈区（Stack Area）**。
 
@@ -315,7 +361,7 @@ String str = new String("Hello");
 2. **堆区**：存放对象和数组。全局共享。
 3. **栈区**：基本数据类型、对象的引用都存放在这。线程私有。
 
-![](https://ws2.sinaimg.cn/large/006tNc79ly1fz8tlredrxj31el0u077d.jpg)
+![img](img/1177828-20170920153811462-862037386.jpg)
 
 每当一个方法被执行时就会在栈区中创建一个**栈帧（Stack Frame）**，基本数据类型和对象引用就存在栈帧中**局部变量表（Local Variables）**。
 
@@ -343,19 +389,21 @@ Test.java文件编译后得到.class文件，里面包含了类的信息，其�
 
 .class文件常量池主要存储的就包括**字面量**，字面量包括类中定义的常量，由于String是不可变的（[String为什么是不可变的？](http://www.cnblogs.com/justcooooode/p/7514863.html)），所以字符串“Hello”就存放在这。
 
-![](https://ws4.sinaimg.cn/large/006tNc79ly1fz8tu3d3izj30k00fj0tl.jpg)
+![img](img/1177828-20170929184033950-619493112.png)
 
 当程序用到Test类时，Test.class被解析到内存中的方法区。.class文件中的常量池信息会被加载到运行时常量池，但String不是。
 
 例子中“Hello”会在堆区中创建一个对象，同时会在字符串池（String Pool）存放一个它的引用，如下图所示。
 
-![](https://ws1.sinaimg.cn/large/006tNc79ly1fz8tuxdujyj31gq0u0mzx.jpg)
+![img](img/1177828-20170920154211321-596178280.png)
 
 **此时只是Test类刚刚被加载，主函数中的str并没有被创建，而“Hello”对象已经创建在于堆中。**
 
 当主线程开始创建str变量的，虚拟机会去字符串池中找是否有equals(“Hello”)的String，如果相等就把在字符串池中“Hello”的引用复制给str。如果找不到相等的字符串，就会在堆中新建一个对象，同时把引用驻留在字符串池，再把引用赋给str。
 
-![](https://ws3.sinaimg.cn/large/006tNc79ly1fz8tw6wa6rj31iz0u0whg.jpg)当用字面量赋值的方法创建字符串时，无论创建多少次，只要字符串的值相同，它们所指向的都是堆中的同一个对象。
+![img](img/1177828-20170920212341228-1393425975.png)
+
+当用字面量赋值的方法创建字符串时，无论创建多少次，只要字符串的值相同，它们所指向的都是堆中的同一个对象。
 
 ```java
 public class Test {
@@ -369,7 +417,9 @@ public class Test {
 }
 ```
 
-![](https://ws3.sinaimg.cn/large/006tNc79ly1fz8tzsxyz6j31gz0u0ad9.jpg)当利用**new**关键字去创建字符串时，前面加载的过程是一样的，只是在运行时无论字符串池中有没有与当前值相等的对象引用，都会在堆中新开辟一块内存，创建一个对象。
+![img](img/1177828-20170920213030587-629195501.png)
+
+当利用**new**关键字去创建字符串时，前面加载的过程是一样的，只是在运行时无论字符串池中有没有与当前值相等的对象引用，都会在堆中新开辟一块内存，创建一个对象。
 
 ```java
 public class Test {
@@ -383,7 +433,7 @@ public class Test {
 }
 ```
 
-![](https://ws4.sinaimg.cn/large/006tNc79ly1fz8u0yl5xnj31i20u0dj6.jpg)
+![img](img/1177828-20170920213937103-776364568.png)
 
 ### 解释开头的例子
 
@@ -504,7 +554,7 @@ public static void main(String[] args) {
 
 下面来解释一下**JDK1.6**环境下的结果：
 
-![](https://ws3.sinaimg.cn/large/006tNc79ly1fz9e8k85x8j30po0fwq46.jpg)
+![img](img/1177828-20170929183900606-1688428199.png)
 
 图中绿色线条代表string对象的内容指向，黑色线条代表地址指向。
 
@@ -512,7 +562,7 @@ JDK1.6中的intern()方法只是返回常量池中的引用，上面说过，常
 
 接着来说一下**JDK1.7**：
 
-![](https://ws1.sinaimg.cn/large/006tNc79ly1fz9ea9od3jj30v90e2q46.jpg)
+![img](img/1177828-20170929183909169-2103124161.png)
 
 再贴一下代码
 
@@ -534,7 +584,7 @@ public static void main(String[] args) {
 
 由于**s**是new出来的，所以会在常量池和堆中创建两个不同的对象，s.intern()后，发现“1”并不是第一次出现在常量池了，所以接下来就和之前没有区别了。
 
-![](https://ws3.sinaimg.cn/large/006tNc79ly1fz9eb4tr3sj30v60elgnn.jpg)
+![img](img/1177828-20170929183728481-2021113406.png)
 
 ```
 public static void main(String[] args) {
@@ -564,7 +614,9 @@ public static void main(String[] args) {
 String s = "abcd";
 ```
 
-![String-Immutability-1](https://ws1.sinaimg.cn/large/006tNc79ly1fz9f1forspj30ic0b4mxd.jpg)
+![String-Immutability-1](img/String-Immutability-1.jpeg)
+
+
 
 `s`中保存了string对象的引用。下面的箭头可以理解为“存储他的引用”。
 
@@ -574,7 +626,7 @@ String s = "abcd";
 String s2 = s;
 ```
 
-![String-Immutability-2](https://ws2.sinaimg.cn/large/006tNc79ly1fz9faonkjdj30ic0b4t92.jpg)
+![String-Immutability-2](img/String-Immutability-2.jpeg)
 
 s2保存了相同的引用值，因为他们代表同一个对象。
 
@@ -584,7 +636,7 @@ s2保存了相同的引用值，因为他们代表同一个对象。
 s = s.concat("ef");
 ```
 
-![string-immutability](https://ws1.sinaimg.cn/large/006tNc79ly1fz9farnmcpj30i207rwet.jpg)
+![string-immutability](img/string-immutability-650x279.jpeg)
 
 `s`中保存的是一个重新创建出来的string对象的引用。
 
@@ -613,7 +665,7 @@ String string2 = "abcd";
 
 下面是图示：
 
-![string](http://www.hollischuang.com/wp-content/uploads/2016/03/QQ20160302-3.png)
+![string](img/QQ20160302-3.png)
 
 如果字符串可变的话，**当两个引用指向指向同一个字符串时，对其中一个做修改就会影响另外一个。**（请记住该影响，有助于理解后面的内容）
 
@@ -680,8 +732,6 @@ String y = new String("abc");
 
 在编译期都会被加入常量池，即class文件的常量池。
 
-![image-20190117115604206](https://ws4.sinaimg.cn/large/006tNc79ly1fz9g09mneej30wm0la0vk.jpg)
-
 ## 6.1 双引号 vs 构造函数
 
 这个问题可以使用这两个简单代码实例来回答：
@@ -714,7 +764,7 @@ System.out.println("c.equals(d) : "+(c.equals(d))); // true
 
 下面图论证了以上的结论。
 
-![string](http://www.hollischuang.com/wp-content/uploads/2016/03/QQ20160302-4.png)
+![string](img/QQ20160302-4.png)
 
 ## 6.2 运行时字符串驻留
 
@@ -765,7 +815,7 @@ bc
 
 你可能知道，因为x是不可变的，当使用`x.substring(1,3)`对x赋值的时候，它会指向一个全新的字符串：
 
-![string-immutability1](http://www.programcreek.com/wp-content/uploads/2013/09/string-immutability1-650x303.jpeg)
+![string-immutability1](img/string-immutability1-650x303.jpeg)
 
 然而，这个图不是完全正确的表示堆中发生的事情。因为在jdk6 和 jdk7中调用substring时发生的事情并不一样。
 
@@ -775,7 +825,7 @@ String是通过字符数组实现的。在jdk 6 中，String类包含三个成�
 
 当调用substring方法的时候，会创建一个新的string对象，但是这个string的值仍然指向堆中的同一个字符数组。这两个对象中只有count和offset 的值是不同的。
 
-![string-substring-jdk6](http://www.programcreek.com/wp-content/uploads/2013/09/string-substring-jdk6-650x389.jpeg)
+![string-substring-jdk6](img/string-substring-jdk6-650x389.jpeg)
 
 下面是证明上说观点的Java源码中的关键代码：
 
@@ -803,7 +853,7 @@ x = x.substring(x, y) + ""
 
 关于JDK 6中subString的使用不当会导致内存系列已经被官方记录在Java Bug Database中：
 
-![leak](https://ws1.sinaimg.cn/large/006tNc79ly1fz9gge5dwlj30u90ko42s.jpg)
+![leak](img/leak.png)
 
 > 内存泄露：在计算机科学中，内存泄漏指由于疏忽或错误造成程序未能释放已经不再使用的内存。 内存泄漏并非指内存在物理上的消失，而是应用程序分配某段内存后，由于设计错误，导致在释放该段内存之前就失去了对该段内存的控制，从而造成了内存的浪费。
 
@@ -811,7 +861,7 @@ x = x.substring(x, y) + ""
 
 上面提到的问题，在jdk 7中得到解决。在jdk 7 中，substring方法会在堆内存中创建一个新的数组。
 
-![string-substring-jdk7](https://ws4.sinaimg.cn/large/006tNc79ly1fz9ghctd6aj30i20ataai.jpg)
+![string-substring-jdk7](img/string-substring-jdk71-650x389.jpeg)
 
 Java源码中关于这部分的主要代码如下：
 
@@ -983,7 +1033,7 @@ public class Apple {
 
 如果你了解Map的工作原理，那么你一定知道，它是通过把key值进行hash来定位对象的，这样可以提供比线性存储更好的性能。实际上，Map的底层数据结构就是一个数组的数组（准确的说其实是一个链表+数组）。第一个数组的索引值是key的哈希码。通过这个索引可以定位到第二个数组，第二个数组通过使用equals方法进行线性搜索的方式来查找对象。([HashMap完全解读](http://www.hollischuang.com/archives/82))
 
-[![image](http://www.hollischuang.com/wp-content/uploads/2016/03/image-1024x622.jpg)](http://www.hollischuang.com/wp-content/uploads/2016/03/image.jpg)
+![image](img/image-1024x622.jpg)
 
 其实，一个哈希码可以映射到一个桶（bucket）中，`hashcode`的作用就是先确定对象是属于哪个桶的。如果多个对象有相同的哈希值，那么他们可以放在同一个桶中。如果有不同的哈希值，则需要放在不同的桶中。至于同一个桶中的各个对象之前如何区分就需要使用`equals`方法了。
 

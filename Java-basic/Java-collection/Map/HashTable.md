@@ -1,4 +1,13 @@
-[TOC]
+<!--ts-->
+   * [前言](HashTable.md#前言)
+   * [1.定义](HashTable.md#1定义)
+   * [2. 构造方法](HashTable.md#2-构造方法)
+   * [3. 主要方法](HashTable.md#3-主要方法)
+   * [4. HashTable与HashMap的区别](HashTable.md#4-hashtable与hashmap的区别)
+
+<!-- Added by: anapodoton, at: Sun Feb 16 15:39:10 CST 2020 -->
+
+<!--te-->
 
 # 前言
 

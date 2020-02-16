@@ -1,4 +1,14 @@
-[TOC]
+<!--ts-->
+   * [前言](#前言)
+   * [1. Comparable](#1-comparable)
+   * [2. Comparator](#2-comparator)
+   * [3. 如何选择](#3-如何选择)
+      * [3.1 使用Comparator创建TreeSet](#31-使用comparator创建treeset)
+      * [3.2 使用Comparable创建TreeSet](#32-使用comparable创建treeset)
+
+<!-- Added by: anapodoton, at: Sat Feb 15 21:42:42 CST 2020 -->
+
+<!--te-->
 
 # 前言
 

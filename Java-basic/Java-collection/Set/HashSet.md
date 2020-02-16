@@ -1,4 +1,13 @@
-[TOC]
+<!--ts-->
+   * [前言](HashSet.md#前言)
+   * [1. 定义](HashSet.md#1-定义)
+      * [1.1 <strong>基本属性</strong>](HashSet.md#11-基本属性)
+      * [1.2  <strong>构造函数</strong>](HashSet.md#12--构造函数)
+   * [2.方法](HashSet.md#2方法)
+
+<!-- Added by: anapodoton, at: Sun Feb 16 15:20:33 CST 2020 -->
+
+<!--te-->
 
 # 前言
 

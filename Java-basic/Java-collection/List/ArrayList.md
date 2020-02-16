@@ -1,8 +1,22 @@
+<!--ts-->
+   * [1. ArrayList概述](#1-arraylist概述)
+   * [2. ArrayList源码分析](#2-arraylist源码分析)
+      * [2.1、底层使用数组](#21底层使用数组)
+      * [<strong>2.2、构造函数</strong>](#22构造函数)
+      * [<strong>2.3、新增</strong>](#23新增)
+      * [<strong>2.4、删除</strong>](#24删除)
+      * [<strong>2.5、查找</strong>](#25查找)
+      * [<strong>2.6、扩容</strong>](#26扩容)
+
+<!-- Added by: anapodoton, at: Sun Feb 16 13:56:17 CST 2020 -->
+
+<!--te-->
+
 # 1. ArrayList概述
 
 ArrayList是实现List接口的动态数组，所谓动态就是它的大小是可变的。实现了所有可选列表操作，并允许包括 null 在内的所有元素。除了实现 List 接口外，此类还提供一些方法来**操作内部用来存储列表的数组的大小**。
 
-每个ArrayList实例都有一个容量，该容量是指用来存储列表元素的数组的大小。默认初始容量为10。随着ArrayList中元素的增加，它的容量也会不断的自动增长。在每次添加新的元素时，ArrayList都会检查是否需要进行扩容操作，扩容操作带来数据向新数组的重新拷贝，所以如果我们知道具体业务数据量，在构造ArrayList时可以给ArrayList指定一个初始容量，这样就会减少扩容时数据的拷贝问题。当然在添加大量元素前，应用程序也可以使用ensureCapacity操作来增加ArrayList实例的容量，这可以减少递增式再分配的数量。
+每个ArrayList实例都有一个容量，该容量是指用来存储列表元素的数组的大小。**默认初始容量为10**。随着ArrayList中元素的增加，它的容量也会不断的自动增长。在每次添加新的元素时，ArrayList都会检查是否需要进行扩容操作，**扩容操作带来数据向新数组的重新拷贝**，所以如果我们知道具体业务数据量，在构造ArrayList时可以给ArrayList指定一个初始容量，这样就会减少扩容时数据的拷贝问题。当然在添加大量元素前，应用程序也可以使用ensureCapacity操作来增加ArrayList实例的容量，这可以减少递增式再分配的数量。
 
 **注意，ArrayList实现不是同步的**。如果多个线程同时访问一个ArrayList实例，而其中至少一个线程从结构上修改了列表，那么它必须保持外部同步。所以为了保证同步，最好的办法是在创建时完成，以防止意外对列表进行不同步的访问：
 
@@ -20,7 +34,7 @@ ArrayList我们使用的实在是太多了，非常熟悉，所以在这里将�
  private transient Object[] elementData;
 ```
 
-transient？？为java关键字，为变量修饰符，如果用transient声明一个实例变量，当对象存储时，它的值不需要维持。Java的serialization提供了一种持久化对象实例的机制。当持久化对象时，可能有一个特殊的对象数据成员，我们不想用serialization机制来保存它。为了在一个特定对象的一个域上关闭serialization，可以在这个域前加上关键字transient。当一个对象被序列化的时候，transient型变量的值不包括在序列化的表示中，然而非transient型的变量是被包括进去的。
+transient？为java关键字，为变量修饰符，如果用transient声明一个实例变量，当对象存储时，它的值不需要维持（**不需要序列化**）。Java的serialization提供了一种持久化对象实例的机制。当持久化对象时，可能有一个特殊的对象数据成员，我们不想用serialization机制来保存它。为了在一个特定对象的一个域上关闭serialization，可以在这个域前加上关键字transient。当一个对象被序列化的时候，transient型变量的值不包括在序列化的表示中，然而非transient型的变量是被包括进去的。
 
 这里Object[] elementData，就是我们的ArrayList容器，下面介绍的基本操作都是基于该elementData变量来进行操作的。
 
