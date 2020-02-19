@@ -1,4 +1,46 @@
-[TOC]
+<!--ts-->
+   * [前言](#前言)
+      * [<a href="https://www.hollischuang.com/archives/1876" rel="nofollow">Java虚拟机是如何执行线程同步的</a>](#java虚拟机是如何执行线程同步的)
+         * [线程和共享数据](#线程和共享数据)
+         * [对象和类的锁](#对象和类的锁)
+         * [监视器（Monitors）](#监视器monitors)
+         * [多次加锁](#多次加锁)
+         * [同步](#同步)
+   * [1.Synchronized的实现原理](#1synchronized的实现原理)
+      * [1.1 反编译](#11-反编译)
+      * [1.2 同步方法](#12-同步方法)
+      * [1.3 同步代码块](#13-同步代码块)
+         * [1.3.1 monitorenter](#131-monitorenter)
+         * [1.3.2 monitorexit](#132-monitorexit)
+      * [1.4 总结](#14-总结)
+   * [2. <a href="https://www.hollischuang.com/archives/1910" rel="nofollow">Java的对象模型</a>](#2-java的对象模型)
+      * [2.1 Java的对象模型](#21-java的对象模型)
+         * [2.1.1 oop-klass model](#211-oop-klass-model)
+         * [2.1.2 oop-klass结构](#212-oop-klass结构)
+            * [_mark](#_mark)
+            * [_metadata](#_metadata)
+         * [2.1.3 instanceKlass](#213-instanceklass)
+      * [2.2 内存存储](#22-内存存储)
+      * [2.3 总结](#23-总结)
+      * [2.4 参考资料](#24-参考资料)
+   * [3. <a href="https://www.hollischuang.com/archives/1953" rel="nofollow">Java的对象头</a>](#3-java的对象头)
+      * [3.1 Java对象模型回顾与勘误](#31-java对象模型回顾与勘误)
+   * [4. <a href="https://www.hollischuang.com/archives/2030" rel="nofollow">Moniter的实现原理</a>](#4-moniter的实现原理)
+      * [4.1 操作系统中的管程](#41-操作系统中的管程)
+      * [4.2 Java线程同步相关的Moniter](#42-java线程同步相关的moniter)
+      * [4.3 监视器的实现](#43-监视器的实现)
+      * [4.4 总结](#44-总结)
+   * [5. <a href="https://www.hollischuang.com/archives/2344" rel="nofollow">Java虚拟机的锁优化技术</a>](#5-java虚拟机的锁优化技术)
+      * [5.1 前情提要](#51-前情提要)
+      * [5.2 线程状态](#52-线程状态)
+      * [5.3 自旋锁](#53-自旋锁)
+      * [5.4 锁消除](#54-锁消除)
+      * [5.5 锁粗化](#55-锁粗化)
+      * [5.6 总结](#56-总结)
+
+<!-- Added by: anapodoton, at: Wed Feb 19 21:37:22 CST 2020 -->
+
+<!--te-->
 
 # 前言
 
@@ -126,8 +168,6 @@ public class SynchronizedTest {
 
 关于这部分内容，在[JVM规范](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-3.html#jvms-3.14)中也可以找到相关的描述。
 
-
-
 ## 1.2 同步方法
 
 [The Java® Virtual Machine Specification](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-2.html#jvms-2.11.10)中有关于方法级同步的介绍：
@@ -201,8 +241,6 @@ HotSpot是基于c++实现，而c++是一门面向对象的语言，本身是具�
 > >
 > > 在Java中，在运行时会维持类型信息以及类的继承体系。每一个类会在方法区中对应一个数据结构用于存放类的信息，可以通过Class对象访问这个数据结构。其中，类型信息具有superclass属性指示了其超类，以及这个类对应的方法表（其中只包含这个类定义的方法，不包括从超类继承来的）。而每一个在堆上创建的对象，都具有一个指向方法区类型信息数据结构的指针，通过这个指针可以确定对象的类型。
 
-![](https://ws1.sinaimg.cn/large/006tNc79gy1fzkykd3ltkj30hj0kimza.jpg)
-
 上面这段是我从网上摘取过来的，说的有一定道理，但是也不全对。至于为啥，我会在后文介绍到Klass的时候细说。
 
 关于opp-klass模型的整体定义，在HotSpot的[源码](https://github.com/openjdk-mirror/jdk7u-hotspot)中可以找到。
@@ -213,7 +251,7 @@ oops模块可以分成两个相对独立的部分：OOP框架和Klass框架。
 
 ### 2.1.2 oop-klass结构
 
-![oops](https://ws2.sinaimg.cn/large/006tNc79ly1fz61f5yu17j30id0epjt2.jpg)
+![oops](img/oops.png)
 
 oop体系：
 
@@ -250,9 +288,7 @@ typedef class   markOopDesc*                    markOop;
 
 **在Java程序运行过程中，每创建一个新的对象，在JVM内部就会相应地创建一个对应类型的OOP对象。**在HotSpot中，根据JVM内部使用的对象业务类型， 具有多种`oopDesc`的子类。除了`oppDesc`类型外，opp体系中还有很多`instanceOopDesc`、`arrayOopDesc` 等类型的实例，他们都是`oopDesc`的子类。
 
-![OOP结构](https://ws3.sinaimg.cn/large/006tNc79ly1fz61lchdp1j30pb0ao0x6.jpg)
-
-这些OOPS在JVM内部有着不同的用途，例如**，instanceOopDesc表示类实例，arrayOopDesc表示数组。**也就是说，**当我们使用new创建一个Java对象实例的时候，JVM会创建一个instanceOopDesc对象来表示这个Java对象。同理，当我们使用new创建一个Java数组实例的时候，JVM会创建一个arrayOopDesc对象来表示这个数组对象。**
+![OOP结构](img/OOP结构.png)这些OOPS在JVM内部有着不同的用途，例如**，instanceOopDesc表示类实例，arrayOopDesc表示数组。**也就是说，**当我们使用new创建一个Java对象实例的时候，JVM会创建一个instanceOopDesc对象来表示这个Java对象。同理，当我们使用new创建一个Java数组实例的时候，JVM会创建一个arrayOopDesc对象来表示这个数组对象。**
 
 在HotSpot中，oopDesc类定义在[oop.hpp](https://github.com/openjdk-mirror/jdk7u-hotspot/blob/50bdefc3afe944ca74c3093e7448d6b889cd20d1/src/share/vm/oops/oop.hpp)中，instanceOopDesc定义在[instanceOop.hpp](https://github.com/openjdk-mirror/jdk7u-hotspot/blob/50bdefc3afe944ca74c3093e7448d6b889cd20d1/src/share/vm/oops/instanceOop.hpp)中，arrayOopDesc定义在[arrayOop.hpp](https://github.com/openjdk-mirror/jdk7u-hotspot/blob/50bdefc3afe944ca74c3093e7448d6b889cd20d1/src/share/vm/oops/arrayOop.hpp)中。
 
@@ -346,7 +382,7 @@ class   constantPoolCacheKlass;
 
 和`oopDesc`是其他oop类型的父类一样，Klass类是其他klass类型的父类。
 
-![klass](https://ws3.sinaimg.cn/large/006tNc79ly1fz61usfe9nj30oa0eodl3.jpg)
+![klass](img/klass.png)
 
 Klass向JVM提供两个功能：
 
@@ -391,11 +427,11 @@ JVM在运行时，需要一种用来标识Java内部类型的机制。在HotSpot
 
 在JVM中，对象在内存中的基本存在形式就是oop。那么，对象所属的类，在JVM中也是一种对象，因此它们实际上也会被组织成一种oop，即klassOop。同样的，对于klassOop，也有对应的一个klass来描述，它就是klassKlass，也是klass的一个子类。klassKlass作为oop的klass链的端点。关于对象和数组的klass链大致如下图：
 
-![400_ac3_932](https://ws1.sinaimg.cn/large/006tNc79ly1fz61yyakmkj30ke0ak402.jpg)
+![400_ac3_932](img/400_ac3_932.png)
 
 在这种设计下，JVM对内存的分配和回收，都可以采用统一的方式来管理。oop-klass-klassKlass关系如图：
 
-![2579123-5b117a7c06e83d84](https://ws1.sinaimg.cn/large/006tNc79ly1fz6342xmjnj30jg0dm0v1.jpg)
+![2579123-5b117a7c06e83d84](img/2579123-5b117a7c06e83d84.png)
 
 ## 2.2 内存存储
 
@@ -429,7 +465,7 @@ public static void main(String[] args) {
 
 存储结构如下：
 
-[![20170615230126453](http://www.hollischuang.com/wp-content/uploads/2017/12/20170615230126453.jpeg)](http://www.hollischuang.com/wp-content/uploads/2017/12/20170615230126453.jpeg)
+![20170615230126453](img/20170615230126453-20200219215106002.jpeg)
 
 从上图中可以看到，在方法区的instantKlass中有一个`int a=1`的数据存储。在堆内存中的两个对象的oop中，分别维护着`int b=3`,`int b=2`的实例数据。和oopDesc一样，instantKlass也维护着一些`fields`，用来保存类中定义的类数据，比如`int a=1`。
 
@@ -483,7 +519,7 @@ class oopDesc {
 
 对markword的设计方式上，非常像网络协议报文头：将mark word划分为多个比特位区间，并在不同的对象状态下赋予比特位不同的含义。下图描述了在32位虚拟机上，在对象不同状态时 mark word各个比特位区间的含义。
 
-![ObjectHead](https://ws2.sinaimg.cn/large/006tNc79ly1fz64ezgu02j30sg095gnc.jpg)
+![ObjectHead](img/ObjectHead-1024x329.png)
 
 同样，在HotSpot的源码中我们可以找到关于对象头对象的定义，会一一印证上图的描述。对应与[markOop.hpp](https://github.com/openjdk-mirror/jdk7u-hotspot/blob/50bdefc3afe944ca74c3093e7448d6b889cd20d1/src/share/vm/oops/markOop.hpp)类。
 
@@ -547,11 +583,11 @@ enum { age_bits                 = 4,
 
 先来举个例子，然后我们在上源码。我们可以把监视器理解为包含一个特殊的房间的建筑物，这个特殊房间同一时刻只能有一个客人（线程）。这个房间中包含了一些数据和代码。
 
-![Java-Monitor](https://ws1.sinaimg.cn/large/006tNc79ly1fz64twu13hj3090060aa2.jpg)
+![Java-Monitor](img/Java-Monitor.jpg)
 
 如果一个顾客想要进入这个特殊的房间，他首先需要在走廊（Entry Set）排队等待。调度器将基于某个标准（比如 FIFO）来选择排队的客户进入房间。如果，因为某些原因，该客户客户暂时因为其他事情无法脱身（线程被挂起），那么他将被送到另外一间专门用来等待的房间（Wait Set），这个房间的可以可以在稍后再次进入那件特殊的房间。如上面所说，这个建筑屋中一共有三个场所。
 
-![java-monitor-associate-with-object](https://ws2.sinaimg.cn/large/006tNc79ly1fz64v60yylj308p097jrh.jpg)
+![java-monitor-associate-with-object](img/java-monitor-associate-with-object.jpg)
 
 总之，监视器是一个用来监视这些线程进入特殊的房间的。他的义务是保证（同一时间）只有一个线程可以访问被保护的数据和代码。
 
@@ -604,7 +640,7 @@ ObjectMonitor中有几个关键属性：
 
 若持有monitor的线程调用`wait()`方法，将释放当前持有的monitor，`_owner`变量恢复为`null`，`_count`自减1，同时该线程进入`_WaitSet`集合中等待被唤醒。若当前线程执行完毕也将释放monitor(锁)并复位变量的值，以便其他线程进入获取monitor(锁)。如下图所示
 
-![monitor](https://ws1.sinaimg.cn/large/006tNc79ly1fz64yy5hmmj30et08v0t8.jpg)
+![monitor](img/monitor.png)
 
 ObjectMonitor类中提供了几个方法：
 
@@ -666,7 +702,7 @@ void ATTR ObjectMonitor::enter(TRAPS) {
 }
 ```
 
-![lockenter](https://ws2.sinaimg.cn/large/006tNc79ly1fz6518fwraj30jk0f6ab3.jpg)
+![lockenter](img/lockenter.png)
 
 **释放锁**
 
@@ -706,7 +742,7 @@ void ATTR ObjectMonitor::exit(TRAPS) {
    //省略部分代码，根据不同的策略（由QMode指定），从cxq或EntryList中获取头节点，通过ObjectMonitor::ExitEpilog方法唤醒该节点封装的线程，唤醒操作最终由unpark完成。
 ```
 
-![lockexit](https://ws1.sinaimg.cn/large/006tNc79ly1fz652sd0prj30h90iuab6.jpg)
+![lockexit](img/lockexit.png)
 
 除了enter和exit方法以外，[objectMonitor.cpp](https://github.com/openjdk-mirror/jdk7u-hotspot/blob/50bdefc3afe944ca74c3093e7448d6b889cd20d1/src/share/vm/runtime/objectMonitor.cpp)中还有
 
@@ -772,13 +808,13 @@ void      notifyAll(TRAPS);
 
 比如，你今天要去银行办业务，你到了银行之后，要先取一个号，然后你坐在休息区等待叫号，过段时间，广播叫到你的号码之后，会告诉你去哪个柜台办理业务，这时，你拿着你手里的号码，去到对应的柜台，找相应的柜员开始办理业务。当你办理业务的时候，这个柜台和柜台后面的柜员只能为你自己服务。当你办完业务离开之后，广播再喊其他的顾客前来办理业务。
 
-![Pic1](https://ws3.sinaimg.cn/large/006tNc79ly1fz658n2neyj308y04gmy1.jpg)
+![Pic1](img/Pic1.png)
 
 > 这个例子中，每个顾客是一个**线程**。 柜台前面的那把椅子，就是**锁**。 柜台后面的柜员，就是**共享资源**。 你发现无法直接办理业务，要取号等待的过程叫做**阻塞**。 当你听到叫你的号码的时候，你起身去办业务，这就是**唤醒**。 当你坐在椅子上开始办理业务的时候，你就**获得锁**。 当你办完业务离开的时候，你就**释放锁**。
 
 对于线程来说，一共有五种状态，分别为：初始状态(New) 、就绪状态(Runnable) 、运行状态(Running) 、阻塞状态(Blocked) 和死亡状态(Dead) 。
 
-![thread](https://ws1.sinaimg.cn/large/006tNc79ly1fz658uq641j30i20cc0va.jpg)
+![thread](img/thread.png)
 
 ## 5.3 自旋锁
 
@@ -790,7 +826,7 @@ void      notifyAll(TRAPS);
 
 有一种比较好的设计，那就是银行提供自动取款机，当你去银行取款的时候，你不需要取号，不需要去休息区等待叫号，你只需要找到一台取款机，排在其他人后面等待取款就行了。
 
-![Pic2](https://ws3.sinaimg.cn/large/006tNc79ly1fz65gx8x9xj308y04z0u6.jpg)
+![Pic2](img/Pic2.png)
 
 之所以能这样做，是因为取款的这个过程相比较之下是比较节省时间的。如果所有人去银行都只取款，或者办理业务的时间都很短的话，那也就可以不需要取号，不需要去单独的休息区，不需要听叫号，也不需要再跑到对应的柜台了。
 
@@ -817,7 +853,7 @@ void      notifyAll(TRAPS);
 
 你去银行取钱，所有情况下都需要取号，并且等待吗？其实是不用的，当银行办理业务的人不多的时候，可能根本不需要取号，直接走到柜台前面办理业务就好了。能这么做的前提是，没有人和你抢着办业务。
 
-![Pic3](https://ws3.sinaimg.cn/large/006tNc79ly1fz65r0h1x6j308n04q0tl.jpg)
+![Pic3](img/Pic3.png)
 
 上面的这种例子，在锁优化中被称作“锁消除”，是JIT编译器对内部锁的具体实现所做的一种优化。
 
@@ -863,7 +899,7 @@ public void f() {
 
 还是我们去银行柜台办业务，最高效的方式是你坐在柜台前面的时候，只办和银行相关的事情。如果这个时候，你拿出手机，接打几个电话，问朋友要往哪个账户里面打钱，这就很浪费时间了。最好的做法肯定是提前准备好相关资料，在办理业务时直接办理就好了。
 
-![Pic4](https://ws2.sinaimg.cn/large/006tNc79ly1fz65vz5w4oj306l03pdfo.jpg)
+![Pic4](img/Pic4.png)
 
 加锁也一样，把无关的准备工作放到锁外面，锁内部只处理和并发相关的内容。这样有助于提高效率。
 
@@ -900,38 +936,3 @@ synchronized(this){
 自Java 6/Java 7开始，Java虚拟机对内部锁的实现进行了一些优化。这些优化主要包括锁消除（Lock Elision）、锁粗化（Lock Coarsening）、偏向锁（Biased Locking）以及适应性自旋锁（Adaptive Locking）。这些优化仅在Java虚拟机server模式下起作用（即运行Java程序时我们可能需要在命令行中指定Java虚拟机参数“-server”以开启这些优化）。
 
 本文主要介绍了自旋锁、锁粗化和锁消除的概念。在JIT编译过程中，虚拟机会根据情况使用这三种技术对锁进行优化，目的是减少锁的竞争，提升性能。
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

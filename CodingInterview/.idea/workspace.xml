@@ -2,52 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2e5b6ca8-8a82-4248-8fe6-c30b94a7599d" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/code/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/code/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/code/array/IntegerIdenticalToIndex_5303.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/code/array/IntegerIdenticalToIndex_5303.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/Concurrency-memory-model.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/Java-memory-moudle-happens-before.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/Java-thread-pool.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/Moniter-implement.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/ReentrantLock.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/Synchronized-implement.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/ThreadLocal.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/Volatile-vs-Synchronized.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/deep-learning-AQS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/deep-learning-cas.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/deep-learning-thread.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/deep-learning-volatile.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/hardware-problem.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/java-happens-before.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/java-thread-create-four-type.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/jvm-lock-optimization.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/synchronized-detail.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/volatile-detail.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/what-is-thread-safe.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-IO/BIO-NIO-AIO-vs.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-IO/BIO-NIO-AIO-vs.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-IO/IO-basic.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-IO/IO-basic.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-IO/Java-IO-all.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-IO/Java-IO-all.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/HashMap-initialize.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/HashMap-initialize.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/HashMap-puzzle.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/HashMap-puzzle.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/HashMap.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/HashMap.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/Map-hash().md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/Map-hash().md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/TreeMap.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/TreeMap.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-collection/collection-family.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-collection/collection-family.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/java-enum/Java-enum-use.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/java-enum/Java-enum-use.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/java-enum/deep-learning-java-enum-thread-safe.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/java-enum/deep-learning-java-enum-thread-safe.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/java-enum/seven-singleton-pattern.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/java-enum/seven-singleton-pattern.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/java-reflect/deep-understand-java-class-reflect.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/java-reflect/deep-understand-java-class-reflect.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/java-source-code/ArrayList&amp;LinkedList.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/java-source-code/BigDecimal-sourcecode-reading.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/java-source-code/ClassLoader &amp; URLClassLoader.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/java-source-code/ClassLoader &amp; URLClassLoader.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/java-source-code/Enum.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/java-source-code/Enum.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/java-source-code/HashMap-LinkedHashMap- TreeMap-CouncurrentHashMap.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/java-source-code/HashMap-LinkedHashMap- TreeMap-CouncurrentHashMap.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/java-source-code/HashSet-LinkedHashSet-TreeSet.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Java-basic/java-source-code/ThreadLocal-sourcecode.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../jvmLearning/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../jvmLearning/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../jvmLearning/JVM-memory-strcture-VS Java-memory-model-VS Java-object-model.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../jvmLearning/Java-memory-model.md" beforeDir="false" afterPath="$PROJECT_DIR$/../jvmLearning/Java-memory-model.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../jvmLearning/jvm-memory-strcture.md" beforeDir="false" afterPath="$PROJECT_DIR$/../jvmLearning/jvm-memory-strcture.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../jvmLearning/jvm-subsystem/CLass-strcture.md" beforeDir="false" afterPath="$PROJECT_DIR$/../jvmLearning/jvm-subsystem/CLass-strcture.md" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -218,7 +176,7 @@
       <workItem from="1578289359276" duration="631000" />
       <workItem from="1578920190388" duration="33000" />
       <workItem from="1581921815045" duration="3114000" />
-      <workItem from="1582097439518" duration="1130000" />
+      <workItem from="1582097439518" duration="2536000" />
     </task>
     <servers />
   </component>

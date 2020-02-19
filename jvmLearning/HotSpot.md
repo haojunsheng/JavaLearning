@@ -1,4 +1,37 @@
-[TOC]
+<!--ts-->
+   * [前言](#前言)
+   * [1. HotSpot 虚拟机对象探秘](#1-hotspot-虚拟机对象探秘)
+      * [1.1 对象的创建](#11-对象的创建)
+      * [1.2 对象的内存布局](#12-对象的内存布局)
+      * [1.3 对象的访问定位](#13-对象的访问定位)
+   * [2. <a href="https://github.com/openjdk-mirror/jdk7u-hotspot">HotSpot 源码</a>](#2-hotspot-源码)
+   * [3. <a href="https://www.hollischuang.com/archives/2322" rel="nofollow">深入分析Java的编译原理</a>](#3-深入分析java的编译原理)
+      * [3.1 <a href="https://www.hollischuang.com/archives/58" rel="nofollow">Java代码的编译与反编译那些事儿</a>](#31-java代码的编译与反编译那些事儿)
+         * [3.1.1 编程语言](#311-编程语言)
+         * [3.1.3 什么是反编译](#313-什么是反编译)
+         * [3.1.4 Java反编译工具](#314-java反编译工具)
+            * [javap](#javap)
+            * [jad](#jad)
+            * [CFR](#cfr)
+         * [3.1.5 如何防止反编译](#315-如何防止反编译)
+      * [3.2 深入分析java的编译原理](#32-深入分析java的编译原理)
+         * [3.2.1 Java中的前端编译](#321-java中的前端编译)
+            * [语法分析](#语法分析)
+            * [语义分析](#语义分析)
+            * [中间代码生成](#中间代码生成)
+         * [3.2.2 Java中的后端编译](#322-java中的后端编译)
+            * [热点检测](#热点检测)
+            * [编译优化](#编译优化)
+   * [4. <a href="https://www.hollischuang.com/archives/2398" rel="nofollow">对象和数组并不是都在堆上分配内存的</a>](#4-对象和数组并不是都在堆上分配内存的)
+      * [4.1 JVM内存分配策略](#41-jvm内存分配策略)
+      * [4.2 逃逸分析](#42-逃逸分析)
+      * [4.3 对象的栈上内存分配](#43-对象的栈上内存分配)
+      * [4.4 总结](#44-总结)
+   * [5. <a href="http://www.hollischuang.com/archives/2344" rel="nofollow">深入理解多线程（五）—— Java虚拟机的锁优化技术</a>（锁消除部分）](#5-深入理解多线程五-java虚拟机的锁优化技术锁消除部分)
+
+<!-- Added by: anapodoton, at: Wed Feb 19 23:34:13 CST 2020 -->
+
+<!--te-->
 
 # 前言
 

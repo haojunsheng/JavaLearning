@@ -23,3 +23,4 @@ class文件格式、运行时数据区：堆、栈、方法区、直接内存、
 # 4. 方法区和运行时常量池
 
  [method-area-constants-pool.md](method-area-constants-pool.md) 
+
