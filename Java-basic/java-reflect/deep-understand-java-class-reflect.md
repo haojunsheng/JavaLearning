@@ -443,25 +443,7 @@ x.getClass() == A.class false
 x.getClass() == B.class true
 x.getClass().equals(A.class)) false
 x.getClass().equals(B.class)) true
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
+
 到此关于Class对象相关的知识点都分析完了，下面将结合Class对象的知识点分析反射技术。
 
 理解反射技术
@@ -1259,32 +1241,6 @@ import java.lang.reflect.Array;
      }
      System.out.println(min);
       }
-     1
-     2
-     3
-     4
-     5
-     6
-     7
-     8
-     9
-     10
-     11
-     12
-     13
-     14
-     15
-     16
-     17
-     18
-     19
-     20
-     21
-     22
-     23
-     24
-     25
-     26
      毕竟我们无法直接创建泛型数组，有了Array的动态创建数组的方式这个问题也就迎刃而解了。
 
 //无效语句，编译不通

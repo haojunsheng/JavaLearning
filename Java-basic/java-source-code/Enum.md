@@ -1,4 +1,17 @@
-[TOC]
+<!--ts-->
+   * [前言](#前言)
+   * [1. 定义](#1-定义)
+      * [1.1 抽象类](#11-抽象类)
+      * [1.2 实现Comparable和Serializable接口](#12-实现comparable和serializable接口)
+      * [1.3 泛型：&lt;E extends Enum&lt;E&gt;&gt;](#13-泛型e-extends-enume)
+   * [2. 成员变量](#2-成员变量)
+   * [3. 构造函数](#3-构造函数)
+   * [4. 其他方法](#4-其他方法)
+      * [参考资料：](#参考资料)
+
+<!-- Added by: anapodoton, at: Mon Feb 17 10:08:17 CST 2020 -->
+
+<!--te-->
 
 # 前言
 

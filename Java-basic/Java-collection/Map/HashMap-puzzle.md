@@ -13,7 +13,7 @@
 
 先来看一下，HashMap中都定义了哪些成员变量。
 
-![paramInMap](https://ws4.sinaimg.cn/large/006tKfTcly1g0eebsgzp5j30ej080gnb.jpg)
+![paramInMap](img/paramInMap.png)
 
 上面是一张HashMap中主要的成员变量的图，其中有一个是我们本文主要关注的： `size`、`loadFactor`、`threshold`、`DEFAULT_LOAD_FACTOR`和`DEFAULT_INITIAL_CAPACITY`。
 

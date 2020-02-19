@@ -2,52 +2,52 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2e5b6ca8-8a82-4248-8fe6-c30b94a7599d" name="Default" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/array/FindDuplicate_1.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/array/FindDuplicate_1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/array/PrintMatrix_29.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/array/PrintMatrix_29.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/array/SortArrayForMinNumber_45.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/array/SortArrayForMinNumber_45.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/highQuality/KLeastNumbers_40.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/highQuality/KLeastNumbers_40.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/highQuality/Print1ToMaxOfNDigits_17.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/highQuality/Print1ToMaxOfNDigits_17.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/CopyList_35.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/CopyList_35.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/DeleteNodeInList_18$ListNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/DeleteNodeInList_18$ListNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/DeleteNodeInList_18.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/DeleteNodeInList_18.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/DeleteNodeOfDuplication_1802.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/DeleteNodeOfDuplication_1802.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/EnterNodeInLink_23.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/EnterNodeInLink_23.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/FirstCommonNodesInLists_52.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/FirstCommonNodesInLists_52.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/KthNodeFromEnd_22.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/KthNodeFromEnd_22.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/LastRemaining_62.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/LastRemaining_62.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/MergeList_25.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/MergeList_25.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/PrintListInReversedOrder_06.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/PrintListInReversedOrder_06.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/ReverseList_24$ListNode.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/ReverseList_24$ListNode.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/ReverseList_24.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/ReverseList_24.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/deleteDuplication.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/linkedList/deleteDuplication.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/sort/MergeSort.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/sort/MergeSort.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/stack/QueueWithTwoStacks_09.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/stack/QueueWithTwoStacks_09.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/stack/StackSequence_31.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/stack/StackSequence_31.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/string/FirstNotRepeatingChar_5002.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/string/FirstNotRepeatingChar_5002.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/string/RegularMatch_19.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/string/RegularMatch_19.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/string/ReplaceSpaces_05.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/string/ReplaceSpaces_05.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/string/ReverseWordsInSentence_58.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/string/ReverseWordsInSentence_58.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/string/StringPermutation_38.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/string/StringPermutation_38.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/BinaryTreeConvert_36.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/BinaryTreeConvert_36.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/BinaryTreeSerialize_37.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/BinaryTreeSerialize_37.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/ConstructBinaryTree_07.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/ConstructBinaryTree_07.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/KLeastNumbers_40.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/KLeastNumbers_40.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/KthNodeInBST_54.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/KthNodeInBST_54.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/MirrorTree_27.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/MirrorTree_27.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/NextNodeInBinaryTrees_08.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/NextNodeInBinaryTrees_08.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/PrintTreeFromTopToBottom_3201.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/PrintTreeFromTopToBottom_3201.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/PrintTreeFromTopToBottom_3202.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/PrintTreeFromTopToBottom_3202.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/PrintTreeFromTopToBottom_3203.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/CodingInterview/com/code/tree/PrintTreeFromTopToBottom_3203.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/com/code/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/code/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/code/array/OverHalfInArray_39.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/code/array/OverHalfInArray_39.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/code/array/PrintMatrix_29.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/code/array/PrintMatrix_29.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/code/linkedList/DeleteNodeInList_18.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/code/linkedList/DeleteNodeInList_18.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/code/linkedList/ReverseList_24.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/code/linkedList/ReverseList_24.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/code/sort/MergeSort.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/code/sort/MergeSort.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/code/string/RegularMatch_19.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/code/string/RegularMatch_19.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/code/tree/SquenceOfBST_33.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/code/tree/SquenceOfBST_33.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/code/array/IntegerIdenticalToIndex_5303.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/code/array/IntegerIdenticalToIndex_5303.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/Concurrency-memory-model.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/Java-memory-moudle-happens-before.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/Java-thread-pool.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/Moniter-implement.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/ReentrantLock.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/Synchronized-implement.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/ThreadLocal.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/Volatile-vs-Synchronized.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/deep-learning-AQS.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/deep-learning-cas.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/deep-learning-thread.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/deep-learning-volatile.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/hardware-problem.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/java-happens-before.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/java-thread-create-four-type.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/jvm-lock-optimization.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/synchronized-detail.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/volatile-detail.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-Concurrent -programming/what-is-thread-safe.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-IO/BIO-NIO-AIO-vs.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-IO/BIO-NIO-AIO-vs.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-IO/IO-basic.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-IO/IO-basic.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-IO/Java-IO-all.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-IO/Java-IO-all.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/HashMap-initialize.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/HashMap-initialize.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/HashMap-puzzle.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/HashMap-puzzle.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/HashMap.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/HashMap.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/Map-hash().md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/Map-hash().md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/TreeMap.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-collection/Map/TreeMap.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/Java-collection/collection-family.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/Java-collection/collection-family.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/java-enum/Java-enum-use.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/java-enum/Java-enum-use.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/java-enum/deep-learning-java-enum-thread-safe.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/java-enum/deep-learning-java-enum-thread-safe.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/java-enum/seven-singleton-pattern.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/java-enum/seven-singleton-pattern.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/java-reflect/deep-understand-java-class-reflect.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/java-reflect/deep-understand-java-class-reflect.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/java-source-code/ArrayList&amp;LinkedList.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/java-source-code/BigDecimal-sourcecode-reading.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/java-source-code/ClassLoader &amp; URLClassLoader.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/java-source-code/ClassLoader &amp; URLClassLoader.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/java-source-code/Enum.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/java-source-code/Enum.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/java-source-code/HashMap-LinkedHashMap- TreeMap-CouncurrentHashMap.md" beforeDir="false" afterPath="$PROJECT_DIR$/../Java-basic/java-source-code/HashMap-LinkedHashMap- TreeMap-CouncurrentHashMap.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/java-source-code/HashSet-LinkedHashSet-TreeSet.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Java-basic/java-source-code/ThreadLocal-sourcecode.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../jvmLearning/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../jvmLearning/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../jvmLearning/jvm-memory-strcture.md" beforeDir="false" afterPath="$PROJECT_DIR$/../jvmLearning/jvm-memory-strcture.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../jvmLearning/jvm-subsystem/CLass-strcture.md" beforeDir="false" afterPath="$PROJECT_DIR$/../jvmLearning/jvm-subsystem/CLass-strcture.md" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -62,21 +62,17 @@
       </list>
     </option>
   </component>
-  <component name="FindInProjectRecents">
-    <findStrings>
-      <find>对称的二叉树</find>
-    </findStrings>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="ProjectId" id="1S3bXw7Ciyqaucm5cf1vIOxZfoG" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="vcs.Git" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
@@ -221,6 +217,8 @@
       <workItem from="1578239151853" duration="230000" />
       <workItem from="1578289359276" duration="631000" />
       <workItem from="1578920190388" duration="33000" />
+      <workItem from="1581921815045" duration="3114000" />
+      <workItem from="1582097439518" duration="1130000" />
     </task>
     <servers />
   </component>

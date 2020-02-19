@@ -1,4 +1,4 @@
-[TOC]
+
 
 jvm的学习笔记
 
@@ -61,10 +61,6 @@ oop-klass、对象头
  [类加载机制.md](类加载机制.md) 
 
 classLoader、类加载过程、双亲委派（破坏双亲委派）、模块化（jboss modules、osgi、jigsaw）
-
-##  [jvm常量池的区分.md](jvm常量池的区分.md) 
-
-
 
 ## 8.虚拟机性能监控与故障处理工具
 

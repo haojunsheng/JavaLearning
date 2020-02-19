@@ -21,7 +21,7 @@
 
 我们之前提到过，《阿里巴巴Java开发手册》中建议我们设置HashMap的初始化容量。
 
-![hash](https://ws3.sinaimg.cn/large/006tKfTcly1g0f03apafuj30ip02e3zj.jpg)
+![hash](img/hash.png)
 
 那么，为什么要这么建议？你有想过没有。
 
@@ -123,7 +123,7 @@ System.out.println("capacity : " + capacity.invoke(map));
 
 聪明的读者们，如果让你设计这个算法你准备如何计算？如果你想到二进制的话，那就很简单了。举几个例子看一下：
 
-![QQ20180527-173743](https://ws1.sinaimg.cn/large/006tKfTcly1g0f0upfsppj30iw08uwf7.jpg)
+![QQ20180527-173743](img/QQ20180527-173743.png)
 
 请关注上面的几个例子中，蓝色字体部分的变化情况，或许你会发现些规律。5->8、9->16、19->32、37->64都是主要经过了两个阶段。
 
@@ -210,7 +210,7 @@ int n = cap - 1;
 
 关于这个值的设置，在《阿里巴巴Java开发手册》有以下建议：
 
-![Demo](https://ws3.sinaimg.cn/large/006tKfTcly1g0f0y3ksvwj30p0026403.jpg)
+![Demo](img/Demo.png)
 
 这个值，并不是阿里巴巴的工程师原创的，在guava（21.0版本）中也使用的是这个值。
 

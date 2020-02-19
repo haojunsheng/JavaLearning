@@ -1,4 +1,5 @@
 <!--ts-->
+
    * [前言](Map-hash().md#前言)
    * [1. 哈希](Map-hash().md#1-哈希)
    * [2. HashMap 的数据结构](Map-hash().md#2-hashmap-的数据结构)
@@ -63,7 +64,7 @@
 
 在Java中，保存数据有两种比较简单的数据结构：数组和链表。**数组的特点是：寻址容易，插入和删除困难；而链表的特点是：寻址困难，插入和删除容易。**上面我们提到过，常用的哈希函数的冲突解决办法中有一种方法叫做链地址法，其实就是将数组和链表组合在一起，发挥了两者的优势，我们可以将其理解为链表的数组。
 
-[![640](http://www.hollischuang.com/wp-content/uploads/2018/03/640.png)](http://www.hollischuang.com/wp-content/uploads/2018/03/640.png)
+![640](img/640.png)
 
 我们可以从上图看到，左边很明显是个数组，数组的每个成员是一个链表。该数据结构所容纳的所有元素均包含一个指针，用于元素间的链接。我们根据元素的自身特征把元素分配到不同的链表中去，反过来我们也正是通过这些特征找到正确的链表，再从链表中找出正确的元素。其中，根据元素特征计算元素数组下标的方法就是哈希算法，即本文的主角hash()函数（当然，还包括indexOf()函数）。
 
@@ -71,7 +72,7 @@
 
 我们拿JDK 1.7的HashMap为例，其中定义了一个final int hash(Object k) 方法，其主要被以下方法引用。
 
-![hash-use](https://ws3.sinaimg.cn/large/006tKfTcly1g0eysynisej30ba06adgj.jpg)
+![hash-use](img/hash-use.png)
 
 上面的方法主要都是增加和删除方法，这不难理解，当我们要对一个链表数组中的某个元素进行增删的时候，首先要知道他应该保存在这个链表数组中的哪个位置，即他在这个数组中的下标。而hash()方法的功能就是根据Key来定位其在HashMap中的位置。HashTable、ConcurrentHashMap同理。
 
@@ -142,7 +143,7 @@ static int indexFor(int h, int length) {
 >
 > 10 & 8 = 2 ，10 & 7 = 2
 
-![640 (https://ws3.sinaimg.cn/large/006tKfTcly1g0ezlfdjbvj30bp04xweq.jpg)](http://www.hollischuang.com/wp-content/uploads/2018/03/640-1.png)
+![640 (img/640-1.png)](http://www.hollischuang.com/wp-content/uploads/2018/03/640-1.png)
 
 所以，`return h & (length-1);`只要保证length的长度是`2^n`的话，就可以实现取模运算了。而HashMap中的length也确实是2的倍数，初始值是16，之后每次扩充为原来的2倍。
 
@@ -152,7 +153,7 @@ HashMap的数据是存储在链表数组里面的。在对HashMap进行插入/�
 
 接下来我们会发现，无论是用取模运算还是位运算都无法直接解决冲突较大的问题。比如：`CA11 0000`和`0001 0000`在对`0000 1111`进行按位与运算后的值是相等的。
 
-![640 (https://ws4.sinaimg.cn/large/006tKfTcly1g0ezmorq21j30bq044glq.jpg)](http://www.hollischuang.com/wp-content/uploads/2018/03/640-2.png)
+![640 (img/640-2.png)](http://www.hollischuang.com/wp-content/uploads/2018/03/640-2.png)
 
 两个不同的键值，在对数组长度进行按位与运算后得到的结果相同，这不就发生了冲突吗。那么如何解决这种冲突呢，来看下Java是如何做的。
 
@@ -168,13 +169,13 @@ return h ^ (h >>> 7) ^ (h >>> 4);
 
 举个例子来说，我们现在想向一个HashMap中put一个K-V对，Key的值为“hollischuang”，经过简单的获取hashcode后，得到的值为“1011000110101110011111010011011”，如果当前HashTable的大小为16，即在不进行扰动计算的情况下，他最终得到的index结果值为11。由于15的二进制扩展到32位为“00000000000000000000000000001111”，所以，一个数字在和他进行按位与操作的时候，前28位无论是什么，计算结果都一样（因为0和任何数做与，结果都为0）。如下图所示。
 
-[![640 (3)](http://www.hollischuang.com/wp-content/uploads/2018/03/640-3.png)](http://www.hollischuang.com/wp-content/uploads/2018/03/640-3.png)
+![640 (img/640-3.png)](http://www.hollischuang.com/wp-content/uploads/2018/03/640-3.png)
 
 可以看到，后面的两个hashcode经过位运算之后得到的值也是11 ，虽然我们不知道哪个key的hashcode是上面例子中的那两个，但是肯定存在这样的key，这就产生了冲突。
 
 那么，接下来，我看看一下经过扰动的算法最终的计算结果会如何。
 
-![640 (https://ws4.sinaimg.cn/large/006tKfTcly1g0ezpcslqfj30n80cbmxg.jpg)](http://www.hollischuang.com/wp-content/uploads/2018/03/640-4.png)
+![640 (img/640-4.png)](http://www.hollischuang.com/wp-content/uploads/2018/03/640-4.png)
 
 从上面图中可以看到，之前会产生冲突的两个hashcode，经过扰动计算之后，最终得到的index的值不一样了，这就很好的**避免了冲突**。
 

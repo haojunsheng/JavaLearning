@@ -179,11 +179,15 @@ Map的家族关系图谱。
 
 ##2.2. TreeMap
 
-键以某种排序规则排序，内部以red-black（红-黑）树数据结构实现，实现了SortedMap接口
+键以某种排序规则排序，内部以red-black（红-黑）树数据结构实现，实现了SortedMap接口。
+
+ [TreeMap.md](Map/TreeMap.md) 
 
 ##2.3. HashTable
 
 也是以哈希表数据结构实现的，解决冲突时与HashMap也一样也是采用了散列链表的形式，不过性能比HashMap要低
+
+ [HashTable.md](Map/HashTable.md) 
 
 # 3.  异同点
 

@@ -1,4 +1,40 @@
-[TOC]
+<!--ts-->
+   * [1. 什么是 I/O?](#1-什么是-io)
+   * [2. 简单理解Java 流（Stream）](#2-简单理解java-流stream)
+   * [3. Java中的 I/O 类库的基本架构](#3-java中的-io-类库的基本架构)
+      * [3.1 基于字节的 I/O 操作接口](#31-基于字节的-io-操作接口)
+      * [3.2基于字符的 I/O 操作接口](#32基于字符的-io-操作接口)
+      * [3.3 字节与字符的转化接口](#33-字节与字符的转化接口)
+   * [4. 磁盘 I/O 的工作机制](#4-磁盘-io-的工作机制)
+      * [4.1 几种访问文件的方式](#41-几种访问文件的方式)
+         * [4.1.1. 标准访问文件的方式](#411-标准访问文件的方式)
+         * [4.1.2 .直接 I/O 方式](#412-直接-io-方式)
+         * [4.1.3 .内存映射的方式](#413-内存映射的方式)
+         * [4.1.4 同步和异步访问文件的方式](#414-同步和异步访问文件的方式)
+      * [4.2 Java 访问磁盘文件](#42-java-访问磁盘文件)
+      * [4.2  Java 序列化技术](#42--java-序列化技术)
+         * [4.2.1 一个实际的序列化例子](#421-一个实际的序列化例子)
+         * [serialVersionUID的作用](#serialversionuid的作用)
+         * [序列化用来干什么？](#序列化用来干什么)
+         * [关于序列化的一些细节](#关于序列化的一些细节)
+   * [网络 I/O 工作机制](#网络-io-工作机制)
+      * [Java Socket 的工作机制](#java-socket-的工作机制)
+         * [建立通信链路](#建立通信链路)
+         * [数据传输](#数据传输)
+      * [NIO 的工作方式](#nio-的工作方式)
+         * [BIO 带来的挑战](#bio-带来的挑战)
+         * [NIO 的工作机制](#nio-的工作机制)
+         * [Buffer 的工作方式](#buffer-的工作方式)
+         * [Java NIO 实例](#java-nio-实例)
+         * [NIO 和 IO 的主要区别](#nio-和-io-的主要区别)
+   * [Java AIO 简单了解](#java-aio-简单了解)
+      * [BIO/ NIO/ AIO 的简单理解](#bio-nio-aio-的简单理解)
+      * [BIO、NIO、AIO适用场景分析](#bionioaio适用场景分析)
+      * [简单总结](#简单总结)
+
+<!-- Added by: anapodoton, at: Mon Feb 17 11:44:14 CST 2020 -->
+
+<!--te-->
 
 https://www.cnblogs.com/wmyskxz/p/9485251.html
 
@@ -12,13 +48,13 @@ https://www.cnblogs.com/wmyskxz/p/9485251.html
 
 通常我们说 I/O 都会涉及到诸如输入流、输出流这样的概念，那么什么是流呢？流是一个抽象但形象的概念，你可以简单理解成**一个数据的序列**，输入流表示从一个源读取数据，输出流则表示向一个目标写数据，在Java程序中，对于数据的输入和输出都是采用 “流” 这样的方式进行的，其设备可以是文件、网络、内存等；
 
-![img](https://ws1.sinaimg.cn/large/006tKfTcly1g0kzd5bhtbj30f40790sm.jpg)
+![img](img/1240.png)
 
 流具有方向性，至于是输入流还是输出流则是一个相对的概念，**一般以程序为参考**，**如果数据的流向是程序至设备，我们成为输出流，反之我们称为输入流。**
 
 可以将流想象成一个“水流管道”，水流就在这管道中形成了，自然就出现了方向的概念。
 
-![img](https://ws1.sinaimg.cn/large/006tKfTcly1g0kze6rh8gj30cn032wef.jpg)
+![img](img/1240-20200217101913773.png)
 
 **“流”，代表了任何有能力产出数据的数据源对象或有能力接受数据的接收端对象，它屏蔽了实际的 I/O 设备中处理数据的细节——摘自《Think in Java》**
 
@@ -41,11 +77,11 @@ Java的 I/O 操作类在包 java.io下，有将近80个类，这些类大概可�
 
 基于字节的 I/O 操作的接口输入和输出分别对应是 InputStream 和 OutputStream，InputStream 的类层次结构如下图：
 
-![img](https://ws4.sinaimg.cn/large/006tKfTcly1g0kzfseeufj30v6074jrj.jpg)
+![img](img/1240-20200217101926196.png)
 
 输入流根据数据类型和操作方式又被划分成若干个子类，每个子类分别处理不同操作类型，OutputStream 输出流的类层次结构也是类似，如下图所示：
 
-![img](https://ws4.sinaimg.cn/large/006tKfTcly1g0kzfuozkzj30uo051dfw.jpg)
+![img](img/1240-20200217101940071.png)
 
 这里就不详细解释每个子类如何使用了，如果感兴趣可以自己去看一下JDK的源码，而且的话从类名也能大致看出一二该类是在处理怎样的一些东西..这里需要说明两点：
 
@@ -67,19 +103,17 @@ OutputStream out = new BufferedOutputStream(new ObjectOutputStream(new FileOutpu
 
 下图是写字符的 I/O 操作接口涉及到的类，Writer 类提供了一个抽象方法 write(char cbuf[], int off, int len) 由子类去实现：
 
-![img](https://ws1.sinaimg.cn/large/006tKfTcly1g0kzopf6sjj30qa05b3yi.jpg)
+![img](img/1240-20200217102005544.png)
 
 读字符的操作接口也有类似的类结构，如下图所示：
 
-![img](https://ws1.sinaimg.cn/large/006tKfTcly1g0kzoorkcsj30qb05at8q.jpg)
-
-读字符的操作接口中也是 int read(char cbuf[], int off, int len)，返回读到的 n 个字节数，**不管是 Writer 还是 Reader 类它们都只定义了读取或写入的数据字符的方式**，也就是怎么写或读，但是并没有规定数据要写到哪去，写到哪去就是我们后面要讨论的基于磁盘和网络的工作机制。
+![img](img/1240-20200217102015048.png)读字符的操作接口中也是 int read(char cbuf[], int off, int len)，返回读到的 n 个字节数，**不管是 Writer 还是 Reader 类它们都只定义了读取或写入的数据字符的方式**，也就是怎么写或读，但是并没有规定数据要写到哪去，写到哪去就是我们后面要讨论的基于磁盘和网络的工作机制。
 
 ## 3.3 字节与字符的转化接口
 
 另外数据持久化或网络传输都是以字节进行的，所以必须要有字符到字节或字节到字符的转化。字符到字节需要转化，其中读的转化过程如下图所示：
 
-![img](https://ws3.sinaimg.cn/large/006tKfTcly1g0kzoviolhj309s0563zh.jpg)
+![img](img/1240-20200217102025457.png)
 
 InputStreamReader 类是字节到字符的转化桥梁，InputStream 到 Reader 的过程要指定编码字符集，否则将采用操作系统默认字符集，很可能会出现乱码问题。StreamDecoder 正是完成字节到字符的解码的实现类。也就是当你用如下方式读取一个文件时：
 
@@ -99,7 +133,7 @@ FileReader 类就是按照上面的工作方式读取文件的，FileReader 是�
 
 写入也是类似的过程如下图所示：
 
-![img](https://ws2.sinaimg.cn/large/006tKfTcly1g0kzpom1k0j309z057dgs.jpg)
+![img](img/1240-20200217102034508.png)
 
 通过 OutputStreamWriter 类完成，字符到字节的编码过程，由 StreamEncoder 完成编码过程。
 
@@ -115,7 +149,7 @@ FileReader 类就是按照上面的工作方式读取文件的，FileReader 是�
 
 ### 4.1.1. 标准访问文件的方式
 
-![img](https://ws4.sinaimg.cn/large/006tKfTcly1g0kzqbknf0j30cr08ltam.jpg)
+![img](img/1240-20200217102043660.png)
 
 读取的方式是，当应用程序调用`read()`接口时：
 
@@ -128,7 +162,7 @@ FileReader 类就是按照上面的工作方式读取文件的，FileReader 是�
 
 ### 4.1.2 .直接 I/O 方式
 
-![img](https://ws4.sinaimg.cn/large/006tKfTcly1g0kzqnc38tj30dt09mjte.jpg)
+![img](img/1240-20200217102052877.png)
 
 所谓的直接 I/O 的方式就是应用程序直接访问磁盘数据，而不经过操作系统内核数据缓冲区，**这样做的目的是减少一次从内核缓冲区到用户程序缓存的数据复制；**
 
@@ -138,7 +172,7 @@ FileReader 类就是按照上面的工作方式读取文件的，FileReader 是�
 
 ### 4.1.3 .内存映射的方式
 
-![img](https://ws2.sinaimg.cn/large/006tKfTcly1g0kzqu8970j30gw0b6wh2.jpg)
+![img](img/1240-20200217102101508.png)
 
 内存映射是指将硬盘上文件的位置与进程逻辑地址空间中一块大小相同的区域一一对应，当要访问内存中一段数据时，转换为访问文件的某一段数据。**这种方式的目的同样是减少数据在用户空间和内核空间之间的拷贝操作。**当大量数据需要传输的时候，采用内存映射方式去访问文件会获得比较好的效率。
 
@@ -154,7 +188,7 @@ FileReader 类就是按照上面的工作方式读取文件的，FileReader 是�
 
 下面以上文读取文件的程序为例，介绍下如何从磁盘读取一段文本字符。如下图所示：
 
-![img](https://ws2.sinaimg.cn/large/006tKfTcly1g0kzrc03gcj30g309v0v3.jpg)
+![img](img/1240-20200217102111445.png)
 
 当传入一个文件路径，将会根据这个路径创建一个 File 对象来标识这个文件，然后将会根据这个 File 对象创建真正读取文件的操作对象，这时将会真正创建一个关联真实存在的磁盘文件的文件描述符 FileDescriptor，通过这个对象可以直接控制这个磁盘文件。由于我们需要读取的是字符格式，所以需要 StreamDecoder 类将 byte 解码为 char 格式，至于如何从磁盘驱动器上读取一段数据，由操作系统帮我们完成。至于操作系统是如何将数据持久化到磁盘以及如何建立数据结构需要根据当前操作系统使用何种文件系统来回答，至于文件系统的相关细节可以参考另外的文章。
 
@@ -334,7 +368,7 @@ BIO 即阻塞 I/O，不管是磁盘 I/O 还是网络 I/O，数据在写入 Outpu
 
 很多人都把NIO翻译成New IO，但我更觉得No-Block IO更接近它的本意，也就是非阻塞式IO，它虽然是非阻塞式的，但它是同步的，我们先看一下 NIO 涉及到的关联类图，如下：
 
-![img](https://upload-images.jianshu.io/upload_images/7896890-f2e440c85e1401cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![img](img/1240-20200217102123113.png)
 
 **上图中有两个关键类：Channel 和 Selector**，它们是 NIO 中两个核心概念。我们还用前面的城市交通工具来继续比喻 NIO 的工作方式，这里的 Channel 要比 Socket 更加具体，它可以比作为某种具体的交通工具，如汽车或是高铁等，而 Selector 可以比作为一个车站的车辆运行调度系统，它将负责监控每辆车的当前运行状态：是已经出战还是在路上等等，也就是它可以轮询每个 Channel 的状态。**这里还有一个 Buffer 类**，它也比 Stream 更加具体化，我们可以将它比作为车上的座位，Channel 是汽车的话就是汽车上的座位，高铁上就是高铁上的座位，它始终是一个具体的概念，与 Stream 不同。Stream 只能代表是一个座位，至于是什么座位由你自己去想象，也就是你在去上车之前并不知道，这个车上是否还有没有座位了，也不知道上的是什么车，因为你并不能选择，这些信息都已经被封装在了运输工具（Socket）里面了，对你是透明的。
 
