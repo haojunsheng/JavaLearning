@@ -2,10 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2e5b6ca8-8a82-4248-8fe6-c30b94a7599d" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../jvmLearning/JVM-memory-strcture-VS Java-memory-model-VS Java-object-model.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../jvmLearning/Java-memory-model.md" beforeDir="false" afterPath="$PROJECT_DIR$/../jvmLearning/Java-memory-model.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../jvmLearning/jvm-memory-strcture.md" beforeDir="false" afterPath="$PROJECT_DIR$/../jvmLearning/jvm-memory-strcture.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/code/tree/KLeastNumbers_40.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/code/tree/KLeastNumbers_40.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../jvmLearning/HotSpot.md" beforeDir="false" afterPath="$PROJECT_DIR$/../jvmLearning/HotSpot.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../jvmLearning/class-loader.md" beforeDir="false" afterPath="$PROJECT_DIR$/../jvmLearning/class-loader.md" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -177,6 +176,7 @@
       <workItem from="1578920190388" duration="33000" />
       <workItem from="1581921815045" duration="3114000" />
       <workItem from="1582097439518" duration="2536000" />
+      <workItem from="1582179888763" duration="197000" />
     </task>
     <servers />
   </component>

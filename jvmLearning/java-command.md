@@ -131,8 +131,6 @@ java的常用命令十分的重要。
 3. [使用jstack命令制作线程Dump](http://www.hollischuang.com/archives/110) • Linux环境下使用kill命令制作线程Dump
 4. 使用[jmap](http://www.hollischuang.com/archives/303)命令制作堆Dump
 
-
-
 ------
 
 # 1.[Java命令学习系列（一）——Jps](https://www.hollischuang.com/archives/105)
@@ -275,10 +273,6 @@ PS:jps命令有个地方很不好，似乎只能显示当前用户的java进程�
 
 **也可以直接使用命令行进行传递。**
 
-------
-
-
-
 # 2. [Java命令学习系列（二）——Jstack](https://www.hollischuang.com/archives/110)
 
 > jstack是java虚拟机自带的一种堆栈跟踪工具。
@@ -296,8 +290,6 @@ jstack用于生成java虚拟机当前时刻的线程快照。
 生成线程快照的主要目的是定位线程出现长时间停顿的原因，如线程间死锁、死循环、请求外部资源导致的长时间等待等。 
 
 线程出现停顿的时候通过jstack来查看各个线程的调用堆栈，就可以知道没有响应的线程到底在后台做什么事情，或者等待什么资源。 如果java程序崩溃生成core文件，jstack工具可以用来获得core文件的java stack和native stack的信息，从而可以轻松地知道java程序是如何崩溃和在程序何处发生问题。另外，jstack工具还可以附属到正在运行的java程序中，看到当时运行的java程序的java stack和native stack的信息, 如果现在运行的java程序呈现hung的状态，jstack是非常有用的。
-
-
 
 > So,**jstack命令主要用来查看Java线程的调用堆栈的，可以用来分析线程问题（如死锁）。**
 
@@ -321,7 +313,7 @@ jstack用于生成java虚拟机当前时刻的线程快照。
 
 在多线程的 JAVA程序中，实现线程之间的同步，就要说说 Monitor。 **Monitor是 Java中用以实现线程之间的互斥与协作的主要手段**，它可以看成是对象或者 Class的锁。每一个对象都有，也仅有一个 monitor。下 面这个图，描述了线程和 Monitor之间关系，以 及线程的状态转换图：
 
-![thread](https://ws2.sinaimg.cn/large/006tNc79ly1fz4pspq2efj30dw0abaap.jpg)
+![thread](img/thread.bmp)
 
 **进入区(Entrt Set)**:表示线程通过synchronized要求获取对象的锁。如果对象未被锁住,则进入拥有者;否则则在进入区等待。一旦对象锁被其他线程释放,立即参与竞争。
 
@@ -664,7 +656,7 @@ class Suo {
 
 当我启动该程序时，我们看一下控制台：
 
-[![thread_meitu_1](http://www.hollischuang.com/wp-content/uploads/2016/01/QQ20160118-0.png)](http://qyu1325060001.my3w.com/wp-content/uploads/2015/04/thread_meitu_1.jpg)
+![thread_meitu_1](img/QQ20160118-0.png)
 
 我们发现，程序只输出了两行内容，然后程序就不再打印其它的东西了，但是程序并没有停止。这样就产生了死锁。 当线程1使用`synchronized`锁住了o1的同时，线程2也是用`synchronized`锁住了o2。当两个线程都执行完第一个打印任务的时候，线程1想锁住o2，线程2想锁住o1。但是，线程1当前锁着o1，线程2锁着o2。所以两个想成都无法继续执行下去，就造成了死锁。
 
@@ -703,8 +695,6 @@ Found 1 deadlock.
 ## 2.9 其他
 
 **虚拟机执行Full GC时,会阻塞所有的用户线程。因此,即时获取到同步锁的线程也有可能被阻塞。** 在查看线程Dump时,首先查看内存使用情况。
-
-
 
 ------
 
@@ -889,8 +879,6 @@ Error attaching to process: sun.jvm.hotspot.debugger.DebuggerException: Can’t 
 
 > jstat(JVM Statistics Monitoring Tool)是用于监控虚拟机各种运行状态信息的命令行工具。他可以显示本地或远程虚拟机进程中的类装载、内存、垃圾收集、JIT编译等运行数据，在没有GUI图形的服务器上，它是运行期定位虚拟机性能问题的首选工具。
 
-
-
 jstat位于java的bin目录下，主要利用JVM内建的指令对Java应用程序的资源和性能进行实时的命令j行的监控，包括了对Heap size和垃圾回收状况的监控。可见，Jstat是轻量级的、专门针对JVM的工具，非常适用。
 
 ## 4.1 jstat 命令格式
@@ -1072,7 +1060,7 @@ Server is ready.
 
 页面如下：
 
-![QQ20160121-1](https://ws2.sinaimg.cn/large/006tNc79ly1fz526gq2h6j30ql0a976b.jpg)
+![QQ20160121-1](img/QQ20160121-1.png)
 
 ### 5.1.3  三、分析
 
@@ -1094,11 +1082,11 @@ Execute Object Query Language (OQL) query
 
 **Show instance counts for all classes (excluding platform)**，平台外的所有对象信息。如下图：
 
-![QQ20160121-3](https://ws2.sinaimg.cn/large/006tNc79ly1fz52bjrotaj30sg06iwfk.jpg)
+![QQ20160121-3](img/QQ20160121-3-1024x234.png)
 
 **Show heap histogram** 以树状图形式展示堆情况。如下图：
 
-![QQ20160121-2](https://ws2.sinaimg.cn/large/006tNc79ly1fz52be6hlfj30q90c8426.jpg)
+![QQ20160121-2](img/QQ20160121-2.png)
 
 具体排查时需要结合代码，观察是否大量应该被回收的对象在一直被引用或者是否有占用内存特别大的对象无法被回收。
 
@@ -1492,70 +1480,3 @@ javap可以用于反编译和查看编译器编译后的字节码**。平时一�
 ## 8.8 结语
 
 经常使用适当的虚拟机监控和分析工具可以加快我们分析数据、定位解决问题的速度，但也要知道，工具永远都是知识技能的一层包装，没有什么工具是包治百病的。
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
