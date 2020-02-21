@@ -1,4 +1,28 @@
 <!--ts-->
+   * [1. 初识synchronized](#1-初识synchronized)
+         * [什么是synchronized](#什么是synchronized)
+         * [synchronized 的用法](#synchronized-的用法)
+         * [synchronized 的实现原理](#synchronized-的实现原理)
+            * [同步方法实现原理](#同步方法实现原理)
+            * [同步代码块实现原理](#同步代码块实现原理)
+            * [synchronized 原理总结](#synchronized-原理总结)
+         * [Monitor 的实现原理](#monitor-的实现原理)
+            * [什么是 Monitor](#什么是-monitor)
+            * [Monitor 的代码实现](#monitor-的代码实现)
+         * [Monitor 原理总结](#monitor-原理总结)
+         * [总结](#总结)
+   * [2. 进阶synchronized——如何保证线程安全？](#2-进阶synchronized如何保证线程安全)
+         * [synchronized与原子性](#synchronized与原子性)
+         * [synchronized与有序性](#synchronized与有序性)
+         * [synchronized与可见性](#synchronized与可见性)
+         * [总结](#总结-1)
+   * [3. 拓展synchronized——锁优化](#3-拓展synchronized锁优化)
+         * [自旋锁](#自旋锁)
+         * [锁消除](#锁消除)
+         * [锁粗化](#锁粗化)
+         * [总结](#总结-2)
+
+<!-- Added by: anapodoton, at: Fri Feb 21 23:34:47 CST 2020 -->
 
 <!--te-->
 
