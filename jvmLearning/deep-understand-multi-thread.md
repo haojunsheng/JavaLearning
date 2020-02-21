@@ -1,6 +1,6 @@
 <!--ts-->
    * [前言](#前言)
-      * [<a href="https://www.hollischuang.com/archives/1876" rel="nofollow">Java虚拟机是如何执行线程同步的</a>](#java虚拟机是如何执行线程同步的)
+      * [Java虚拟机是如何执行线程同步的](#java虚拟机是如何执行线程同步的)
          * [线程和共享数据](#线程和共享数据)
          * [对象和类的锁](#对象和类的锁)
          * [监视器（Monitors）](#监视器monitors)
@@ -13,7 +13,7 @@
          * [1.3.1 monitorenter](#131-monitorenter)
          * [1.3.2 monitorexit](#132-monitorexit)
       * [1.4 总结](#14-总结)
-   * [2. <a href="https://www.hollischuang.com/archives/1910" rel="nofollow">Java的对象模型</a>](#2-java的对象模型)
+   * [2. Java的对象模型](#2-java的对象模型)
       * [2.1 Java的对象模型](#21-java的对象模型)
          * [2.1.1 oop-klass model](#211-oop-klass-model)
          * [2.1.2 oop-klass结构](#212-oop-klass结构)
@@ -23,14 +23,14 @@
       * [2.2 内存存储](#22-内存存储)
       * [2.3 总结](#23-总结)
       * [2.4 参考资料](#24-参考资料)
-   * [3. <a href="https://www.hollischuang.com/archives/1953" rel="nofollow">Java的对象头</a>](#3-java的对象头)
+   * [3. Java的对象头](#3-java的对象头)
       * [3.1 Java对象模型回顾与勘误](#31-java对象模型回顾与勘误)
-   * [4. <a href="https://www.hollischuang.com/archives/2030" rel="nofollow">Moniter的实现原理</a>](#4-moniter的实现原理)
+   * [4. Moniter的实现原理](#4-moniter的实现原理)
       * [4.1 操作系统中的管程](#41-操作系统中的管程)
       * [4.2 Java线程同步相关的Moniter](#42-java线程同步相关的moniter)
       * [4.3 监视器的实现](#43-监视器的实现)
       * [4.4 总结](#44-总结)
-   * [5. <a href="https://www.hollischuang.com/archives/2344" rel="nofollow">Java虚拟机的锁优化技术</a>](#5-java虚拟机的锁优化技术)
+   * [5. Java虚拟机的锁优化技术](#5-java虚拟机的锁优化技术)
       * [5.1 前情提要](#51-前情提要)
       * [5.2 线程状态](#52-线程状态)
       * [5.3 自旋锁](#53-自旋锁)
@@ -38,7 +38,7 @@
       * [5.5 锁粗化](#55-锁粗化)
       * [5.6 总结](#56-总结)
 
-<!-- Added by: anapodoton, at: Wed Feb 19 21:37:22 CST 2020 -->
+<!-- Added by: anapodoton, at: Fri Feb 21 17:34:46 CST 2020 -->
 
 <!--te-->
 
@@ -46,7 +46,9 @@
 
 我们将在这里深入学习多线程的知识。首先我们需要学习下java虚拟机是如何执行线程同步的。
 
-## [Java虚拟机是如何执行线程同步的](https://www.hollischuang.com/archives/1876)
+##  Java虚拟机是如何执行线程同步的
+
+[Java虚拟机是如何执行线程同步的](https://www.hollischuang.com/archives/1876)
 
 想介绍下synchronized的原理，但是又不知道从何下手，在网上看到一篇老外的文章，介绍了和线程同步相关的几个基础知识点。所以想把它翻译一下给大家看看。相信看过这些基础知识之后再看我后面要写的synchronized的原理就会好理解一点了。
 
@@ -210,7 +212,9 @@ public class SynchronizedTest {
 
 ------
 
-# 2. [Java的对象模型](https://www.hollischuang.com/archives/1910)
+# 2. Java的对象模型
+
+ [Java的对象模型](https://www.hollischuang.com/archives/1910)
 
 [上一篇](http://www.hollischuang.com/archives/1883)文章中简单介绍过`synchronized`关键字的方式，其中，同步代码块使用`monitorenter`和`monitorexit`两个指令实现，同步方法使用`ACC_SYNCHRONIZED`标记符实现。后面几篇文章会从JVM源码的角度更加深入，层层剥开`synchronized`的面纱。
 
@@ -485,7 +489,9 @@ public static void main(String[] args) {
 
 ------
 
-# 3. [Java的对象头](https://www.hollischuang.com/archives/1953)
+# 3. Java的对象头
+
+[Java的对象头](https://www.hollischuang.com/archives/1953)
 
 [上一篇](http://www.hollischuang.com/archives/1910)文章中我们从HotSpot的源码入手，介绍了Java的对象模型。这一篇文章在上一篇文章的基础上再来介绍一下Java的对象头。主要介绍一下对象头的作用，结构以及他和锁的关系。
 
@@ -567,7 +573,9 @@ enum { age_bits                 = 4,
 
 ------
 
-# 4. [Moniter的实现原理](https://www.hollischuang.com/archives/2030)
+# 4. Moniter的实现原理
+
+[Moniter的实现原理](https://www.hollischuang.com/archives/2030)
 
 在[深入理解多线程（一）——Synchronized的实现原理](http://www.hollischuang.com/archives/1883)中介绍过关于`Synchronize`的实现原理，无论是同步方法还是同步代码块，无论是`ACC_SYNCHRONIZED`还是`monitorenter`、`monitorexit`都是基于`Monitor`实现的，那么这篇来介绍下什么是**Monitor**。
 
@@ -776,7 +784,9 @@ void      notifyAll(TRAPS);
 
 ------
 
-# 5. [Java虚拟机的锁优化技术](https://www.hollischuang.com/archives/2344)
+# 5. Java虚拟机的锁优化技术
+
+[Java虚拟机的锁优化技术](https://www.hollischuang.com/archives/2344)
 
 本文是《[深入理解多线程](http://www.hollischuang.com/archives/tag/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E5%A4%9A%E7%BA%BF%E7%A8%8B)》的第五篇文章，前面几篇文章中我们从synchronized的实现原理开始，一直介绍到了Monitor的实现原理。
 

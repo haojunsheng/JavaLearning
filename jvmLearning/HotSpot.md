@@ -4,9 +4,9 @@
       * [1.1 对象的创建](#11-对象的创建)
       * [1.2 对象的内存布局](#12-对象的内存布局)
       * [1.3 对象的访问定位](#13-对象的访问定位)
-   * [2. <a href="https://github.com/openjdk-mirror/jdk7u-hotspot">HotSpot 源码</a>](#2-hotspot-源码)
-   * [3. <a href="https://www.hollischuang.com/archives/2322" rel="nofollow">深入分析Java的编译原理</a>](#3-深入分析java的编译原理)
-      * [3.1 <a href="https://www.hollischuang.com/archives/58" rel="nofollow">Java代码的编译与反编译那些事儿</a>](#31-java代码的编译与反编译那些事儿)
+   * [2. HotSpot 源码](#2-hotspot-源码)
+   * [3. 深入分析Java的编译原理](#3-深入分析java的编译原理)
+      * [3.1 Java代码的编译与反编译那些事儿](#31-java代码的编译与反编译那些事儿)
          * [3.1.1 编程语言](#311-编程语言)
          * [3.1.3 什么是反编译](#313-什么是反编译)
          * [3.1.4 Java反编译工具](#314-java反编译工具)
@@ -43,7 +43,7 @@
       * [5.4 总结](#54-总结)
    * [6. <a href="http://www.hollischuang.com/archives/2344" rel="nofollow">深入理解多线程（五）—— Java虚拟机的锁优化技术</a>（锁消除部分）](#6-深入理解多线程五-java虚拟机的锁优化技术锁消除部分)
 
-<!-- Added by: anapodoton, at: Thu Feb 20 14:13:19 CST 2020 -->
+<!-- Added by: anapodoton, at: Thu Feb 20 20:29:10 CST 2020 -->
 
 <!--te-->
 
@@ -198,15 +198,17 @@ HotSpot 虚拟机的对象头包括两部分信息，第一部分用于存储对
 
 ------
 
-# 2. [HotSpot 源码](https://github.com/openjdk-mirror/jdk7u-hotspot)
+# 2. HotSpot 源码
 
+[HotSpot 源码](https://github.com/openjdk-mirror/jdk7u-hotspot)
 
+# 3. 深入分析Java的编译原理
 
-# 3. [深入分析Java的编译原理](https://www.hollischuang.com/archives/2322)
+[深入分析Java的编译原理](https://www.hollischuang.com/archives/2322)
 
-在此之前，我们首先学习下[Java代码的编译与反编译那些事儿](https://www.hollischuang.com/archives/58)
+## 3.1 Java代码的编译与反编译那些事儿
 
-## 3.1 [Java代码的编译与反编译那些事儿](https://www.hollischuang.com/archives/58)
+[Java代码的编译与反编译那些事儿](https://www.hollischuang.com/archives/58)
 
 ### 3.1.1 编程语言
 

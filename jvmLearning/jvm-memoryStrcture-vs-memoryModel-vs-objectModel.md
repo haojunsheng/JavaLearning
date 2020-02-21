@@ -67,18 +67,3 @@ HotSpot虚拟机中，设计了一个OOP-Klass Model。OOP（Ordinary Object Poi
 我们再来区分下JVM内存结构、 Java内存模型 以及 Java对象模型 三个概念。
 
 JVM内存结构，和Java虚拟机的运行时区域有关。 Java内存模型，和Java的并发编程有关。 Java对象模型，和Java对象在虚拟机中的表现形式有关。
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

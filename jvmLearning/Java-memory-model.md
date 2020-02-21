@@ -15,7 +15,25 @@
       * [6.2 内存模型](#62-内存模型)
       * [6.3 总结](#63-总结)
          * [思考](#思考)
-   * [7.总结](#7总结)
+   * [7.关键字的实现](#7关键字的实现)
+      * [7.1 synchronized](#71-synchronized)
+         * [7.1.1 synchronized的用法](#711-synchronized的用法)
+         * [7.1.2 synchronized的实现原理](#712-synchronized的实现原理)
+         * [7.1.3 synchronized与原子性](#713-synchronized与原子性)
+         * [7.1.4 synchronized与可见性](#714-synchronized与可见性)
+         * [7.1.5 synchronized与有序性](#715-synchronized与有序性)
+         * [7.1.6 synchronized与锁优化](#716-synchronized与锁优化)
+      * [7.2 volatile](#72-volatile)
+         * [7.2.1 volatile的用法](#721-volatile的用法)
+         * [7.2.2 volatile的原理](#722-volatile的原理)
+         * [7.2.3 <em>volatile</em>与可见性](#723-volatile与可见性)
+         * [7.2.4 volatile与有序性](#724-volatile与有序性)
+         * [7.2.5 volatile与原子性](#725-volatile与原子性)
+         * [7.2.6 总结与思考](#726-总结与思考)
+         * [7.2.7 既生synchronized，何生volatile](#727-既生synchronized何生volatile)
+            * [7.2.7.2 volatile的附加功能](#7272-volatile的附加功能)
+            * [7.2.7.3 synchronized的有序性保证呢？](#7273-synchronized的有序性保证呢)
+            * [7.2.7.4 总结](#7274-总结)
    * [8. 深入理解 Java 内存模型系列教程](#8-深入理解-java-内存模型系列教程)
       * [8.1 深入理解 Java 内存模型（一）——基础](#81-深入理解-java-内存模型一基础)
          * [8.1.1 并发编程模型的分类](#811-并发编程模型的分类)
@@ -59,7 +77,7 @@
       * [JSR-133 对旧内存模型的修补](#jsr-133-对旧内存模型的修补)
    * [扩展](#扩展)
 
-<!-- Added by: anapodoton, at: Wed Feb 19 23:34:46 CST 2020 -->
+<!-- Added by: anapodoton, at: Fri Feb 21 16:31:39 CST 2020 -->
 
 <!--te-->
 
@@ -76,6 +94,8 @@
 > 在介绍Java内存模型之前，先来看一下到底什么是计算机内存模型，然后再来看Java内存模型在计算机内存模型的基础上做了哪些事情。要说计算机的内存模型，就要说一下一段古老的历史，看一下为什么要有内存模型。
 
 **内存模型，英文名Memory Model，他是一个很老的老古董了。他是与计算机硬件有关的一个概念。那么我先给你介绍下他和硬件到底有啥关系。**
+
+抽象了计算机的硬件。速度不匹配的问题。
 
 ## 1.1 CPU和缓存一致性
 
@@ -149,7 +169,7 @@
 
 可想而知，如果任由**处理器优化和编译器对指令重排**的话，就可能导致各种各样的问题。
 
-> 关于员工组织调整的情况，如果允许人事部在接到多个命令后进行随意拆分乱序执行或者重排的话，那么对于这个员工以及这家公司的影响是非常大的。
+> 关于员工组织调整的情况，如果允w许人事部在接到多个命令后进行随意拆分乱序执行或者重排的话，那么对于这个员工以及这家公司的影响是非常大的。
 
 # 2.并发编程的问题
 
@@ -353,11 +373,518 @@ PS：这里还需要再重复一遍，Java多线程中，每个线程都有自�
 
 既然在硬件层面，已经有了缓存一致性协议，可以保证缓存的一致性即并发编程中的可见性，那么为什么在写多线程的代码的时候，程序员要自己使用volatile、synchronized等关键字来保证可见性？
 
-# 7.总结
+# 7.关键字的实现
+
+## 7.1 synchronized
+
+在[再有人问你Java内存模型是什么，就把这篇文章发给他。](http://www.hollischuang.com/archives/2550)中我们曾经介绍过，Java语言为了解决并发编程中存在的原子性、可见性和有序性问题，提供了一系列和并发处理相关的关键字，比如`synchronized`、`volatile`、`final`、`concurren包`等。
+
+在《深入理解Java虚拟机》中，有这样一段话：
+
+> `synchronized`关键字在需要原子性、可见性和有序性这三种特性的时候都可以作为其中一种解决方案，看起来是“万能”的。的确，大部分并发控制操作都能使用synchronized来完成。
+
+海明威在他的《午后之死》说过的：“冰山运动之雄伟壮观，是因为他只有八分之一在水面上。”对于程序员来说，`synchronized`只是个关键字而已，用起来很简单。之所以我们可以在处理多线程问题时可以不用考虑太多，就是因为这个关键字帮我们屏蔽了很多细节。
+
+那么，本文就围绕`synchronized`展开，主要介绍`synchronized`的用法、`synchronized`的原理，以及`synchronized`是如何提供原子性、可见性和有序性保障的等。
+
+### 7.1.1 synchronized的用法
+
+`synchronized`是Java提供的一个并发控制的关键字。主要有两种用法，分别是同步方法和同步代码块。也就是说，`synchronized`既可以修饰方法也可以修饰代码块。
+
+```java
+/**
+ * @author Hollis 18/08/04.
+ */
+public class SynchronizedDemo {
+     //同步方法
+    public synchronized void doSth(){
+        System.out.println("Hello World");
+    }
+
+    //同步代码块
+    public void doSth1(){
+        synchronized (SynchronizedDemo.class){
+            System.out.println("Hello World");
+        }
+    }
+}
+```
+
+被`synchronized`修饰的代码块及方法，在同一时间，只能被单个线程访问。
+
+### 7.1.2 synchronized的实现原理
+
+`synchronized`，是Java中用于解决并发情况下数据同步访问的一个很重要的关键字。当我们想要保证一个共享资源在同一时间只会被一个线程访问到时，我们可以在代码中使用`synchronized`关键字对类或者对象加锁。
+
+在[深入理解多线程（一）——Synchronized的实现原理](http://www.hollischuang.com/archives/1883)中我曾经介绍过其实现原理，为了保证知识的完整性，这里再简单介绍一下，详细的内容请去原文阅读。
+
+我们对上面的代码进行反编译，可以得到如下代码：
+
+```
+public synchronized void doSth();
+    descriptor: ()V
+    flags: ACC_PUBLIC, ACC_SYNCHRONIZED
+    Code:
+      stack=2, locals=1, args_size=1
+         0: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+         3: ldc           #3                  // String Hello World
+         5: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+         8: return
+
+  public void doSth1();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=2, locals=3, args_size=1
+         0: ldc           #5                  // class com/hollis/SynchronizedTest
+         2: dup
+         3: astore_1
+         4: monitorenter
+         5: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+         8: ldc           #3                  // String Hello World
+        10: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        13: aload_1
+        14: monitorexit
+        15: goto          23
+        18: astore_2
+        19: aload_1
+        20: monitorexit
+        21: aload_2
+        22: athrow
+        23: return
+```
+
+通过反编译后代码可以看出：对于同步方法，JVM采用`ACC_SYNCHRONIZED`标记符来实现同步。 对于同步代码块。JVM采用`monitorenter`、`monitorexit`两个指令来实现同步。
+
+在[The Java® Virtual Machine Specification](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-2.html#jvms-2.11.10)中有关于同步方法和同步代码块的实现原理的介绍，我翻译成中文如下：
+
+> 方法级的同步是隐式的。同步方法的常量池中会有一个`ACC_SYNCHRONIZED`标志。当某个线程要访问某个方法的时候，会检查是否有`ACC_SYNCHRONIZED`，如果有设置，则需要先获得监视器锁，然后开始执行方法，方法执行之后再释放监视器锁。这时如果其他线程来请求执行方法，会因为无法获得监视器锁而被阻断住。值得注意的是，如果在方法执行过程中，发生了异常，并且方法内部并没有处理该异常，那么在异常被抛到方法外面之前监视器锁会被自动释放。
+>
+> 同步代码块使用`monitorenter`和`monitorexit`两个指令实现。可以把执行`monitorenter`指令理解为加锁，执行`monitorexit`理解为释放锁。 每个对象维护着一个记录着被锁次数的计数器。未被锁定的对象的该计数器为0，当一个线程获得锁（执行`monitorenter`）后，该计数器自增变为 1 ，当同一个线程再次获得该对象的锁的时候，计数器再次自增。当同一个线程释放锁（执行`monitorexit`指令）的时候，计数器再自减。当计数器为0的时候。锁将被释放，其他线程便可以获得锁。
+
+无论是`ACC_SYNCHRONIZED`还是`monitorenter`、`monitorexit`都是基于Monitor实现的，在Java虚拟机(HotSpot)中，Monitor是基于C++实现的，由ObjectMonitor实现。
+
+ObjectMonitor类中提供了几个方法，如`enter`、`exit`、`wait`、`notify`、`notifyAll`等。`sychronized`加锁的时候，会调用objectMonitor的enter方法，解锁的时候会调用exit方法。（关于Monitor详见[深入理解多线程（四）—— Moniter的实现原理](http://www.hollischuang.com/archives/2030)）
+
+### 7.1.3 synchronized与原子性
+
+原子性是指一个操作是不可中断的，要全部执行完成，要不就都不执行。
+
+我们在[Java的并发编程中的多线程问题到底是怎么回事儿？](http://www.hollischuang.com/archives/2618)中分析过：线程是CPU调度的基本单位。CPU有时间片的概念，会根据不同的调度算法进行线程调度。当一个线程获得时间片之后开始执行，在时间片耗尽之后，就会失去CPU使用权。所以在多线程场景下，由于时间片在线程间轮换，就会发生原子性问题。
+
+在Java中，为了保证原子性，提供了两个高级的字节码指令`monitorenter`和`monitorexit`。前面中，介绍过，这两个字节码指令，在Java中对应的关键字就是`synchronized`。
+
+通过`monitorenter`和`monitorexit`指令，可以保证被`synchronized`修饰的代码在同一时间只能被一个线程访问，在锁未释放之前，无法被其他线程访问到。因此，在Java中可以使用`synchronized`来保证方法和代码块内的操作是原子性的。
+
+> 线程1在执行`monitorenter`指令的时候，会对Monitor进行加锁，加锁后其他线程无法获得锁，除非线程1主动解锁。即使在执行过程中，由于某种原因，比如CPU时间片用完，线程1放弃了CPU，但是，他并没有进行解锁。而由于`synchronized`的锁是可重入的，下一个时间片还是只能被他自己获取到，还是会继续执行代码。直到所有代码执行完。这就保证了原子性。
+
+### 7.1.4 synchronized与可见性
+
+可见性是指当多个线程访问同一个变量时，一个线程修改了这个变量的值，其他线程能够立即看得到修改的值。
+
+我们在[再有人问你Java内存模型是什么，就把这篇文章发给他。](http://www.hollischuang.com/archives/2550)中分析过：Java内存模型规定了所有的变量都存储在主内存中，每条线程还有自己的工作内存，线程的工作内存中保存了该线程中是用到的变量的主内存副本拷贝，线程对变量的所有操作都必须在工作内存中进行，而不能直接读写主内存。不同的线程之间也无法直接访问对方工作内存中的变量，线程间变量的传递均需要自己的工作内存和主存之间进行数据同步进行。所以，就可能出现线程1改了某个变量的值，但是线程2不可见的情况。
+
+前面我们介绍过，被`synchronized`修饰的代码，在开始执行时会加锁，执行完成后会进行解锁。而为了保证可见性，有一条规则是这样的：**对一个变量解锁之前，必须先把此变量同步回主存中**。这样解锁后，后续线程就可以访问到被修改后的值。
+
+所以，synchronized关键字锁住的对象，其值是具有可见性的。
+
+### 7.1.5 synchronized与有序性
+
+有序性即程序执行的顺序按照代码的先后顺序执行。
+
+我们在[再有人问你Java内存模型是什么，就把这篇文章发给他。](http://www.hollischuang.com/archives/2550)中分析过：除了引入了时间片以外，由于处理器优化和指令重排等，CPU还可能对输入代码进行乱序执行，比如load->add->save 有可能被优化成load->save->add 。这就是可能存在有序性问题。
+
+这里需要注意的是，`synchronized`是无法禁止指令重排和处理器优化的。也就是说，`synchronized`无法避免上述提到的问题。
+
+那么，为什么还说`synchronized`也提供了有序性保证呢？
+
+这就要再把有序性的概念扩展一下了。Java程序中天然的有序性可以总结为一句话：如果在本线程内观察，所有操作都是天然有序的。如果在一个线程中观察另一个线程，所有操作都是无序的。
+
+以上这句话也是《深入理解Java虚拟机》中的原句，但是怎么理解呢？周志明并没有详细的解释。这里我简单扩展一下，这其实和`as-if-serial语义`有关。
+
+`as-if-serial`语义的意思指：不管怎么重排序（编译器和处理器为了提高并行度），单线程程序的执行结果都不能被改变。编译器和处理器无论如何优化，都必须遵守`as-if-serial`语义。
+
+这里不对`as-if-serial语义`详细展开了，简单说就是，`as-if-serial语义`保证了单线程中，指令重排是有一定的限制的，而只要编译器和处理器都遵守了这个语义，那么就可以认为单线程程序是按照顺序执行的。当然，实际上还是有重排的，只不过我们无须关心这种重排的干扰。
+
+所以呢，由于`synchronized`修饰的代码，同一时间只能被同一线程访问。那么也就是单线程执行的。所以，可以保证其有序性。
+
+### 7.1.6 synchronized与锁优化
+
+前面介绍了`synchronized`的用法、原理以及对并发编程的作用。是一个很好用的关键字。
+
+`synchronized`其实是借助Monitor实现的，在加锁时会调用objectMonitor的`enter`方法，解锁的时候会调用`exit`方法。事实上，只有在JDK1.6之前，synchronized的实现才会直接调用ObjectMonitor的`enter`和`exit`，这种锁被称之为重量级锁。
+
+所以，在JDK1.6中出现对锁进行了很多的优化，进而出现轻量级锁，偏向锁，锁消除，适应性自旋锁，锁粗化(自旋锁在1.4就有，只不过默认的是关闭的，jdk1.6是默认开启的)，这些操作都是为了在线程之间更高效的共享数据 ，解决竞争问题。
+
+关于自旋锁、锁粗化和锁消除可以参考[深入理解多线程（五）—— Java虚拟机的锁优化技术](http://www.hollischuang.com/archives/2344)，关于轻量级锁和偏向锁，已经在排期规划中，我后面会有文章单独介绍，将独家发布在我的博客(http://www.hollischuang.com)和公众号(Hollis)中，敬请期待。
+
+好啦，关于`synchronized`关键字，我们介绍了其用法、原理、以及如何保证的原子性、顺序性和可见性，同时也扩展的留下了锁优化相关的资料及思考。后面我们会继续介绍`volatile`关键字以及他和`synchronized`的区别等。敬请期待。
 
 在读完本文之后，相信你应该了解了什么是Java内存模型、Java内存模型的作用以及Java中内存模型做了什么事情等。关于Java中这些和内存模型有关的关键字，希望读者还可以继续深入学习，并且自己写几个例子亲自体会一下。
 
-------
+## 7.2 volatile
+
+在[再有人问你Java内存模型是什么，就把这篇文章发给他](http://www.hollischuang.com/archives/2550)中我们曾经介绍过，Java语言为了解决并发编程中存在的原子性、可见性和有序性问题，提供了一系列和并发处理相关的关键字，比如`synchronized`、`volatile`、`final`、`concurren包`等。在[前一篇](http://www.hollischuang.com/archives/2637)文章中，我们也介绍了`synchronized`的用法及原理。本文，来分析一下另外一个关键字——`volatile`。
+
+本文就围绕`volatile`展开，主要介绍`volatile`的用法、`volatile`的原理，以及`volatile`是如何提供可见性和有序性保障的等。
+
+`volatile`这个关键字，不仅仅在Java语言中有，在很多语言中都有的，而且其用法和语义也都是不尽相同的。尤其在C语言、C++以及Java中，都有`volatile`关键字。都可以用来声明变量或者对象。下面简单来介绍一下Java语言中的`volatile`关键字。
+
+### 7.2.1 volatile的用法
+
+`volatile`通常被比喻成”轻量级的`synchronized`“，也是Java并发编程中比较重要的一个关键字。和`synchronized`不同，`volatile`是一个变量修饰符，只能用来修饰变量。无法修饰方法及代码块等。
+
+`volatile`的用法比较简单，只需要在声明一个可能被多线程同时访问的变量时，使用`volatile`修饰就可以了。
+
+```java
+public class Singleton {  
+    private volatile static Singleton singleton;  
+    private Singleton (){}  
+    public static Singleton getSingleton() {  
+    if (singleton == null) {  
+        synchronized (Singleton.class) {  
+        if (singleton == null) {  
+            singleton = new Singleton();  
+        }  
+        }  
+    }  
+    return singleton;  
+    }  
+}  
+```
+
+如以上代码，是一个比较典型的使用双重锁校验的形式实现单例的，其中使用`volatile`关键字修饰可能被多个线程同时访问到的singleton。
+
+### 7.2.2 volatile的原理
+
+在[再有人问你Java内存模型是什么，就把这篇文章发给他](http://www.hollischuang.com/archives/2550)中我们曾经介绍过，为了提高处理器的执行速度，在处理器和内存之间增加了多级缓存来提升。但是由于引入了多级缓存，就存在缓存数据不一致问题。
+
+但是，对于`volatile`变量，当对`volatile`变量进行写操作的时候，JVM会向处理器发送一条lock前缀的指令，将这个缓存中的变量回写到系统主存中。
+
+但是就算写回到内存，如果其他处理器缓存的值还是旧的，再执行计算操作就会有问题，所以在多处理器下，为了保证各个处理器的缓存是一致的，就会实现`缓存一致性协议`
+
+**缓存一致性协议**：每个处理器通过嗅探在总线上传播的数据来检查自己缓存的值是不是过期了，当处理器发现自己缓存行对应的内存地址被修改，就会将当前处理器的缓存行设置成无效状态，当处理器要对这个数据进行修改操作的时候，会强制重新从系统内存里把数据读到处理器缓存里。
+
+所以，如果一个变量被`volatile`所修饰的话，在每次数据变化之后，其值都会被强制刷入主存。而其他处理器的缓存由于遵守了缓存一致性协议，也会把这个变量的值从主存加载到自己的缓存中。这就保证了一个`volatile`在并发编程中，其值在多个缓存中是可见的。
+
+### 7.2.3 *volatile*与可见性
+
+可见性是指当多个线程访问同一个变量时，一个线程修改了这个变量的值，其他线程能够立即看得到修改的值。
+
+我们在[再有人问你Java内存模型是什么，就把这篇文章发给他](http://www.hollischuang.com/archives/2550)中分析过：Java内存模型规定了所有的变量都存储在主内存中，每条线程还有自己的工作内存，线程的工作内存中保存了该线程中是用到的变量的主内存副本拷贝，线程对变量的所有操作都必须在工作内存中进行，而不能直接读写主内存。不同的线程之间也无法直接访问对方工作内存中的变量，线程间变量的传递均需要自己的工作内存和主存之间进行数据同步进行。所以，就可能出现线程1改了某个变量的值，但是线程2不可见的情况。
+
+前面的关于`volatile`的原理中介绍过了，Java中的`volatile`关键字提供了一个功能，那就是被其修饰的变量在被修改后可以立即同步到主内存，被其修饰的变量在每次是用之前都从主内存刷新。因此，可以使用`volatile`来保证多线程操作时变量的可见性。
+
+其实，volatile对于可见性的实现，内存屏障也起着至关重要的作用。因为内存屏障相当于一个数据同步点，他要保证在这个同步点之后的读写操作必须在这个点之前的读写操作都执行完之后才可以执行。并且在遇到内存屏障的时候，缓存数据会和主存进行同步，或者把缓存数据写入主存、或者从主存把数据读取到缓存。
+
+我们在[内存模型是怎么解决缓存一致性问题的？](http://www.hollischuang.com/archives/2662)一文中介绍过缓存缓存一致性协议，同时也提到过内存一致性模型的实现可以通过缓存一致性协议来实现。同时，留了一个问题：已经有了缓存一致性协议，为什么还需要volatile？
+
+这个问题的答案可以从多个方面来回答：
+
+1、并不是所有的硬件架构都提供了相同的一致性保证，Java作为一门跨平台语言，JVM需要提供一个统一的语义。
+
+2、操作系统中的缓存和JVM中线程的本地内存并不是一回事，通常我们可以认为：MESI可以解决缓存层面的可见性问题。使用volatile关键字，可以解决JVM层面的可见性问题。
+
+3、缓存可见性问题的延伸：由于传统的MESI协议的执行成本比较大。所以CPU通过Store Buffer和Invalidate Queue组件来解决，但是由于这两个组件的引入，也导致缓存和主存之间的通信并不是实时的。也就是说，**缓存一致性模型只能保证缓存变更可以保证其他缓存也跟着改变，但是不能保证立刻、马上执行。**
+
+其实，在计算机内存模型中，也是使用内存屏障来解决缓存的可见性问题的（再次强调：缓存可见性和并发编程中的可见性可以互相类比，但是他们并不是一回事儿）。写内存屏障（Store Memory Barrier）可以促使处理器将当前store buffer（存储缓存）的值写回主存。读内存屏障（Load Memory Barrier）可以促使处理器处理invalidate queue（失效队列）。进而避免由于Store Buffer和Invalidate Queue的非实时性带来的问题。
+
+所以，内存屏障也是保证可见性的重要手段，操作系统通过内存屏障保证缓存间的可见性，JVM通过给volatile变量加入内存屏障保证线程之间的可见性。
+
+再来总结一下Java中的内存屏障：**用于控制特定条件下的重排序和内存可见性问题。Java编译器也会根据内存屏障的规则禁止重排序。**
+
+### 7.2.4 volatile与有序性
+
+有序性即程序执行的顺序按照代码的先后顺序执行。
+
+我们在[再有人问你Java内存模型是什么，就把这篇文章发给他](http://www.hollischuang.com/archives/2550)中分析过：除了引入了时间片以外，由于处理器优化和指令重排等，CPU还可能对输入代码进行乱序执行，比如`load->add->save` 有可能被优化成`load->save->add` 。这就是可能存在有序性问题。
+
+而`volatile`除了可以保证数据的可见性之外，还有一个强大的功能，那就是他可以禁止指令重排优化等。
+
+普通的变量仅仅会保证在该方法的执行过程中所依赖的赋值结果的地方都能获得正确的结果，而不能保证变量的赋值操作的顺序与程序代码中的执行顺序一致。
+
+volatile可以禁止指令重排，这就保证了代码的程序会严格按照代码的先后顺序执行。这就保证了有序性。被`volatile`修饰的变量的操作，会严格按照代码顺序执行，`load->add->save` 的执行顺序就是：load、add、save。
+
+那么volatile又是如何禁止指令重排的呢？
+
+先给出结论：volatile是通过**内存屏障**来来禁止指令重排的。
+
+**内存屏障（Memory Barrier）**是一类同步屏障指令，是CPU或编译器在对内存随机访问的操作中的一个同步点，使得此点之前的所有读写操作都执行后才可以开始执行此点之后的操作。CPU和编译器都不会对此处的代码进行乱序处理。
+
+下表描述了和volatile有关的指令重排禁止行为：
+
+![volatile](img/volatile.png)
+
+从上表我们可以看出：
+
+当第二个操作是volatile写时，不管第一个操作是什么，都不能重排序。这个规则确保volatile写之前的操作不会被编译器重排序到volatile写之后。
+
+当第一个操作是volatile读时，不管第二个操作是什么，都不能重排序。这个规则确保volatile读之后的操作不会被编译器重排序到volatile读之前。
+
+当第一个操作是volatile写，第二个操作是volatile读时，不能重排序。
+
+具体实现方式是在编译期生成字节码时，会在指令序列中增加内存屏障来保证，下面是基于保守策略的JMM内存屏障插入策略：
+
+- 在每个volatile写操作的前面插入一个StoreStore屏障。
+  - 对于这样的语句Store1; `StoreStore`; Store2，在Store2及后续写入操作执行前，保证Store1的写入操作对其它处理器可见。
+- 在每个volatile写操作的后面插入一个StoreLoad屏障。
+  - 对于这样的语句Store1; `StoreLoad`; Load2，在Load2及后续所有读取操作执行前，保证Store1的写入对所有处理器可见。
+- 在每个volatile读操作的后面插入一个LoadLoad屏障。
+  - 对于这样的语句Load1; `LoadLoad`; Load2，在Load2及后续读取操作要读取的数据被访问前，保证Load1要读取的数据被读取完毕。
+- 在每个volatile读操作的后面插入一个LoadStore屏障。
+  - 对于这样的语句Load1; `LoadStore`; Store2，在Store2及后续写入操作被刷出前，保证Load1要读取的数据被读取完毕。
+
+![fences-table](img/fences-table.png)
+
+所以，volatile通过在volatile变量的操作前后插入内存屏障的方式，来禁止指令重排，进而保证多线程情况下对共享变量的有序性。
+
+### 7.2.5 volatile与原子性
+
+原子性是指一个操作是不可中断的，要全部执行完成，要不就都不执行。
+
+我们在[Java的并发编程中的多线程问题到底是怎么回事儿？](http://www.hollischuang.com/archives/2618)中分析过：线程是CPU调度的基本单位。CPU有时间片的概念，会根据不同的调度算法进行线程调度。当一个线程获得时间片之后开始执行，在时间片耗尽之后，就会失去CPU使用权。所以在多线程场景下，由于时间片在线程间轮换，就会发生原子性问题。
+
+在上一篇文章中，我们介绍`synchronized`的时候，提到过，为了保证原子性，需要通过字节码指令`monitorenter`和`monitorexit`，但是`volatile`和这两个指令之间是没有任何关系的。
+
+**所以，`volatile`是不能保证原子性的。**
+
+在以下两个场景中可以使用`volatile`来代替`synchronized`：
+
+> 1、运算结果并不依赖变量的当前值，或者能够确保只有单一的线程会修改变量的值。
+>
+> 2、变量不需要与其他状态变量共同参与不变约束。
+
+除以上场景外，都需要使用其他方式来保证原子性，如`synchronized`或者`concurrent包`。
+
+我们来看一下volatile和原子性的例子：
+
+```java
+public class Test {
+    public volatile int inc = 0;
+
+    public void increase() {
+        inc++;
+    }
+
+    public static void main(String[] args) {
+        final Test test = new Test();
+        for(int i=0;i<10;i++){
+            new Thread(){
+                public void run() {
+                    for(int j=0;j<1000;j++)
+                        test.increase();
+                };
+            }.start();
+        }
+
+        while(Thread.activeCount()>1)  //保证前面的线程都执行完
+            Thread.yield();
+        System.out.println(test.inc);
+    }
+}
+```
+
+以上代码比较简单，就是创建10个线程，然后分别执行1000次`i++`操作。正常情况下，程序的输出结果应该是10000，但是，多次执行的结果都小于10000。这其实就是`volatile`无法满足原子性的原因。
+
+为什么会出现这种情况呢，那就是因为虽然volatile可以保证`inc`在多个线程之间的可见性。但是无法`inc++`的原子性。
+
+网上有很多文章，拿`i++`的例子说明`volatile`不能保证原子性，然后进行各种分析，有的说由于引入内存屏障导致无法保证原子性，有的说一段`i++`代码，在编译后字节码为：
+
+```
+    10: getfield      #2                  // Field i:I
+    14: iconst_1
+    15: iadd
+    16: putfield      #2                  // Field i:I
+```
+
+在不考虑内存屏障的情况下，一个`i++`指令也包含了四个步骤。
+
+这些分析，只是说明了`i++`本身并不是一个原子操作，即使使用`volatile`修饰`i`，也无法保证他是一个原子操作。并不能解释为什么`volatile`为啥不能保证原子性。
+
+要我说，由于CPU按照时间片来进行线程调度的，只要是包含多个步骤的操作的执行，天然就是无法保证原子性的。因为这种线程执行，又不像数据库一样可以回滚。如果一个线程要执行的步骤有5步，执行完3步就失去了CPU了，失去后就可能再也不会被调度，这怎么可能保证原子性呢。
+
+为什么`synchronized`可以保证原子性 ，因为被`synchronized`修饰的代码片段，在进入之前加了锁，只要他没执行完，其他线程是无法获得锁执行这段代码片段的，就可以保证他内部的代码可以全部被执行。进而保证原子性。
+
+但是`synchronized`对原子性保证也不绝对，如果真要较真的话，一旦代码运行异常，也没办法回滚。所以呢，在并发编程中，原子性的定义不应该和事务中的原子性一样。他应该定义为：一段代码，或者一个变量的操作，在没有执行完之前，不能被其他线程执行。
+
+那么，为什么`volatile`不能保证原子性呢？因为他不是锁，他没做任何可以保证原子性的处理。当然就不能保证原子性了。
+
+### 7.2.6 总结与思考
+
+我们介绍过了`volatile`关键字和`synchronized`关键字。现在我们知道，`synchronized`可以保证原子性、有序性和可见性。而`volatile`却只能保证有序性和可见性。
+
+那么，我们再来看一下双重校验锁实现的单例，已经使用了`synchronized`，为什么还需要`volatile`？
+
+```java
+public class Singleton {  
+    private volatile static Singleton singleton;  
+    private Singleton (){}  
+    public static Singleton getSingleton() {  
+    if (singleton == null) {  
+        synchronized (Singleton.class) {  
+        if (singleton == null) {  
+            singleton = new Singleton();  
+        }  
+        }  
+    }  
+    return singleton;  
+    }  
+}  
+```
+
+### 7.2.7 既生synchronized，何生volatile
+
+我们简单回顾一下相关内容：
+
+1、Java语言为了解决并发编程中存在的原子性、可见性和有序性问题，提供了一系列和并发处理相关的关键字，比如synchronized、volatile、final、concurren包等。([再有人问你Java内存模型是什么，就把这篇文章发给他](http://www.hollischuang.com/archives/2550))
+
+2、synchronized通过加锁的方式，使得其在需要原子性、可见性和有序性这三种特性的时候都可以作为其中一种解决方案，看起来是“万能”的。的确，大部分并发控制操作都能使用synchronized来完成。[再有人问你synchronized是什么，就把这篇文章发给他。](https://www.hollischuang.com/archives/2637)
+
+3、volatile通过在volatile变量的操作前后插入内存屏障的方式，保证了变量在并发场景下的可见性和有序性。[再有人问你volatile是什么，把这篇文章也发给他](https://www.hollischuang.com/archives/2673)
+
+4、volatile关键字是无法保证原子性的，而synchronized通过monitorenter和monitorexit两个指令，可以保证被synchronized修饰的代码在同一时间只能被一个线程访问，即可保证不会出现CPU时间片在多个线程间切换，即可保证原子性。[Java的并发编程中的多线程问题到底是怎么回事儿？](http://www.hollischuang.com/archives/2618)
+
+那么，我们知道，synchronized和volatile两个关键字是Java并发编程中经常用到的两个关键字，而且，通过前面的回顾，我们知道synchronized可以保证并发编程中不会出现原子性、可见性和有序性问题，而volatile只能保证可见性和有序性，那么，**既生synchronized、何生volatile？**
+
+####7.2.7.1 synchronized的问题
+
+我们都知道synchronized其实是一种加锁机制，那么既然是锁，天然就具备以下几个缺点：
+
+1、有性能损耗
+
+虽然在JDK 1.6中对synchronized做了很多优化，如如适应性自旋、锁消除、锁粗化、轻量级锁和偏向锁等（[深入理解多线程（五）—— Java虚拟机的锁优化技术](https://www.hollischuang.com/archives/2344)），但是他毕竟还是一种锁。
+
+以上这几种优化，都是尽量想办法避免对Monitor（[深入理解多线程（四）—— Moniter的实现原理](http://www.hollischuang.com/archives/2030)）进行加锁，但是，并不是所有情况都可以优化的，况且就算是经过优化，优化的过程也是有一定的耗时的。
+
+所以，无论是使用同步方法还是同步代码块，在同步操作之前还是要进行加锁，同步操作之后需要进行解锁，这个加锁、解锁的过程是要有性能损耗的。
+
+关于二者的性能对比，由于虚拟机对锁实行的许多消除和优化，使得我们很难量化这两者之间的性能差距，但是我们可以确定的一个基本原则是：**volatile变量的读操作的性能小号普通变量几乎无差别，但是写操作由于需要插入内存屏障所以会慢一些，即便如此，volatile在大多数场景下也比锁的开销要低。**
+
+2、产生阻塞
+
+我们在[深入理解多线程（一）——Synchronized的实现原理](http://www.hollischuang.com/archives/1883)中介绍过关于synchronize的实现原理，无论是同步方法还是同步代码块，无论是ACC_SYNCHRONIZED还是monitorenter、monitorexit都是基于Monitor实现的。
+
+基于Monitor对象，当多个线程同时访问一段同步代码时，首先会进入Entry Set，当有一个线程获取到对象的锁之后，才能进行The Owner区域，其他线程还会继续在Entry Set等待。并且当某个线程调用了wait方法后，会释放锁并进入Wait Set等待。
+
+![img](img/15660298698995.jpg)￼
+
+所以，synchronize实现的锁本质上是一种阻塞锁，也就是说多个线程要排队访问同一个共享对象。
+
+而volatile是Java虚拟机提供的一种轻量级同步机制，他是基于内存屏障实现的。说到底，他并不是锁，所以他不会有synchronized带来的阻塞和性能损耗的问题。
+
+#### 7.2.7.2 volatile的附加功能
+
+除了前面我们提到的volatile比synchronized性能好以外，volatile其实还有一个很好的附加功能，那就是禁止指令重排。
+
+我们先来举一个例子，看一下如果只使用synchronized而不使用volatile会发生什么问题，就拿我们比较熟悉的单例模式来看。
+
+我们通过双重校验锁的方式实现一个单例，这里不使用volatile关键字：
+
+```java
+ 1   public class Singleton {  
+ 2      private static Singleton singleton;  
+ 3       private Singleton (){}  
+ 4       public static Singleton getSingleton() {  
+ 5       if (singleton == null) {  
+ 6           synchronized (Singleton.class) {  
+ 7               if (singleton == null) {  
+ 8                   singleton = new Singleton();  
+ 9               }  
+ 10           }  
+ 11       }  
+ 12       return singleton;  
+ 13       }  
+ 14   }  
+```
+
+以上代码，我们通过使用synchronized对Singleton.class进行加锁，可以保证同一时间只有一个线程可以执行到同步代码块中的内容，也就是说singleton = new Singleton()这个操作只会执行一次，这就是实现了一个单例。
+
+但是，当我们在代码中使用上述单例对象的时候有可能发生空指针异常。这是一个比较诡异的情况。
+
+我们假设Thread1 和 Thread2两个线程同时请求Singleton.getSingleton方法的时候：
+
+![img](img/15660330700367.jpg)￼
+
+Step1 ,Thread1执行到第8行，开始进行对象的初始化。 Step2 ,Thread2执行到第5行，判断singleton == null。 Step3 ,Thread2经过判断发现singleton ！= null，所以执行第12行，返回singleton。 Step4 ,Thread2拿到singleton对象之后，开始执行后续的操作，比如调用singleton.call()。
+
+以上过程，看上去并没有什么问题，但是，其实，在Step4，Thread2在调用singleton.call()的时候，是有可能抛出空指针异常的。
+
+之所有会有NPE抛出，是因为在Step3，Thread2拿到的singleton对象并不是一个完整的对象。
+
+我们这里来分析一下，singleton = new Singleton();这行代码到底做了什么事情，大致过程如下：
+
+1、虚拟机遇到new指令，到常量池定位到这个类的符号引用。 2、检查符号引用代表的类是否被加载、解析、初始化过。 3、虚拟机为对象分配内存。 4、虚拟机将分配到的内存空间都初始化为零值。 5、虚拟机对对象进行必要的设置。 6、执行方法，成员变量进行初始化。 7、将对象的引用指向这个内存区域。
+
+我们把这个过程简化一下，简化成3个步骤：
+
+a、JVM为对象分配一块内存M b、在内存M上为对象进行初始化 c、将内存M的地址复制给singleton变量
+
+![img](img/15660328514676.jpg)￼
+
+因为将内存的地址赋值给singleton变量是最后一步，所以Thread1在这一步骤执行之前，Thread2在对singleton==null进行判断一直都是true的，那么他会一直阻塞，直到Thread1将这一步骤执行完。
+
+但是，以上过程并不是一个原子操作，并且编译器可能会进行重排序，如果以上步骤被重排成：
+
+a、JVM为对象分配一块内存M c、将内存的地址复制给singleton变量 b、在内存M上为对象进行初始化
+
+![img](img/15660329140984.jpg)￼
+
+这样的话，Thread1会先执行内存分配，在执行变量赋值，最后执行对象的初始化，那么，也就是说，在Thread1还没有为对象进行初始化的时候，Thread2进来判断singleton==null就可能提前得到一个false，则会返回一个不完整的sigleton对象，因为他还未完成初始化操作。
+
+这种情况一旦发生，我们拿到了一个不完整的singleton对象，当尝试使用这个对象的时候就极有可能发生NPE异常。
+
+那么，怎么解决这个问题呢？因为指令重排导致了这个问题，那就避免指令重排就行了。
+
+所以，volatile就派上用场了，因为volatile可以避免指令重排。只要将代码改成以下代码，就可以解决这个问题：
+
+```
+ 1   public class Singleton {  
+ 2      private volatile static Singleton singleton;  
+ 3       private Singleton (){}  
+ 4       public static Singleton getSingleton() {  
+ 5       if (singleton == null) {  
+ 6           synchronized (Singleton.class) {  
+ 7               if (singleton == null) {  
+ 8                   singleton = new Singleton();  
+ 9               }  
+ 10           }  
+ 11       }  
+ 12       return singleton;  
+ 13       }  
+ 14   }  
+```
+
+对singleton使用volatile约束，保证他的初始化过程不会被指令重排。
+
+#### 7.2.7.3 synchronized的有序性保证呢？
+
+看到这里可能有朋友会问了，说到底上面问题还是个有序性的问题，不是说synchronized是可以保证有序性的么，这里为什么就不行了呢？
+
+首先，可以明确的一点是：**synchronized是无法禁止指令重排和处理器优化的**。那么他是如何保证的有序性呢？
+
+这就要再把有序性的概念扩展一下了。Java程序中天然的有序性可以总结为一句话：如果在本线程内观察，所有操作都是天然有序的。如果在一个线程中观察另一个线程，所有操作都是无序的。
+
+以上这句话也是《深入理解Java虚拟机》中的原句，但是怎么理解呢？周志明并没有详细的解释。这里我简单扩展一下，这其实和as-if-serial语义有关。
+
+as-if-serial语义的意思指：不管怎么重排序，单线程程序的执行结果都不能被改变。编译器和处理器无论如何优化，都必须遵守as-if-serial语义。
+
+这里不对as-if-serial语义详细展开了，简单说就是，as-if-serial语义保证了单线程中，不管指令怎么重排，最终的执行结果是不能被改变的。
+
+那么，我们回到刚刚那个双重校验锁的例子，站在单线程的角度，也就是只看Thread1的话，因为编译器会遵守as-if-serial语义，所以这种优化不会有任何问题，对于这个线程的执行结果也不会有任何影响。
+
+但是，Thread1内部的指令重排却对Thread2产生了影响。
+
+那么，我们可以说，synchronized保证的有序性是多个线程之间的有序性，即被加锁的内容要按照顺序被多个线程执行。但是其内部的同步代码还是会发生重排序，只不过由于编译器和处理器都遵循as-if-serial语义，所以我们可以认为这些重排序在单线程内部可忽略。
+
+#### 7.2.7.4 总结
+
+本文从两方面论述了volatile的重要性以及不可替代性：
+
+一方面是因为**synchronized是一种锁机制，存在阻塞问题和性能问题，而volatile并不是锁(内存屏障)，所以不存在阻塞和性能问题。**
+
+另外一方面，因为volatile借助了内存屏障来帮助其解决可见性和有序性问题，而内存屏障的使用还为其带来了一个禁止指令重排的附件功能，所以在有些场景中是可以避免发生指令重排的问题的。
+
+
 
 下面是深入理解Java内存模型系列。
 
@@ -367,7 +894,7 @@ PS：这里还需要再重复一遍，Java多线程中，每个线程都有自�
 
 ### 8.1.1 并发编程模型的分类
 
-在并发编程中，我们需要处理两个关键问题：**线程之间如何通信及线程之间如何同步**（这里的线程是指并发执行的活动实体）。**通信是指线程之间以何种机制来交换信息。在命令式编程中，线程之间的通信机制有两种：共享内存和消息传递。**
+在并发编程中，我们需要处理两个关键问题：**线程之间如何通信及线程之间如何同步**（这里的线程是指并发执行的活动实体）。**通信是指线程之间以何种机制来交换信息。在命令式编程中，线程之间的通信机制有两种：共享内存和消息传递。**我们在[这篇文章](https://haojunsheng.github.io/2020/01/inter-process-communication/)也进行了讲解。
 
 在共享内存的并发模型里，线程之间共享程序的公共状态，线程之间通过写 - 读内存中的公共状态来隐式进行通信。在消息传递的并发模型里，线程之间没有公共状态，线程之间必须通过明确的发送消息来显式进行通信。
 
@@ -628,7 +1155,7 @@ JMM 对正确同步的多线程程序的内存一致性做了如下保证：
 
 现在我们再假设这两个线程没有做同步，下面是这个未同步程序在顺序一致性模型中的执行示意图：
 
-![img](https://static001.infoq.cn/resource/image/4f/13/4f5afaac60fff83522424ed5486f0d13.png)
+![image-20200221145414422](img/image-20200221145414422.png)
 
 未同步程序在顺序一致性模型中虽然整体执行顺序是无序的，但所有线程都只能看到一个一致的整体执行顺序。以上图为例，线程 A 和 B 看到的执行顺序都是：B1->A1->A2->B2->A3->B3。之所以能得到这个保证是因为顺序一致性内存模型中的每个操作必须立即对任意线程可见。
 
@@ -1467,32 +1994,3 @@ JSR-133 对 JDK5 之前的旧内存模型的修补主要有两个：
 [深入理解Java内存模型（七）——总结](http://www.infoq.com/cn/articles/java-memory-model-7)
 
 [Java 理论与实践: 修复 Java 内存模型，第 2 部分](https://www.ibm.com/developerworks/cn/java/j-jtp03304/)（拓展阅读）
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

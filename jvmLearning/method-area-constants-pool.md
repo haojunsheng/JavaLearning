@@ -39,7 +39,7 @@
 
 java为什么叫方法区：「码农翻身认为」所谓的面向对象，到了底层，都“退化”成了面向过程，就是一个个的方法，所以我猜这是方法区的由来。
 
-我的理解是：主要保存的是方法。
+我的理解是：主要保存的是方法。保存类的信息和编译器可以确定的值（指类的，方法的局部变量不用）。
 
 ## 1.1、相关特征
 
@@ -240,7 +240,7 @@ int a = 123;
 String s = "hollis";
 ```
 
-上面的代码事例中，123和hollis都 是字面量，a是变量。
+上面的代码事例中，123和hollis都 是字面量，a和s是符号引用。**符号引用主要是用来重定位的**。
 
 #### 符号引用
 
@@ -254,7 +254,7 @@ String s = "hollis";
 
 **方法的名称和描述符**
 
-这也就可以印证前面的常量池中还包含一些`com/hollis/HelloWorld`、`main`、`([Ljava/lang/String;)V`等常量的原因了。
+这也就可以印证前面的常量池中还包含一些`com/hollis/HelloWorld`、`main`、`([Ljava/lang/String;)V`等常量的原因了。**符号引用主要是用来重定位的**。
 
 ### 2.1.4 Class常量池有什么用
 
@@ -615,9 +615,7 @@ Worker接口的work()方法引用信息，JVM会使用CONSTANT_InterfaceMethodre
 
    1.CONSTANT_InterfaceMethodref_info 的tag 值为11，而CONSTANT_Methodref_info的tag值为10；
 
-   2. CONSTANT_InterfaceMethodref_info 描述的是接口中定义的方法，而CONSTANT_Methodref_info描述的是实例类中的方法；
-
-  
+   2. CONSTANT_InterfaceMethodref_info 描述的是接口中定义的方法，而CONSTANT_Methodref_info描述的是实例类中的方法；  
 
 小试牛刀
 关于方法的描述,完全相同CONSTANT_InterfaceMethodref_info和上述的CONSTANT_Methodref_info 结构体完全一致，这里就不单独为CONSTANT_InterfaceMethodref_info绘制结构图了，请读者依照CONSTANT_Methodref_info的描述，结合本例子关于Worker接口和Boss类的关系，使用javap -v Boss,查看常量池信息，然后根据常量池信息，自己动手绘制work() 方法在常量池中的结构。

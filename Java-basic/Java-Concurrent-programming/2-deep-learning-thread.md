@@ -42,15 +42,15 @@
 
 线程中的实体基本上不拥有系统资源，只是有一点必不可少的、能保证独立运行的资源。 线程的实体包括程序、数据和TCB。线程是动态概念，它的动态特性由线程控制块TCB（Thread Control Block）描述。TCB包括以下信息： （1）线程状态。 （2）当线程不运行时，被保存的现场资源。 （3）一组执行堆栈。 （4）存放每个线程的局部变量主存区。 （5）访问同一个进程中的主存和其它资源。 用于指示被执行指令序列的程序计数器、保留局部变量、少数状态参数和返回地址等的一组寄存器和堆栈。
 
-## 1.2 独立调度和分派的基本单位。
+## 1.2 独立调度和分派的基本单位
 
 在多线程操作系统中，线程是能独立运行的基本单位，因而也是独立调度和分派的基本单位。由于线程很“轻”，故线程的切换非常迅速且开销小（在同一进程中的）。
 
-## 1.3 可并发执行。
+## 1.3 可并发执行
 
 在一个进程中的多个线程之间，可以并发执行，甚至允许在一个进程中所有线程都能并发执行；同样，不同进程中的线程也能并发执行，充分利用和发挥了处理机与外围设备并行工作的能力。
 
-## 1.4 共享进程资源。
+## 1.4 共享进程资源
 
 在同一进程中的各个线程，都可以共享该进程所拥有的资源，这首先表现在：所有线程都具有相同的地址空间（进程的地址空间），这意味着，线程可以访问该地址空间的每一个虚地址；此外，还可以访问进程所拥有的已打开文件、定时器、信号量机构等。由于同一个进程内的线程共享内存和文件，所以线程之间互相通信不必调用内核。
 
@@ -115,7 +115,9 @@
 
 ![image-20200218221423128](img/image-20200218221423128.png)
 
-## 2.1 **wait(), notify(), notifyAll()等方法介绍**
+可以看到，图中的各个状态之间的流转路径上都有标注对应的Java中的方法。这些就是Java中进行线程调度的一些api。
+
+## 3.1 **wait(), notify(), notifyAll()等方法介绍**
 
 在Object.java中，定义了wait(), notify()和notifyAll()等接口。wait()的作用是让当前线程进入等待状态，同时，wait()也会让当前线程释放它所持有的锁。而notify()和notifyAll()的作用，则是唤醒当前对象上的等待线程；notify()是唤醒单个线程，而notifyAll()是唤醒所有的线程。
 
@@ -126,7 +128,7 @@ Object类中关于等待/唤醒的API详细信息如下：
 **wait(long timeout)**                    -- 让当前线程处于“等待(阻塞)状态”，“直到其他线程调用此对象的 notify() 方法或 notifyAll() 方法，或者超过指定的时间量”，当前线程被唤醒(进入“就绪状态”)。
 **wait(long timeout, int nanos)**  -- 让当前线程处于“等待(阻塞)状态”，“直到其他线程调用此对象的 notify() 方法或 notifyAll() 方法，或者其他某个线程中断当前线程，或者已超过某个实际时间量”，当前线程被唤醒(进入“就绪状态”)。
 
-## 2.2 为什么notify(), wait()等函数定义在Object中，而不是Thread中
+## 3.2 为什么notify(), wait()等函数定义在Object中，而不是Thread中
 
 Object中的wait(), notify()等函数，和synchronized一样，会对“对象的同步锁”进行操作。
 
@@ -137,11 +139,11 @@ OK，线程调用wait()之后，会释放它锁持有的“同步锁”；而且
 
 总之，notify(), wait()依赖于“同步锁”，而“同步锁”是对象锁持有，并且每个对象有且仅有一个！这就是为什么notify(), wait()等函数定义在Object类，而不是Thread类中的原因。
 
-## 2.3 **yield()介绍**
+## 3.3 **yield()介绍**
 
 **yield()的作用是让步。它能让当前线程由“运行状态”进入到“就绪状态”，从而让其它具有相同优先级的等待线程获取执行权；但是，并不能保证在当前线程调用yield()之后，其它具有相同优先级的线程就一定能获得执行权；也有可能是当前线程又进入到“运行状态”继续运行！**
 
-## 2.4 yield() 与 wait()的比较
+## 3.4 yield() 与 wait()的比较
 
 **我们知道，wait()的作用是让当前线程由“运行状态”进入“等待(阻塞)状态”的同时，也会释放同步锁。而yield()的作用是让步，它也会让当前线程离开“运行状态”。它们的区别是：(01) wait()是让线程由“运行状态”进入到“等待(阻塞)状态”，而不yield()是让线程由“运行状态”进入到“就绪状态”。(02) wait()是会线程释放它所持有对象的同步锁，而yield()方法不会释放锁。**
 
@@ -205,12 +207,12 @@ t2 [5]:9
 **结果说明**：
 主线程main中启动了两个线程t1和t2。t1和t2在run()会引用同一个对象的同步锁，即synchronized(obj)。在t1运行过程中，虽然它会调用Thread.yield()；但是，t2是不会获取cpu执行权的。因为，t1并没有释放“obj所持有的同步锁”！
 
-## 2.5 sleep()介绍
+## 3.5 sleep()介绍
 
 sleep() 定义在Thread.java中。
 sleep() 的作用是让当前线程休眠，即当前线程会从“[运行状态](http://www.cnblogs.com/skywang12345/p/3479024.html)”进入到“[休眠(阻塞)状态](http://www.cnblogs.com/skywang12345/p/3479024.html)”。sleep()会指定休眠时间，线程休眠的时间会大于/等于该休眠时间；在线程重新被唤醒时，它会由“[阻塞状态](http://www.cnblogs.com/skywang12345/p/3479024.html)”变成“[就绪状态](http://www.cnblogs.com/skywang12345/p/3479024.html)”，从而等待cpu的调度执行。
 
-## 2.6 **6. sleep() 与 wait()的比较**
+## 3.6 **sleep() 与 wait()的比较**
 
 **我们知道，wait()的作用是让当前线程由“运行状态”进入“等待(阻塞)状态”的同时，也会释放同步锁。而sleep()的作用是也是让当前线程由“运行状态”进入到“休眠(阻塞)状态”。但是，wait()会释放对象的同步锁，而sleep()则不会释放锁。下面通过示例演示sleep()是不会释放锁的。**
 
@@ -253,571 +255,364 @@ public class SleepLockTest{
 主线程main中启动了两个线程t1和t2。t1和t2在run()会引用同一个对象的同步锁，即synchronized(obj)。在t1运行过程中，虽然它会调用Thread.sleep(100)；但是，t2是不会获取cpu执行权的。因为，t1并没有释放“obj所持有的同步锁”！
 注意，若我们注释掉synchronized (obj)后再次执行该程序，t1和t2是可以相互切换的。
 
+# 4. 线程的调度
 
+在关于线程安全的文章中，我们提到过，对于单CPU的计算机来说，在任意时刻只能执行一条机器指令，每个线程只有获得CPU的使用权才能执行指令。
 
-# 3. 线程的调度
+所谓多线程的并发运行，其实是指从宏观上看，各个线程轮流获得CPU的使用权，分别执行各自的任务。
 
-一般线程调度模式分为两种——**抢占式调度和协同式调度**。抢占式调度指的是每条线程执行的时间、线程的切换都由系统控制，系统控制指的是在系统某种运行机制下，可能每条线程都分同样的执行时间片，也可能是某些线程执行的时间片较长，甚至某些线程得不到执行的时间片。在这种机制下，一个线程的堵塞不会导致整个进程堵塞。协同式调度指某一线程执行完后主动通知系统切换到另一线程上执行，这种模式就像接力赛一样，一个人跑完自己的路程就把接力棒交接给下一个人，下个人继续往下跑。线程的执行时间由线程本身控制，线程切换可以预知，不存在多线程同步问题，但它有一个致命弱点：如果一个线程编写有问题，运行到一半就一直堵塞，那么可能导致整个系统崩溃。
+前面关于线程状态的介绍中，我们知道，线程的运行状态中包含两种子状态，即就绪（READY）和运行中(RUNNING)。
 
-![](https://ws3.sinaimg.cn/large/006tKfTcly1g0jv2wlrhlj30et0a8755.jpg)
+而一个线程想要从就绪状态变成运行中状态，这个过程需要系统调度，即给线程分配CPU的使用权，获得CPU使用权的线程才会从就绪状态变成运行状态。
 
-左边为抢占式线程调度，假如三条线程需要运行，处理器运行的路径是在线程一运行一个时间片后强制切换到线程二运行一个时间片，然后切到线程三，再回到线程一，如此循环直至三条线程都执行完。而协同式线程调度则不这样走，它会先将线程一执行完，线程一再通知线程二执行，线程二再通知线程三，直到线程三执行完。
+**给多个线程按照特定的机制分配CPU的使用权的过程就叫做线程调度。**
 
+还记得在介绍进程和线程的区别的时候，我们提到过的一句话吗：进程是分配资源的基本单元，线程是CPU调度的基本单元。这里所说的调度指的就是给其分配CPU时间片，让其执行任务。
 
+## 4.1 Linux线程调度
 
-Java使用的是哪种线程调度模式？此问题涉及到JVM的实现，JVM规范中规定每个线程都有优先级，且优先级越高越优先执行，但优先级高并不代表能独自占用执行时间片，可能是优先级高得到越多的执行时间片，反之，优先级低的分到的执行时间少但不会分配不到执行时间。JVM的规范没有严格地给调度策略定义，**一般Java使用的线程调度是抢占式调度**，在JVM中体现为让可运行池中优先级高的线程拥有CPU使用权，如果可运行池中线程优先级一样则随机选择线程，但要注意的是实际上一个绝对时间点只有一个线程在运行（这里是相对于一个CPU来说），直到此线程进入非可运行状态或另一个具有更高优先级的线程进入可运行线程池，才会使之让出CPU的使用权。
+在Linux中，线程是由进程来实现，线程就是轻量级进程（ lightweight process ），因此在Linux中，线程的调度是按照进程的调度方式来进行调度的，也就是说线程是调度单元。
 
+Linux这样实现的线程的好处的之一是：线程调度直接使用进程调度就可以了，没必要再搞一个进程内的线程调度器。在Linux中，调度器是基于线程的调度策略（scheduling policy）和静态调度优先级（static scheduling priority）来决定那个线程来运行。
 
+在Linux中，主要有三种调度策略。分别是：
 
-# 4. 线程间通信
+- SCHED_OTHER 分时调度策略，（默认的）
+- SCHED_FIFO 实时调度策略，先到先服务
+- SCHED_RR 实时调度策略，时间片轮转
 
-## 4.1 介绍
+## 4.2 Windows线程调度
 
-本文总结我对于JAVA多线程中线程之间的通信方式的理解，主要以代码结合文字的方式来讨论线程间的通信，故摘抄了书中的一些示例代码。
+Windows 采用基于优先级的、抢占调度算法来调度线程。
 
-## 4.2 **线程间的通信方式**
+用于处理调度的 Windows 内核部分称为调度程序，Windows 调度程序确保具有最高优先级的线程总是在运行的。由于调度程序选择运行的线程会一直运行，直到被更高优先级的线程所抢占，或终止，或时间片已到，或调用阻塞系统调用（如 I/O）。如果在低优先级线程运行时，更高优先级的实时线程变成就绪，那么低优先级线程就被抢占。这种抢占使得实时线程在需要使用 CPU 时优先得到使用。
 
-**共享内存机制和消息通信机制。**
+## 4.3 Java线程调度
 
-### 4.2.1 **同步**
+可以看到，不同的操作系统，有不同的线程调度策略。但是，作为一个Java开发人员来说，我们日常开发过程中一般很少关注操作系统层面的东西。
 
-这里讲的同步是指多个线程通过synchronized关键字这种方式来实现线程间的通信。
+主要是因为Java程序都是运行在Java虚拟机上面的，而虚拟机帮我们屏蔽了操作系统的差异，所以我们说Java是一个跨平台语言。
 
-参考示例：
+**在操作系统中，一个Java程序其实就是一个进程。所以，我们说Java是单进程、多线程的！**
 
-```java
-public class MyObject {
+前面关于线程的实现也介绍过，Thread类与大部分的Java API有显著的差别，它的所有关键方法都是声明为Native的，也就是说，他需要根据不同的操作系统有不同的实现。
 
-    synchronized public void methodA() {
-        //do something....
-    }
+在Java的多线程程序中，为保证所有线程的执行能按照一定的规则执行，JVM实现了一个线程调度器，它定义了线程调度模型，对于CPU运算的分配都进行了规定，按照这些特定的机制为多个线程分配CPU的使用权。
 
-    synchronized public void methodB() {
-        //do some other thing
-    }
-}
+主要有两种调度模型：**协同式线程调度**和**抢占式调度模型**。
 
-public class ThreadA extends Thread {
+### 4.3.1 协同式线程调度
 
-    private MyObject object;
-//省略构造方法
-    @Override
-    public void run() {
-        super.run();
-        object.methodA();
-    }
-}
+协同式调度的多线程系统，线程的执行时间由线程本身来控制，线程把自己的工作执行完了之后，要主动通知系统切换到另外一个线程上。协同式多线程的最大好处是实现简单，而且由于线程要把自己的事情干完后才会进行线程切换，切换操作对线程自己是可知的，所以没有什么线程同步的问题。
 
-public class ThreadB extends Thread {
+### 4.3.2 抢占式调度模型
 
-    private MyObject object;
-//省略构造方法
-    @Override
-    public void run() {
-        super.run();
-        object.methodB();
-    }
-}
+抢占式调度的多线程系统，那么每个线程将由系统来分配执行时间，线程的切换不由线程本身来决定。在这种实现线程调度的方式下，线程的执行时间是系统可控的，也不会有一个线程导致整个进程阻塞的问题。
 
-public class Run {
-    public static void main(String[] args) {
-        MyObject object = new MyObject();
+系统会让可运行池中优先级高的线程占用CPU，如果可运行池中的线程优先级相同，那么就随机选择一个线程，使其占用CPU。处于运行状态的线程会一直运行，直至它不得不放弃CPU。
 
-        //线程A与线程B 持有的是同一个对象:object
-        ThreadA a = new ThreadA(object);
-        ThreadB b = new ThreadB(object);
-        a.start();
-        b.start();
-    }
-}
-```
+**Java虚拟机采用抢占式调度模型。**
 
-由于线程A和线程B持有同一个MyObject类的对象object，尽管这两个线程需要调用不同的方法，但是它们是同步执行的，比如：**线程B需要等待线程A执行完了methodA()方法之后，它才能执行methodB()方法。这样，线程A和线程B就实现了 通信。**
+虽然Java线程调度是系统自动完成的，但是我们还是可以“建议”系统给某些线程多分配一点执行时间，另外的一些线程则可以少分配一点——这项操作可以通过设置线程优先级来完成。Java语言一共设置了10个级别的线程优先级（Thread.MIN_PRIORITY至Thread.MAX_PRIORITY），在两个线程同时处于Ready状态时，优先级越高的线程越容易被系统选择执行。
 
-**这种方式，本质上就是“共享内存”式的通信。多个线程需要访问同一个共享变量，谁拿到了锁（获得了访问权限），谁就可以执行。**
+不过，线程优先级并不是太靠谱，原因是Java的线程是通过映射到系统的原生线程上来实现的，所以线程调度最终还是取决于操作系统，虽然现在很多操作系统都提供线程优先级的概念，但是并不见得能与Java线程的优先级一一对应。
 
-### 4.2.2 **while轮询的方式**
+## 4.4 小结
 
-代码如下：
+- 线程的特点
+  - 在多线程操作系统中，通常是在一个进程中包括多个线程，每个线程都是作为利用CPU的基本单位，是花费最小开销的实体。是一个独立调度和分派的基本单位，可并发执行并且是共享进程资源的。
+- 线程的实现
+  - 主流的操作系统都提供了线程实现，实现线程主要有3种方式：使用内核线程实现、使用用户线程实现和使用用户线程加轻量级进程混合实现。
+- Java线程的实现
+  - Java线程在JDK 1.2之前，是基于称为“绿色线程”（Green Threads）的用户线程实现的，而在JDK 1.2中，线程模型替换为基于操作系统原生线程模型来实现。
+  - 在目前的JDK版本中，操作系统支持怎样的线程模型，在很大程度上决定了Java虚拟机的线程是怎样映射的，这点在不同的平台上没有办法达成一致，虚拟机规范中也并未限定Java线程需要使用哪种线程模型来实现。
+- 线程状态
+  - 线程是有状态的，并且这些状态之间也是可以互相流转的。Java中线程的状态分为6种：初始(NEW)、运行(RUNNABLE)、阻塞(BLOCKED)、等待(WAITING)、超时等待(TIMED_WAITING)和终止(TERMINATED)。
+  - 其中运行(RUNNABLE)包含两种子状态，分别是就绪（READY）和运行中（RUNNING）
+- 线程调度
+  - 一个线程想要从就绪状态变成运行中状态，这个过程需要系统调度，即给线程分配CPU的使用权，获得CPU使用权的线程才会从就绪状态变成运行状态。给多个线程按照特定的机制分配CPU的使用权的过程就叫做线程调度。
+  - 不同的操作系统，有不同的线程调度策略。Java程序都是运行在Java虚拟机上面的，而虚拟机帮我们屏蔽了操作系统的差异。在Java的多线程程序中，为保证所有线程的执行能按照一定的规则执行，JVM实现了一个线程调度器，它定义了线程调度模型，对于CPU运算的分配都进行了规定，按照这些特定的机制为多个线程分配CPU的使用权。
+  - 主要有两种调度模型：协同式线程调度和抢占式调度模型。Java虚拟机采用抢占式调度模型。
 
-```java
- 1 import java.util.ArrayList;
- 2 import java.util.List;
- 3 
- 4 public class MyList {
- 5 
- 6     private List<String> list = new ArrayList<String>();
- 7     public void add() {
- 8         list.add("elements");
- 9     }
-10     public int size() {
-11         return list.size();
-12     }
-13 }
-14 
-15 import mylist.MyList;
-16 
-17 public class ThreadA extends Thread {
-18 
-19     private MyList list;
-20 
-21     public ThreadA(MyList list) {
-22         super();
-23         this.list = list;
-24     }
-25 
-26     @Override
-27     public void run() {
-28         try {
-29             for (int i = 0; i < 10; i++) {
-30                 list.add();
-31                 System.out.println("添加了" + (i + 1) + "个元素");
-32                 Thread.sleep(1000);
-33             }
-34         } catch (InterruptedException e) {
-35             e.printStackTrace();
-36         }
-37     }
-38 }
-39 
-40 import mylist.MyList;
-41 
-42 public class ThreadB extends Thread {
-43 
-44     private MyList list;
-45 
-46     public ThreadB(MyList list) {
-47         super();
-48         this.list = list;
-49     }
-50 
-51     @Override
-52     public void run() {
-53         try {
-54             while (true) {
-55                 if (list.size() == 5) {
-56                     System.out.println("==5, 线程b准备退出了");
-57                     throw new InterruptedException();
-58                 }
-59             }
-60         } catch (InterruptedException e) {
-61             e.printStackTrace();
-62         }
-63     }
-64 }
-65 
-66 import mylist.MyList;
-67 import extthread.ThreadA;
-68 import extthread.ThreadB;
-69 
-70 public class Test {
-71 
-72     public static void main(String[] args) {
-73         MyList service = new MyList();
-74 
-75         ThreadA a = new ThreadA(service);
-76         a.setName("A");
-77         a.start();
-78 
-79         ThreadB b = new ThreadB(service);
-80         b.setName("B");
-81         b.start();
-82     }
-83 }
-```
+下面主要包括线程优先级、守护线程、ThreadLoacal以及线程池等。
 
-在这种方式下，线程A不断地改变条件，线程ThreadB不停地通过while语句检测这个条件(list.size()==5)是否成立 ，从而实现了线程间的通信。但是**这种方式会浪费CPU资源**。之所以说它浪费资源，是因为JVM调度器将CPU交给线程B执行时，它没做啥“有用”的工作，只是在不断地测试 某个条件是否成立。*就类似于现实生活中，某个人一直看着手机屏幕是否有电话来了，而不是： 在干别的事情，当有电话来时，响铃通知TA电话来了。*关于线程的轮询的影响，[可参考：](http://www.cnblogs.com/hapjin/p/5467984.html)[JAVA多线程之当一个线程在执行死循环时会影响另外一个线程吗？](http://www.cnblogs.com/hapjin/p/5467984.html)
+# 5. 线程优先级
 
-这种方式还存在另外一个问题：
+我们学习过，Java虚拟机采用抢占式调度模型。也就是说他会给优先级更高的线程优先分配CPU。
 
-轮询的条件的可见性问题，关于内存可见性问题，可参考：[JAVA多线程之volatile 与 synchronized 的比较](http://www.cnblogs.com/hapjin/p/5492880.html)中的第一点“**一，volatile关键字的可见性**”
+虽然Java线程调度是系统自动完成的，但是我们还是可以“建议”系统给某些线程多分配一点执行时间，另外的一些线程则可以少分配一点——这项操作可以通过设置线程优先级来完成。
 
-线程都是先把变量读取到本地线程栈空间，然后再去再去修改的本地变量。因此，如果线程B每次都在取本地的 条件变量，那么尽管另外一个线程已经改变了轮询的条件，它也察觉不到，这样也会造成死循环。 
+Java语言一共设置了10个级别的线程优先级（Thread.MIN_PRIORITY至Thread.MAX_PRIORITY），在两个线程同时处于Ready状态时，优先级越高的线程越容易被系统选择执行。
 
-### 4.2.3 **wait/notify机制**
-
-代码如下：
-
-```java
- 1 import java.util.ArrayList;
- 2 import java.util.List;
- 3 
- 4 public class MyList {
- 5 
- 6     private static List<String> list = new ArrayList<String>();
- 7 
- 8     public static void add() {
- 9         list.add("anyString");
-10     }
-11 
-12     public static int size() {
-13         return list.size();
-14     }
-15 }
-16 
-17 
-18 public class ThreadA extends Thread {
-19 
-20     private Object lock;
-21 
-22     public ThreadA(Object lock) {
-23         super();
-24         this.lock = lock;
-25     }
-26 
-27     @Override
-28     public void run() {
-29         try {
-30             synchronized (lock) {
-31                 if (MyList.size() != 5) {
-32                     System.out.println("wait begin "
-33                             + System.currentTimeMillis());
-34                     lock.wait();
-35                     System.out.println("wait end  "
-36                             + System.currentTimeMillis());
-37                 }
-38             }
-39         } catch (InterruptedException e) {
-40             e.printStackTrace();
-41         }
-42     }
-43 }
-44 
-45 
-46 public class ThreadB extends Thread {
-47     private Object lock;
-48 
-49     public ThreadB(Object lock) {
-50         super();
-51         this.lock = lock;
-52     }
-53 
-54     @Override
-55     public void run() {
-56         try {
-57             synchronized (lock) {
-58                 for (int i = 0; i < 10; i++) {
-59                     MyList.add();
-60                     if (MyList.size() == 5) {
-61                         lock.notify();
-62                         System.out.println("已经发出了通知");
-63                     }
-64                     System.out.println("添加了" + (i + 1) + "个元素!");
-65                     Thread.sleep(1000);
-66                 }
-67             }
-68         } catch (InterruptedException e) {
-69             e.printStackTrace();
-70         }
-71     }
-72 }
-73 
-74 public class Run {
-75 
-76     public static void main(String[] args) {
-77 
-78         try {
-79             Object lock = new Object();
-80 
-81             ThreadA a = new ThreadA(lock);
-82             a.start();
-83 
-84             Thread.sleep(50);
-85 
-86             ThreadB b = new ThreadB(lock);
-87             b.start();
-88         } catch (InterruptedException e) {
-89             e.printStackTrace();
-90         }
-91     }
-92 }
-```
-
-线程A要等待某个条件满足时(list.size()==5)，才执行操作。线程B则向list中添加元素，改变list 的size。
-
-A,B之间如何通信的呢？也就是说，线程A如何知道 list.size() 已经为5了呢？
-
-这里用到了Object类的 wait() 和 notify() 方法。
-
-当条件未满足时(list.size() !=5)，线程A调用wait() 放弃CPU，并进入阻塞状态。---不像②while轮询那样占用CPU
-
-当条件满足时，线程B调用 notify()通知 线程A，所谓通知线程A，就是唤醒线程A，并让它进入可运行状态。
-
-这种方式的一个好处就是CPU的利用率提高了。
-
-但是也有一些缺点：比如，线程B先执行，一下子添加了5个元素并调用了notify()发送了通知，而此时线程A还执行；当线程A执行并调用wait()时，那它永远就不可能被唤醒了。因为，线程B已经发了通知了，以后不再发通知了。这说明：**通知过早，会打乱程序的执行逻辑。**
-
-### 4.2.4 **管道通信**
-
-就是使用java.io.PipedInputStream 和 java.io.PipedOutputStream进行通信
-
-具体就不介绍了。分布式系统中说的两种通信机制：**共享内存机制和消息通信机制**。感觉前面的①中的synchronized关键字和②中的while轮询 “属于” 共享内存机制，由于是轮询的条件使用了volatile关键字修饰时，这就表示它们通过判断这个“共享的条件变量“是否改变了，来实现进程间的交流。
-
-而管道通信，更像消息传递机制，也就是说：通过管道，将一个线程中的消息发送给另一个。
-
-
-
-# 4. 守护线程
-
-Java的线程分为两种：User Thread(用户线程)、DaemonThread(守护线程)。
-
-只要当前JVM实例中尚存任何一个非守护线程没有结束，守护线程就全部工作；只有当最后一个非守护线程结束是，守护线程随着JVM一同结束工作，Daemon作用是为其他线程提供便利服务，守护线程最典型的应用就是GC(垃圾回收器)，他就是一个很称职的守护者。
-
-User和Daemon两者几乎没有区别，唯一的不同之处就在于虚拟机的离开：如果 User Thread已经全部退出运行了，只剩下Daemon Thread存在了，虚拟机也就退出了。 因为没有了被守护者，Daemon也就没有工作可做了，也就没有继续运行程序的必要了。
-
-首先看一个例子，主线程中建立一个守护线程，当主线程结束时，守护线程也跟着结束。
+Java 线程优先级使用 1 ~ 10 的整数表示。默认的优先级是5。
 
 ```
-`package` `com.daemon;  ``  ` `import` `java.util.concurrent.TimeUnit;  ``  ` `public` `class` `DaemonThreadTest  ``{  ``    ``public` `static` `void` `main(String[] args)  ``    ``{  ``        ``Thread mainThread = ``new` `Thread(``new` `Runnable(){  ``            ``@Override` `            ``public` `void` `run()  ``            ``{  ``                ``Thread childThread = ``new` `Thread(``new` `ClildThread());  ``                ``childThread.setDaemon(``true``);  ``                ``childThread.start();  ``                ``System.out.println(``"I'm main thread..."``);  ``            ``}  ``        ``});  ``        ``mainThread.start();  ``    ``}  ``}  ``  ` `class` `ClildThread ``implements` `Runnable  ``{  ``    ``@Override` `    ``public` `void` `run()  ``    ``{  ``        ``while``(``true``)  ``        ``{  ``            ``System.out.println(``"I'm child thread.."``);  ``            ``try` `            ``{  ``                ``TimeUnit.MILLISECONDS.sleep(``1000``);  ``            ``}  ``            ``catch` `(InterruptedException e)  ``            ``{  ``                ``e.printStackTrace();  ``            ``}  ``        ``}  ``    ``}  ``}`
-```
-
-运行结果：
-
-```
-`I'm child thread..  ``I'm main thread...`
-```
-
-如果不何止childThread为守护线程，当主线程结束时，childThread还在继续运行，如下：
-
-```
-`package` `com.daemon;  ``  ` `import` `java.util.concurrent.TimeUnit;  ``  ` `public` `class` `DaemonThreadTest  ``{  ``    ``public` `static` `void` `main(String[] args)  ``    ``{  ``        ``Thread mainThread = ``new` `Thread(``new` `Runnable(){  ``            ``@Override` `            ``public` `void` `run()  ``            ``{  ``                ``Thread childThread = ``new` `Thread(``new` `ClildThread());  ``                ``childThread.setDaemon(``false``);  ``                ``childThread.start();  ``                ``System.out.println(``"I'm main thread..."``);  ``            ``}  ``        ``});  ``        ``mainThread.start();  ``    ``}  ``}  ``  ` `class` `ClildThread ``implements` `Runnable  ``{  ``    ``@Override` `    ``public` `void` `run()  ``    ``{  ``        ``while``(``true``)  ``        ``{  ``            ``System.out.println(``"I'm child thread.."``);  ``            ``try` `            ``{  ``                ``TimeUnit.MILLISECONDS.sleep(``1000``);  ``            ``}  ``            ``catch` `(InterruptedException e)  ``            ``{  ``                ``e.printStackTrace();  ``            ``}  ``        ``}  ``    ``}  ``}`
-```
-
-运行结果：
-
-```
-`I'm main thread...  ``I'm child thread..  ``I'm child thread..  ``I'm child thread..  ``I'm child thread..  ``I'm child thread..（无限输出）`
-```
-
-可以看到，当主线程结束时，childThread是非守护线程，就会无限的执行。
-
-守护线程有一个应用场景，就是当主线程结束时，结束其余的子线程（守护线程）自动关闭，就免去了还要继续关闭子线程的麻烦。不过博主推荐，如果真有这种场景，还是用中断的方式实现比较合理。
-
-还有补充一点，不是说当子线程是守护线程，主线程结束，子线程就跟着结束，这里的前提条件是：当前jvm应用实例中没有用户线程继续执行，如果有其他用户线程继续执行，那么后台线程不会中断，如下：
-
-```
-`package` `com.daemon;  ``  ` `import` `java.util.concurrent.TimeUnit;  ``  ` `public` `class` `DaemonThreadTest  ``{  ``    ``public` `static` `void` `main(String[] args)  ``    ``{  ``        ``Thread mainThread = ``new` `Thread(``new` `Runnable(){  ``            ``@Override` `            ``public` `void` `run()  ``            ``{  ``                ``Thread childThread = ``new` `Thread(``new` `ClildThread());  ``                ``childThread.setDaemon(``true``);  ``                ``childThread.start();  ``                ``System.out.println(``"I'm main thread..."``);  ``            ``}  ``        ``});  ``        ``mainThread.start();  ``          ` `        ``Thread otherThread = ``new` `Thread(``new` `Runnable(){  ``            ``@Override` `            ``public` `void` `run()  ``            ``{  ``                ``while``(``true``)  ``                ``{  ``                    ``System.out.println(``"I'm other user thread..."``);  ``                    ``try` `                    ``{  ``                        ``TimeUnit.MILLISECONDS.sleep(``1000``);  ``                    ``}  ``                    ``catch` `(InterruptedException e)  ``                    ``{  ``                        ``e.printStackTrace();  ``                    ``}  ``                ``}  ``            ``}  ``        ``});  ``        ``otherThread.start();  ``    ``}  ``}  ``  ` `class` `ClildThread ``implements` `Runnable  ``{  ``    ``@Override` `    ``public` `void` `run()  ``    ``{  ``        ``while``(``true``)  ``        ``{  ``            ``System.out.println(``"I'm child thread.."``);  ``            ``try` `            ``{  ``                ``TimeUnit.MILLISECONDS.sleep(``1000``);  ``            ``}  ``            ``catch` `(InterruptedException e)  ``            ``{  ``                ``e.printStackTrace();  ``            ``}  ``        ``}  ``    ``}  ``}`
-```
-
-运行结果：
-
-```
-`I'm other user thread...  ``I'm child thread..  ``I'm main thread...  ``I'm other user thread...  ``I'm child thread..  ``I'm other user thread...  ``I'm child thread..  ``I'm child thread..  ``I'm other user thread...  ``I'm other user thread...  ``I'm child thread..  ``I'm child thread..  ``I'm other user thread...  ``I'm other user thread...  ``I'm child thread..  ``I'm other user thread...  ``I'm child thread..  ``I'm other user thread...  ``I'm child thread..  ``I'm other user thread...  ``I'm child thread..  ``I'm other user thread...  ``I'm child thread..  ``I'm other user thread...  ``I'm child thread..  ``I'm other user thread...  ``I'm child thread..（无限输出）`
-```
-
-如果需要在主线程结束时，将子线程结束掉，可以采用如下的中断方式：
-
-```
-`package` `com.self;  ``  ` `import` `java.util.concurrent.ExecutorService;  ``import` `java.util.concurrent.Executors;  ``import` `java.util.concurrent.TimeUnit;  ``  ` `public` `class` `ThreadTest  ``{  ``  ` `    ``public` `static` `void` `main(String[] args)  ``    ``{  ``        ``Thread mainThread = ``new` `Thread(``new` `Runnable(){  ``            ``public` `void` `run()  ``            ``{  ``                ``System.out.println(``"主线程开始..."``);  ``                ``Thread sonThread = ``new` `Thread(``new` `Thread1(Thread.currentThread()));  ``                ``sonThread.setDaemon(``false``);  ``                ``sonThread.start();  ``                  ` `                ``try` `                ``{  ``                    ``TimeUnit.MILLISECONDS.sleep(``10000``);  ``                ``}  ``                ``catch` `(InterruptedException e)  ``                ``{  ``                    ``e.printStackTrace();  ``                ``}  ``                ``System.out.println(``"主线程结束"``);  ``            ``}  ``        ``});  ``        ``mainThread.start();  ``    ``}  ``      ` `}  ``  ` `class` `Thread1 ``implements` `Runnable  ``{  ``    ``private` `Thread mainThread;  ``      ` `    ``public` `Thread1(Thread mainThread)  ``    ``{  ``        ``this``.mainThread = mainThread;  ``    ``}  ``      ` `    ``@Override` `    ``public` `void` `run()  ``    ``{  ``        ``while``(mainThread.isAlive())  ``        ``{  ``            ``System.out.println(``"子线程运行中...."``);  ``            ``try` `            ``{  ``                ``TimeUnit.MILLISECONDS.sleep(``1000``);  ``            ``}  ``            ``catch` `(InterruptedException e)  ``            ``{  ``                ``e.printStackTrace();  ``            ``}  ``        ``}  ``    ``}  ``      ` `}`
-```
-
-运行结果：
-
-```
-`主线程开始...  ``子线程运行中....  ``子线程运行中....  ``子线程运行中....  ``子线程运行中....  ``子线程运行中....  ``子线程运行中....  ``子线程运行中....  ``子线程运行中....  ``子线程运行中....  ``子线程运行中....  ``子线程运行中....  ``主线程结束`
-```
-
-主线程结束
-
-回归正题，这里有几点需要注意：
-(1) thread.setDaemon(true)必须在thread.start()之前设置，否则会跑出一个IllegalThreadStateException异常。你不能把正在运行的常规线程设置为守护线程。
-(2) 在Daemon线程中产生的新线程也是Daemon的。
-(3) 不要认为所有的应用都可以分配给Daemon来进行服务，比如读写操作或者计算逻辑。
-写java多线程程序时，一般比较喜欢用java自带的多线程框架，比如ExecutorService，但是java的线程池会将守护线程转换为用户线程，所以如果要使用后台线程就不能用java的线程池。
-如下，线程池中将daemon线程转换为用户线程的程序片段：
-
-```
-`static` `class` `DefaultThreadFactory ``implements` `ThreadFactory {  ``    ``private` `static` `final` `AtomicInteger poolNumber = ``new` `AtomicInteger(``1``);  ``    ``private` `final` `ThreadGroup group;  ``    ``private` `final` `AtomicInteger threadNumber = ``new` `AtomicInteger(``1``);  ``    ``private` `final` `String namePrefix;  ``  ` `    ``DefaultThreadFactory() {  ``        ``SecurityManager s = System.getSecurityManager();  ``        ``group = (s != ``null``) ? s.getThreadGroup() :  ``                              ``Thread.currentThread().getThreadGroup();  ``        ``namePrefix = ``"pool-"` `+  ``                      ``poolNumber.getAndIncrement() +  ``                     ``"-thread-"``;  ``    ``}  ``  ` `    ``public` `Thread newThread(Runnable r) {  ``        ``Thread t = ``new` `Thread(group, r,  ``                              ``namePrefix + threadNumber.getAndIncrement(),  ``                              ``0``);  ``        ``if` `(t.isDaemon())  ``            ``t.setDaemon(``false``);  ``        ``if` `(t.getPriority() != Thread.NORM_PRIORITY)  ``            ``t.setPriority(Thread.NORM_PRIORITY);  ``        ``return` `t;  ``    ``}  ``}`
-```
-
-注意到，这里不仅会将守护线程转变为用户线程，而且会把优先级转变为Thread.NORM_PRIORITY。
-如下所示，将守护线程采用线程池的方式开启：
-
-```
-`package` `com.daemon;  ``  ` `import` `java.util.concurrent.ExecutorService;  ``import` `java.util.concurrent.Executors;  ``import` `java.util.concurrent.TimeUnit;  ``  ` `public` `class` `DaemonThreadTest  ``{  ``    ``public` `static` `void` `main(String[] args)  ``    ``{  ``        ``Thread mainThread = ``new` `Thread(``new` `Runnable(){  ``            ``@Override` `            ``public` `void` `run()  ``            ``{  ``                ``ExecutorService exec = Executors.newCachedThreadPool();  ``                ``Thread childThread = ``new` `Thread(``new` `ClildThread());  ``                ``childThread.setDaemon(``true``);  ``                ``exec.execute(childThread);  ``                ``exec.shutdown();  ``                ``System.out.println(``"I'm main thread..."``);  ``            ``}  ``        ``});  ``        ``mainThread.start();  ``    ``}  ``}  ``  ` `class` `ClildThread ``implements` `Runnable  ``{  ``    ``@Override` `    ``public` `void` `run()  ``    ``{  ``        ``while``(``true``)  ``        ``{  ``            ``System.out.println(``"I'm child thread.."``);  ``            ``try` `            ``{  ``                ``TimeUnit.MILLISECONDS.sleep(``1000``);  ``            ``}  ``            ``catch` `(InterruptedException e)  ``            ``{  ``                ``e.printStackTrace();  ``            ``}  ``        ``}  ``    ``}  ``}`
-```
-
-运行结果：
-
-```
-`I'm main thread...  ``I'm child thread..  ``I'm child thread..  ``I'm child thread..  ``I'm child thread..  ``I'm child thread..  ``I'm child thread..  ``I'm child thread..  ``I'm child thread..  ``I'm child thread..（无限输出）`
-```
-
-上面代码证实了线程池会将守护线程转变为用户线程。
-
-
-
-# 5. 幽灵线程
-
-# 6. 线程优先级
-
-## 6.1 优先级取值范围
-Java 线程优先级使用 1 ~ 10 的整数表示：
-
 最低优先级 1：Thread.MIN_PRIORITY
 
 最高优先级 10：Thread.MAX_PRIORITY
 
 普通优先级 5：Thread.NORM_PRIORITY
+```
 
-## 6.2 获取线程优先级
-public static void main(String[] args) {
-    System.out.println(Thread.currentThread().getPriority());
+在Java中，可以使用Thread类的`setPriority()`方法为线程设置了新的优先级。`getPriority()`方法返回线程的当前优先级。当创建一个线程时，其默认优先级是创建该线程的线程的优先级。
+
+以下代码演示如何设置和获取线程的优先：
+
+```java
+/**
+ * @author Hollis
+ */
+public class Main {
+
+    public static void main(String[] args) {
+        Thread t = Thread.currentThread();
+        System.out.println("Main Thread  Priority:" + t.getPriority());
+
+        Thread t1 = new Thread();
+        System.out.println("Thread(t1) Priority:" + t1.getPriority());
+        t1.setPriority(Thread.MAX_PRIORITY - 1);
+        System.out.println("Thread(t1) Priority:" + t1.getPriority());
+
+        t.setPriority(Thread.NORM_PRIORITY);
+        System.out.println("Main Thread  Priority:" + t.getPriority());
+
+        Thread t2 = new Thread();
+        System.out.println("Thread(t2) Priority:" + t2.getPriority());
+
+        // Change thread t2 priority to minimum
+        t2.setPriority(Thread.MIN_PRIORITY);
+        System.out.println("Thread(t2) Priority:" + t2.getPriority());
+    }
+
 }
+```
 
-运行结果： 
+输出结果为：
 
-![](https://ws4.sinaimg.cn/large/006tKfTcly1g0lzytni8gj30k202xt9d.jpg)
+```
+Main Thread  Priority:5
+Thread(t1) Priority:5
+Thread(t1) Priority:9
+Main Thread  Priority:5
+Thread(t2) Priority:5
+Thread(t2) Priority:1
+```
 
-## 6.3 设置优先级
-Java 使用 setPriority 方法设置线程优先级，方法签名
+在上面的代码中，Java虚拟机启动时，就会通过main方法启动一个线程，JVM就会一直运行下去，直到以下任意一个条件发生：
 
-public final void setPriority(int newPriority)
-示例：
+- 调用了exit()方法，并且exit()有权限被正常执行。
+- 所有的“非守护线程”都死了(即JVM中仅仅只有“守护线程”)。
 
-public static void main(String[] args) {
-    Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-    System.out.println(Thread.currentThread().getPriority());
-    Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-    System.out.println(Thread.currentThread().getPriority());
-    Thread.currentThread().setPriority(8);
-    System.out.println(Thread.currentThread().getPriority());
-}
-运行结果：
+关于exit，我们在后面的文章中再进行介绍，这里我们先来看看什么是守护线程。
 
-![](https://ws2.sinaimg.cn/large/006tKfTcly1g0lzzfbrn2j30k2041aar.jpg)
+# 6. 守护线程
 
-newPriority 设置范围在 1-10，否则抛出 java.lang.IllegalArgumentException 异常
+在Java中有两类线程：User Thread(用户线程)、Daemon Thread(守护线程) 。用户线程一般用户执行用户级任务，而守护线程也就是“后台线程”，一般用来执行后台任务，守护线程最典型的应用就是GC(垃圾回收器)。
 
-public static void main(String[] args) {
-    Thread.currentThread().setPriority(0);
-    System.out.println(Thread.currentThread().getPriority());
-}
-运行结果：
+这两种线程其实是没有什么区别的，唯一的区别就是Java虚拟机在所有“用户线程”都结束后就会退出。
 
-![](https://ws3.sinaimg.cn/large/006tKfTcly1g0lzzpsiv1j30k203l3zo.jpg)
+我们可以通过使用`setDaemon()`方法通过传递true作为参数，使线程成为一个守护线程。我们必须在启动线程之前调用一个线程的`setDaemon()`方法。否则，就会抛出一个`java.lang.IllegalThreadStateException`。
 
-## 6.4  默认线程优先级
-Java 默认的线程优先级是父线程的优先级，而非普通优先级Thread.NORM_PRIORITY，因为主线程默认优先级是普通优先级Thread.NORM_PRIORITY，所以如果不主动设置线程优先级，则新创建的线程的优先级就是普通优先级Thread.NORM_PRIORITY
+可以使用`isDaemon()`方法来检查线程是否是守护线程。
 
-class CustomThread extends Thread {
-    @Override
-    public void run() {
-        System.out.println("父线程优先级：" + this.getPriority());
-        Thread t = new Thread(new CustomRunnable());
-        System.out.println("子线程优先级：" + t.getPriority());
+```java
+/**
+ * @author Hollis
+ */
+public class Main {
+    public static void main(String[] args) {
+
+        Thread t1 = new Thread();
+        System.out.println(t1.isDaemon());
+        t1.setDaemon(true);
+        System.out.println(t1.isDaemon());
+        t1.start();
+        t1.setDaemon(false);
     }
 }
+```
 
-class CustomRunnable implements Runnable {
-    @Override
-    public void run() {
-        for (int i = 0; i < 10; i++) {
-            System.out.println("CustomRunnable : " + i);
-        }
+以上代码输出结果：
+
+```
+false
+true
+Exception in thread "main" java.lang.IllegalThreadStateException
+    at java.lang.Thread.setDaemon(Thread.java:1359)
+    at com.hollis.Main.main(Main.java:16)
+```
+
+我们提到，当JVM中只剩下守护线程的时候，JVM就会退出，那么写一段代码测试下：
+
+```java
+/**
+ * @author Hollis
+ */
+public class Main {
+    public static void main(String[] args) {
+
+        Thread childThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    System.out.println("I'm child thread..");
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        childThread.start();
+        System.out.println("I'm main thread...");
     }
 }
+```
 
-public static void main(String[] args) {
-    Thread t = new CustomThread();
-    t.setPriority(3);
-    t.start();
-}
-运行结果：
+以上代码中，我们在Main线程中开启了一个子线程，在并没有显示将其设置为守护线程的情况下，他是一个用户线程，代码比较好理解，就是子线程处于一个while(true)循环中，每隔一秒打印一次`I'm child thread..`
 
-![](https://ws1.sinaimg.cn/large/006tKfTcly1g0m007erlkj30k203edgl.jpg)
+输出结果为：
 
-## 6.5 线程调度
-高优先级的线程比低优先级的线程有更高的几率得到执行，实际上这和操作系统及虚拟机版本相关，有可能即使设置了线程的优先级也不会产生任何作用。
+```
+I'm main thread...
+I'm child thread..
+I'm child thread..
+.....
+I'm child thread..
+I'm child thread..
+```
 
-class CustomThread extends Thread {
-    public CustomThread(String name) {
-        super(name);
+我们再把子线程设置成守护线程，重新运行以上代码。
+
+```java
+/**
+ * @author Hollis
+ */
+public class Main {
+    public static void main(String[] args) {
+
+        Thread childThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    System.out.println("I'm child thread..");
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        childThread.setDaemon(true);
+        childThread.start();
+        System.out.println("I'm main thread...");
     }
-    @Override
-    public void run() {
-        for (int i = 0; i < 10; i++) {
-            System.out.println(Thread.currentThread().getName() + " : " + i);
-        }
-    }
 }
+```
 
-public static void main(String[] args) {
-    Thread t1 = new CustomThread("A");
-    Thread t2 = new CustomThread("B");
-    t1.setPriority(Thread.MIN_PRIORITY);
-    t2.setPriority(Thread.MAX_PRIORITY);
-    t1.start();
-    t2.start();
-}
-运行结果：
+以上代码，我们通过`childThread.setDaemon(true);`把子线程设置成守护线程，然后运行，得到以下结果：
 
-![](https://ws2.sinaimg.cn/large/006tKfTcly1g0m00luh9oj30k20cxab9.jpg)
+```
+I'm main thread...
+I'm child thread..
+```
 
-## 6.6 线程组的最大优先级
-我们可以设定线程组的最大优先级，当创建属于该线程组的线程时，新线程的优先级不能超过这个最大优先级
+子线程只打印了一次，也就是，在main线程执行结束后，由于子线程是一个守护线程，JVM就会直接退出了。
 
-系统线程组的最大优先级默认为 Thread.MAX_PRIORITY
+**值得注意的是，在Daemon线程中产生的新线程也是Daemon的。**
 
-创建线程组时最大优先级默认为父线程组（如果未指定父线程组，则其父线程组默认为当前线程所属线程组）的最大优先级
-
-可以通过 setPriority 更改最大优先级，但无法超过父线程组的最大优先级
-
-## 6.7 setPriority 注意事项
-该方法只能更改本线程组及其子线程组（递归）的最大优先级，但不能影响已经创建的直接或间接属于该线程组的线程的优先级，也就是说，即使目前有一个子线程的优先级比新设定的线程组优先级大，也不会更改该子线程的优先级。只有当试图改变子线程的优先级或者创建新的子线程的时候，线程组的最大优先级才起作用
-
-## 6.8 线程优先级的问题
-Thread.setPriority() 是否起作用和操作系统及虚拟机版本相关
-
-线程优先级对于不同的线程调度器可能有不同的含义，可能并不是你直观的推测。特别地，优先级并不一定是指CPU的分享。在UNIX系统，优先级或多或少可以认为是CPU的分配，但Windows不是这样
-
-线程的优先级通常是全局的和局部的优先级设定的组合。Java的 setPriority() 方法只应用于局部的优先级。换句话说，你不能在整个可能的范围内设定优先级，这通常是一种保护的方式，你大概不希望鼠标指针的线程或者处理音频数据的线程被其它随机的用户线程所抢占
-
-不同的系统有不同的线程优先级的取值范围，但是Java定义了10个级别（1-10）。这样就有可能出现几个线程在一个操作系统里有不同的优先级，在另外一个操作系统里却有相同的优先级，并因此可能有意想不到的行为
-
-操作系统可能（并通常这么做）根据线程的优先级给线程添加一些专有的行为，如 only give a quantum boost if the priority is below X，这里再重复一次，优先级的定义有部分在不同系统间有差别
-
-大多数操作系统的线程调度器实际上执行的是在战略的角度上对线程的优先级做临时操作，例如当一个线程接收到它所等待的一个事件或者 I/O，通常操作系统知道最多，试图手工控制优先级可能只会干扰这个系统
-
-应用程序通常不知道有哪些其它运行的线程，所以对于整个系统来说，变更一个线程的优先级所带来的影响是难于预测的，例如有一个预期为偶尔在后台运行的低优先级的线程几乎没有运行，原因是一个病毒监控程序在一个稍微高一点的优先级（但仍然低于普通的优先级）上运行，并且无法预计你程序的性能，它会根据你的客户使用的防病毒程序不同而不同。
-
-
+提到线程，有一个很重要的东西我们需要介绍一下，那就是ThreadLocal。
 
 # 7. ThreadLocal
 
- [ThreadLocal.md](ThreadLocal.md) 
+ThreadLocal是java.lang下面的一个类，是用来解决java多线程程序中并发问题的一种途径；通过为每一个线程创建一份共享变量的副本来保证各个线程之间的变量的访问和修改互相不影响；
 
-# 8. 线程池
+ThreadLocal存放的值是**线程内共享**的，**线程间互斥**的，主要用于线程内共享一些数据，避免通过参数来传递，这样处理后，能够优雅的解决一些实际问题。
 
- [Java线程池的实现原理.md](Java线程池的实现原理.md) 
+比如一次用户的页面操作请求，我们可以在最开始的filter中，把用户的信息保存在ThreadLocal中，在同一次请求中，在使用到用户信息，就可以直接到ThreadLocal中获取就可以了。
 
+还有一个典型的应用就是保存数据库连接，我们可以在第一次初始化Connection的时候，把他保存在ThreadLocal中。
 
+ThreadLocal有四个方法，分别为：
 
+- initialValue
+  - 返回此线程局部变量的初始值
+- get
+  - 返回此线程局部变量的当前线程副本中的值。如果这是线程第一次调用该方法，则创建并初始化此副本。
+- set
+  - 将此线程局部变量的当前线程副本中的值设置为指定值。许多应用程序不需要这项功能，它们只依赖于 initialValue() 方法来设置线程局部变量的值。
+- remove
+  - 移除此线程局部变量的值。
 
+Hibernate中的OpenSessionInView，就是使用ThreadLocal保存Session对象，还有我们经常用ThreadLocal存放Connection，代码如：
 
+```java
+/** 
+* 数据库连接管理类 
+*/  
+public class ConnectionManager {  
 
+  /** 线程内共享Connection，ThreadLocal通常是全局的，支持泛型 */  
+  private static ThreadLocal threadLocal = new ThreadLocal();  
 
+  public static Connection getCurrConnection() {  
+      // 获取当前线程内共享的Connection  
+      Connection conn = threadLocal.get();  
+      try {  
+          // 判断连接是否可用  
+          if(conn == null || conn.isClosed()) {  
+              // 创建新的Connection赋值给conn(略)  
+              // 保存Connection  
+              threadLocal.set(conn);  
+          }  
+      } catch (SQLException e) {  
+          // 异常处理  
+      }  
+      return conn;  
+  }  
 
+  /** 
+   * 关闭当前数据库连接 
+   */  
+  public static void close() {  
+      // 获取当前线程内共享的Connection  
+      Connection conn = threadLocal.get();  
+      try {  
+          // 判断是否已经关闭  
+          if(conn != null && !conn.isClosed()) {  
+              // 关闭资源  
+              conn.close();  
+              // 移除Connection  
+              threadLocal.remove();  
+              conn = null;  
+          }  
+      } catch (SQLException e) {  
+          // 异常处理  
+      }  
+  }  
+}  
+```
 
+本来想介绍一下ThreadLocal的原理，不过我在网上找到一篇不错的文章：http://www.jasongj.com/java/threadlocal/ ，大家可以去看下。
 
+前面介绍过了很多关于线程的基本知识，线程是我们在Java开发中经常遇到的，但是，线程虽然比进程更加轻量级，但是频繁的创建和销毁还是会有很多开销的。为了解决这样的问题，有一种技术就诞生了，那就是——池化技术。
 
+# 8. 池化技术
 
+前面提到一个名词——池化技术，那么到底什么是池化技术呢？
 
+池化技术简单点来说，就是提前保存大量的资源，以备不时之需。在机器资源有限的情况下，使用池化技术可以大大的提高资源的利用率，提升性能等。
 
+在编程领域，比较典型的池化技术有：
 
+线程池、连接池、内存池、对象池等。
 
+# 9. 线程池
 
+一种线程使用模式。线程过多会带来调度开销，进而影响缓存局部性和整体性能。而线程池维护着多个线程，等待着监督管理者分配可并发执行的任务。这避免了在处理短时间任务时创建与销毁线程的代价。
 
+线程池不仅能够保证内核的充分利用，还能防止过分调度。可用线程数量应该取决于可用的并发处理器、处理器内核、内存、网络sockets等的数量。 例如，线程数一般取cpu数量+2比较合适，线程数过多会导致额外的线程切换开销。
 
-
-
-
-
-
-
-
-
-
-
-
-
+关于线程池部分，后面还会有章节单独介绍其原理和正确的使用姿势。目前大家只要记住，使用线程池可以大大的节省开销就好了。
