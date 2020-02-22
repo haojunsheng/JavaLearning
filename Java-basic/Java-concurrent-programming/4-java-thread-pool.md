@@ -1,15 +1,15 @@
 <!--ts-->
-         * [池化技术](#池化技术)
-         * [线程池的简单使用](#线程池的简单使用)
-         * [添加一个任务](#添加一个任务)
-         * [添加worker线程](#添加worker线程)
-         * [worker线程处理队列任务](#worker线程处理队列任务)
-         * [总结](#总结)
-         * [Executors存在什么问题](#executors存在什么问题)
-         * [Executors为什么存在缺陷](#executors为什么存在缺陷)
-         * [创建线程池的正确姿势](#创建线程池的正确姿势)
+   * [1. 池化技术](#1-池化技术)
+   * [2. 线程池的简单使用](#2-线程池的简单使用)
+      * [2.1 添加一个任务](#21-添加一个任务)
+      * [2.2 添加worker线程](#22-添加worker线程)
+      * [2.4 worker线程处理队列任务](#24-worker线程处理队列任务)
+      * [2.5 总结](#25-总结)
+      * [2.6 Executors存在什么问题](#26-executors存在什么问题)
+      * [2.7 Executors为什么存在缺陷](#27-executors为什么存在缺陷)
+      * [2.8 创建线程池的正确姿势](#28-创建线程池的正确姿势)
 
-<!-- Added by: anapodoton, at: Fri Feb 21 23:34:24 CST 2020 -->
+<!-- Added by: anapodoton, at: Sat Feb 22 16:38:13 CST 2020 -->
 
 <!--te-->
 
@@ -23,7 +23,7 @@
 
 网上有不少介绍如何使用线程池的文章，那我想说点什么呢？我希望通过学习线程池原理，明白所有池化技术的基本设计思路。遇到其他相似问题可以解决。
 
-### 池化技术
+# 1. 池化技术
 
 前面提到一个名词——池化技术，那么到底什么是池化技术呢？
 
@@ -39,7 +39,7 @@
 
 在Java的并发编程中，线程是十分重要的，在Java中，创建一个线程比较简单：
 
-```
+```java
 public class App {
     public static void main(String[] args) throws Exception {
         new Thread(new Runnable() {
@@ -60,11 +60,11 @@ public class App {
 
 **这也就是池化技术的思想，通过预先创建好多个线程，放在池中，这样可以在需要使用线程的时候直接获取，避免多次重复创建、销毁带来的开销。**
 
-### 线程池的简单使用
+# 2. 线程池的简单使用
 
 以下代码，是在Java中创建线程池：
 
-```
+```java
 import java.util.concurrent.*;
 
 public class App {
@@ -93,7 +93,56 @@ Jdk提供给外部的接口也很简单。直接调用ThreadPoolExecutor构造�
 
 通常，一般构造函数会反映出这个工具或这个对象的数据存储结构。
 
-![img](img/15473584382878.jpg)￼
+```java
+/**
+ * Creates a new {@code ThreadPoolExecutor} with the given initial
+ * parameters.
+ *
+ * @param corePoolSize the number of threads to keep in the pool, even
+ *        if they are idle, unless {@code allowCoreThreadTimeOut} is set
+ * @param maximumPoolSize the maximum number of threads to allow in the
+ *        pool
+ * @param keepAliveTime when the number of threads is greater than
+ *        the core, this is the maximum time that excess idle threads
+ *        will wait for new tasks before terminating.
+ * @param unit the time unit for the {@code keepAliveTime} argument
+ * @param workQueue the queue to use for holding tasks before they are
+ *        executed.  This queue will hold only the {@code Runnable}
+ *        tasks submitted by the {@code execute} method.
+ * @param threadFactory the factory to use when the executor
+ *        creates a new thread
+ * @param handler the handler to use when execution is blocked
+ *        because the thread bounds and queue capacities are reached
+ * @throws IllegalArgumentException if one of the following holds:<br>
+ *         {@code corePoolSize < 0}<br>
+ *         {@code keepAliveTime < 0}<br>
+ *         {@code maximumPoolSize <= 0}<br>
+ *         {@code maximumPoolSize < corePoolSize}
+ * @throws NullPointerException if {@code workQueue}
+ *         or {@code threadFactory} or {@code handler} is null
+ */
+public ThreadPoolExecutor(int corePoolSize,
+                          int maximumPoolSize,
+                          long keepAliveTime,
+                          TimeUnit unit,
+                          BlockingQueue<Runnable> workQueue,
+                          ThreadFactory threadFactory,
+                          RejectedExecutionHandler handler) {
+    if (corePoolSize < 0 ||
+        maximumPoolSize <= 0 ||
+        maximumPoolSize < corePoolSize ||
+        keepAliveTime < 0)
+        throw new IllegalArgumentException();
+    if (workQueue == null || threadFactory == null || handler == null)
+        throw new NullPointerException();
+    this.corePoolSize = corePoolSize;
+    this.maximumPoolSize = maximumPoolSize;
+    this.workQueue = workQueue;
+    this.keepAliveTime = unit.toNanos(keepAliveTime);
+    this.threadFactory = threadFactory;
+    this.handler = handler;
+}￼
+```
 
 > 如果把线程池比作一个公司。公司会有正式员工处理正常业务，如果工作量大的话，会雇佣外包人员来工作。
 >
@@ -101,7 +150,6 @@ Jdk提供给外部的接口也很简单。直接调用ThreadPoolExecutor构造�
 >
 > 如果这时候还有任务处理不过来，就走需求池排任务。
 
-- acc : 获取调用上下文
 - corePoolSize: 核心线程数量，可以类比正式员工数量，常驻线程数量。
 - maximumPoolSize: 最大的线程数量，公司最多雇佣员工数量。常驻+临时线程数量。
 - workQueue：多余任务等待队列，再多的人都处理不过来了，需要等着，在这个地方等。
@@ -109,26 +157,180 @@ Jdk提供给外部的接口也很简单。直接调用ThreadPoolExecutor构造�
 - threadFactory: 创建线程的工厂，在这个地方可以统一处理创建的线程的属性。每个公司对员工的要求不一样，恩，在这里设置员工的属性。
 - handler：线程池拒绝策略，什么意思呢？就是当任务实在是太多，人也不够，需求池也排满了，还有任务咋办？默认是不处理，抛出异常告诉任务提交者，我这忙不过来了。
 
-### 添加一个任务
+## 2.1 添加一个任务
 
 接着，我们看一下线程池中比较重要的execute方法，该方法用于向线程池中添加一个任务。
 
-![img](img/15473584871974.jpg)￼
+```java
+/**
+ * Executes the given task sometime in the future.  The task
+ * may execute in a new thread or in an existing pooled thread.
+ *
+ * If the task cannot be submitted for execution, either because this
+ * executor has been shutdown or because its capacity has been reached,
+ * the task is handled by the current {@code RejectedExecutionHandler}.
+ *
+ * @param command the task to execute
+ * @throws RejectedExecutionException at discretion of
+ *         {@code RejectedExecutionHandler}, if the task
+ *         cannot be accepted for execution
+ * @throws NullPointerException if {@code command} is null
+ */
+public void execute(Runnable command) {
+    if (command == null)
+        throw new NullPointerException();
+    /*
+     * Proceed in 3 steps:
+     *
+     * 1. If fewer than corePoolSize threads are running, try to
+     * start a new thread with the given command as its first
+     * task.  The call to addWorker atomically checks runState and
+     * workerCount, and so prevents false alarms that would add
+     * threads when it shouldn't, by returning false.
+     *
+     * 2. If a task can be successfully queued, then we still need
+     * to double-check whether we should have added a thread
+     * (because existing ones died since last checking) or that
+     * the pool shut down since entry into this method. So we
+     * recheck state and if necessary roll back the enqueuing if
+     * stopped, or start a new thread if there are none.
+     *
+     * 3. If we cannot queue task, then we try to add a new
+     * thread.  If it fails, we know we are shut down or saturated
+     * and so reject the task.
+     */
+    int c = ctl.get();
+    if (workerCountOf(c) < corePoolSize) {
+        if (addWorker(command, true))
+            return;
+        c = ctl.get();
+    }
+    if (isRunning(c) && workQueue.offer(command)) {
+        int recheck = ctl.get();
+        if (! isRunning(recheck) && remove(command))
+            reject(command);
+        else if (workerCountOf(recheck) == 0)
+            addWorker(null, false);
+    }
+    else if (!addWorker(command, false))
+        reject(command);
+}
+```
 
-核心模块用红框标记了。 * 第一个红框：workerCountOf方法根据ctl的低29位，得到线程池的当前线程数，如果线程数小于corePoolSize，则执行addWorker方法创建新的线程执行任务；
+![image-20200222171930619](img/image-20200222171930619.png)￼
+
+核心模块用红框标记了。 
+
+- 第一个红框：workerCountOf方法根据ctl的低29位，得到线程池的当前线程数，如果线程数小于corePoolSize，则执行addWorker方法创建新的线程执行任务；
 
 - 第二个红框：判断线程池是否在运行，如果在，任务队列是否允许插入，插入成功再次验证线程池是否运行，如果不在运行，移除插入的任务，然后抛出拒绝策略。如果在运行，没有线程了，就启用一个线程。
 - 第三个红框：如果添加非核心线程失败，就直接拒绝了。
 
 这里逻辑稍微有点复杂，画了个流程图仅供参考
 
-![img](img/15473585066913.jpg)￼
+<img src="img/15473585066913.jpg" alt="img" style="zoom: 67%;" />￼
 
 接下来，我们看看如何添加一个工作线程的？
 
-### 添加worker线程
+## 2.2 添加worker线程
 
 从方法execute的实现可以看出：addWorker主要负责创建新的线程并执行任务，代码如下（这里代码有点长，没关系，也是分块的，总共有5个关键的代码块）：
+
+```java
+/**
+ * Checks if a new worker can be added with respect to current
+ * pool state and the given bound (either core or maximum). If so,
+ * the worker count is adjusted accordingly, and, if possible, a
+ * new worker is created and started, running firstTask as its
+ * first task. This method returns false if the pool is stopped or
+ * eligible to shut down. It also returns false if the thread
+ * factory fails to create a thread when asked.  If the thread
+ * creation fails, either due to the thread factory returning
+ * null, or due to an exception (typically OutOfMemoryError in
+ * Thread#start), we roll back cleanly.
+ *
+ * @param firstTask the task the new thread should run first (or
+ * null if none). Workers are created with an initial first task
+ * (in method execute()) to bypass queuing when there are fewer
+ * than corePoolSize threads (in which case we always start one),
+ * or when the queue is full (in which case we must bypass queue).
+ * Initially idle threads are usually created via
+ * prestartCoreThread or to replace other dying workers.
+ *
+ * @param core if true use corePoolSize as bound, else
+ * maximumPoolSize. (A boolean indicator is used here rather than a
+ * value to ensure reads of fresh values after checking other pool
+ * state).
+ * @return true if successful
+ */
+private boolean addWorker(Runnable firstTask, boolean core) {
+    retry:
+    for (;;) {
+        int c = ctl.get();
+        int rs = runStateOf(c);
+
+        // Check if queue empty only if necessary.
+        if (rs >= SHUTDOWN &&
+            ! (rs == SHUTDOWN &&
+               firstTask == null &&
+               ! workQueue.isEmpty()))
+            return false;
+
+        for (;;) {
+            int wc = workerCountOf(c);
+            if (wc >= CAPACITY ||
+                wc >= (core ? corePoolSize : maximumPoolSize))
+                return false;
+            if (compareAndIncrementWorkerCount(c))
+                break retry;
+            c = ctl.get();  // Re-read ctl
+            if (runStateOf(c) != rs)
+                continue retry;
+            // else CAS failed due to workerCount change; retry inner loop
+        }
+    }
+
+    boolean workerStarted = false;
+    boolean workerAdded = false;
+    Worker w = null;
+    try {
+        final ReentrantLock mainLock = this.mainLock;
+        w = new Worker(firstTask);
+        final Thread t = w.thread;
+        if (t != null) {
+            mainLock.lock();
+            try {
+                // Recheck while holding lock.
+                // Back out on ThreadFactory failure or if
+                // shut down before lock acquired.
+                int c = ctl.get();
+                int rs = runStateOf(c);
+
+                if (rs < SHUTDOWN ||
+                    (rs == SHUTDOWN && firstTask == null)) {
+                    if (t.isAlive()) // precheck that t is startable
+                        throw new IllegalThreadStateException();
+                    workers.add(w);
+                    int s = workers.size();
+                    if (s > largestPoolSize)
+                        largestPoolSize = s;
+                    workerAdded = true;
+                }
+            } finally {
+                mainLock.unlock();
+            }
+            if (workerAdded) {
+                t.start();
+                workerStarted = true;
+            }
+        }
+    } finally {
+        if (! workerStarted)
+            addWorkerFailed(w);
+    }
+    return workerStarted;
+}
+```
 
 ![img](https://www.hollischuang.com/wp-content/uploads/2019/01/15473585249788.jpg)￼
 
@@ -159,7 +361,7 @@ Jdk提供给外部的接口也很简单。直接调用ThreadPoolExecutor构造�
 
 一个hashSet。所以，线程池底层的存储结构其实就是一个HashSet。
 
-### worker线程处理队列任务
+## 2.4 worker线程处理队列任务
 
 ![img](img/15473585805259.jpg)￼
 
@@ -172,7 +374,7 @@ Jdk提供给外部的接口也很简单。直接调用ThreadPoolExecutor构造�
 
 到这里，源代码分析到此为止。接下来做一下简单的总结。
 
-### 总结
+## 2.5 总结
 
 所谓线程池本质是一个hashSet。多余的任务会放在阻塞队列中。
 
@@ -226,16 +428,13 @@ ExecutorService executor = Executors.newFixedThreadPool(nThreads) ;
 
 ![img](img/15406254121131.jpg)
 
-### Executors存在什么问题
+## 2.6 Executors存在什么问题
 
 在阿里巴巴Java开发手册中提到，使用Executors创建线程池可能会导致OOM(OutOfMemory ,内存溢出)，但是并没有说明为什么，那么接下来我们就来看一下到底为什么不允许使用Executors？
 
 我们先来一个简单的例子，模拟一下使用Executors导致OOM的情况。
 
 ```java
-/**
- * @author Hollis
- */
 public class ExecutorsDemo {
     private static ExecutorService executor = Executors.newFixedThreadPool(15);
     public static void main(String[] args) {
@@ -268,7 +467,7 @@ Exception in thread "main" java.lang.OutOfMemoryError: GC overhead limit exceede
 
 以上代码指出，`ExecutorsDemo.java`的第16行，就是代码中的`executor.execute(new SubThread());`。
 
-### Executors为什么存在缺陷
+## 2.7 Executors为什么存在缺陷
 
 通过上面的例子，我们知道了`Executors`创建的线程池存在OOM的风险，那么到底是什么原因导致的呢？我们需要深入`Executors`的源码来分析一下。
 
@@ -304,7 +503,7 @@ Java中的`BlockingQueue`主要有两种实现，分别是`ArrayBlockingQueue` �
 
 上面提到的问题主要体现在`newFixedThreadPool`和`newSingleThreadExecutor`两个工厂方法上，并不是说`newCachedThreadPool`和`newScheduledThreadPool`这两个方法就安全了，这两种方式创建的最大线程数可能是`Integer.MAX_VALUE`，而创建这么多线程，必然就有可能导致OOM。
 
-### 创建线程池的正确姿势
+## 2.8 创建线程池的正确姿势
 
 避免使用Executors创建线程池，主要是避免使用其中的默认实现，那么我们可以自己直接调用`ThreadPoolExecutor`的构造函数来自己创建线程池。在创建的同时，给`BlockQueue`指定容量就可以了。
 

@@ -31,7 +31,7 @@
 - 6、线程优先级
   - 虽然Java线程调度是系统自动完成的，但是我们还是可以通过设置优先级来“建议”系统给某些线程多分配一点执行时间，另外的一些线程则可以少分配一点
   - Java语言一共设置了10个级别的线程优先级（Thread.MIN_PRIORITY至Thread.MAX_PRIORITY），可以使用Thread类的setPriority()方法为线程设置了新的优先级。getPriority()方法返回线程的当前优先级。
-- 7、
+- 7、守护线程
   - 在Java中有两类线程：User Thread(用户线程)、Daemon Thread(守护线程) 。守护线程也就是“后台线程”，一般用来执行后台任务，守护线程最典型的应用就是GC(垃圾回收器)。
   - 可以通过使用setDaemon()方法通过传递true作为参数，可以使用isDaemon()方法来检查线程是否是守护线程。
   - Java虚拟机在所有“用户线程”都结束后就会退出。不会等待守护线程的执行。
@@ -51,9 +51,6 @@
 # 1. 继承Thread类创建线程
 
 ```java
-/**
- * @author Hollis
- */
 public class MultiThreads {
 
     public static void main(String[] args) throws InterruptedException {
@@ -76,11 +73,7 @@ class SubClassThread extends Thread {
 
 输出结果：
 
-```
-main
-继承Thread类创建线程
-Thread-0
-```
+![image-20200222144504501](img/image-20200222144504501.png)
 
 SubClassThread是一个继承了Thread类的子类，继承Thread类，并重写其中的run方法。然后new 一个SubClassThread的对象，并调用其start方法，即可启动一个线程。之后就会运行run中的代码。
 
@@ -118,11 +111,7 @@ class RunnableThread implements Runnable {
 
 输出结果：
 
-```
-main
-实现Runnable接口创建线程
-Thread-1
-```
+![image-20200222144717237](img/image-20200222144717237.png)
 
 通过实现接口，同样覆盖`run()`就可以创建一个新的线程了。
 
@@ -138,13 +127,19 @@ Thread-1
 
 自从Java 1.5开始，提供了Callable和Future，通过它们可以在任务执行完毕之后得到任务执行结果。
 
-```
+```java
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 public class MultiThreads {
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException,ExecutionException {
+        System.out.println(Thread.currentThread().getName());
+        System.out.println("通过Callable和FutureTask创建线程");
         CallableThread callableThread = new CallableThread();
         FutureTask futureTask = new FutureTask<>(callableThread);
         new Thread(futureTask).start();
         System.out.println(futureTask.get());
+    }
 }
 
 class CallableThread implements Callable {
@@ -153,18 +148,12 @@ class CallableThread implements Callable {
         System.out.println(Thread.currentThread().getName());
         return "Hollis";
     }
-
 }
 ```
 
 输出结果：
 
-```
-main
-通过Callable和FutureTask创建线程
-Thread-2
-Hollis
-```
+![image-20200222150556043](img/image-20200222150556043.png)
 
 Callable位于java.util.concurrent包下，它也是一个接口，在它里面也只声明了一个方法，只不过这个方法call()，和Runnable接口中的run()方法不同的是，call()方法有返回值。
 
@@ -180,7 +169,7 @@ FutureTask可用于异步获取执行结果或取消执行任务的场景。通�
 
 以上代码改造下就是如下内容：
 
-```
+```java
 public class MultiThreads {
     public static void main(String[] args) throws InterruptedException {
         CallableThread callableThread = new CallableThread();
@@ -202,6 +191,8 @@ public class MultiThreads {
 Java中提供了对线程池的支持，有很多种方式。Jdk提供给外部的接口也很简单。直接调用ThreadPoolExecutor构造一个就可以了：
 
 ```java
+import java.util.concurrent.*;
+
 public class MultiThreads {
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         System.out.println(Thread.currentThread().getName());
@@ -220,11 +211,7 @@ public class MultiThreads {
 
 输出结果：
 
-```
-main
-通过线程池创建线程
-pool-1-thread-1
-```
+![image-20200222151218023](img/image-20200222151218023.png)
 
 所谓线程池本质是一个hashSet。多余的任务会放在阻塞队列中。
 

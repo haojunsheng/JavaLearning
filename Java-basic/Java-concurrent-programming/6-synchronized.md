@@ -1,28 +1,28 @@
 <!--ts-->
    * [1. 初识synchronized](#1-初识synchronized)
-         * [什么是synchronized](#什么是synchronized)
-         * [synchronized 的用法](#synchronized-的用法)
-         * [synchronized 的实现原理](#synchronized-的实现原理)
-            * [同步方法实现原理](#同步方法实现原理)
-            * [同步代码块实现原理](#同步代码块实现原理)
-            * [synchronized 原理总结](#synchronized-原理总结)
-         * [Monitor 的实现原理](#monitor-的实现原理)
-            * [什么是 Monitor](#什么是-monitor)
-            * [Monitor 的代码实现](#monitor-的代码实现)
-         * [Monitor 原理总结](#monitor-原理总结)
-         * [总结](#总结)
+      * [1.1 什么是synchronized](#11-什么是synchronized)
+      * [1.2 synchronized 的用法](#12-synchronized-的用法)
+      * [1.3 synchronized 的实现原理](#13-synchronized-的实现原理)
+         * [1.3.1 同步方法实现原理](#131-同步方法实现原理)
+         * [1.3.2 同步代码块实现原理](#132-同步代码块实现原理)
+         * [1.3.3 synchronized 原理总结](#133-synchronized-原理总结)
+      * [1.4 Monitor 的实现原理](#14-monitor-的实现原理)
+         * [1.4.1 什么是 Monitor](#141-什么是-monitor)
+         * [1.4.2 Monitor 的代码实现](#142-monitor-的代码实现)
+         * [1.4.3 Monitor 原理总结](#143-monitor-原理总结)
+      * [1.5 总结](#15-总结)
    * [2. 进阶synchronized——如何保证线程安全？](#2-进阶synchronized如何保证线程安全)
-         * [synchronized与原子性](#synchronized与原子性)
-         * [synchronized与有序性](#synchronized与有序性)
-         * [synchronized与可见性](#synchronized与可见性)
-         * [总结](#总结-1)
+      * [2.1 synchronized与原子性](#21-synchronized与原子性)
+      * [2.2 synchronized与有序性](#22-synchronized与有序性)
+      * [2.3 synchronized与可见性](#23-synchronized与可见性)
+      * [2.4 总结](#24-总结)
    * [3. 拓展synchronized——锁优化](#3-拓展synchronized锁优化)
-         * [自旋锁](#自旋锁)
-         * [锁消除](#锁消除)
-         * [锁粗化](#锁粗化)
-         * [总结](#总结-2)
+      * [3.1 自旋锁](#31-自旋锁)
+      * [3.2 锁消除](#32-锁消除)
+      * [3.3 锁粗化](#33-锁粗化)
+      * [3.4 总结](#34-总结)
 
-<!-- Added by: anapodoton, at: Fri Feb 21 23:34:47 CST 2020 -->
+<!-- Added by: anapodoton, at: Sat Feb 22 18:16:16 CST 2020 -->
 
 <!--te-->
 
@@ -32,7 +32,7 @@
 
 在计算机内存模型的基础上，Java 语言又提供了 Java 内存模型来帮助 Java 开发者可以更好的处理并发编程问题。Java 内存模型，除了定义了一套规范外，还提供了一系列原语，封装了底层实现后，供开发者直接使用。这些原语就是 Java 中的很多关键字和很多并发处理的类。本章节就来介绍 Java 并发处理中最最常用的关键字——`synchronized`。
 
-### 什么是synchronized
+## 1.1 什么是synchronized
 
 `synchronized` 是 Java 中的一个很重要的关键字，主要用来加锁，`synchronized` 所添加的锁有以下几个特点。
 
@@ -43,7 +43,7 @@
 - 可重入性
   - 如果一个线程已经获得锁，在锁未释放之前，再次请求锁的时候，是必然可以获得锁的。
 
-### synchronized 的用法
+## 1.2 synchronized 的用法
 
 synchronized 的使用方法比较简单，主要可以用来修饰方法和代码块。根据其锁定的对象不同，可以用来定义同步方法和同步代码块。
 
@@ -99,7 +99,7 @@ public void doSth1(){
 
 PS：其实，类锁也是通过对象锁实现的，因为在 Java 中，万物皆对象。
 
-### synchronized 的实现原理
+## 1.3 synchronized 的实现原理
 
 了解了 `synchronized` 的用法之后，接下来，我们来介绍一下 `synchronized` 关键字的实现原理，看一看 `synchronized` 到底是如何加锁的。
 
@@ -162,7 +162,7 @@ public synchronized void doSth();
 
 对于同步方法，JVM 采用 `ACC_SYNCHRONIZED` 标记符来实现同步。 对于同步代码块。JVM 采用 `monitorenter`、`monitorexit` 两个指令来实现同步。
 
-#### 同步方法实现原理
+### 1.3.1 同步方法实现原理
 
 [The Java® Virtual Machine Specification](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-2.html#jvms-2.11.10) 中有关于方法级同步的介绍：
 
@@ -170,7 +170,7 @@ public synchronized void doSth();
 
 主要说的是： 方法级的同步是隐式的。同步方法的常量池中会有一个 `ACC_SYNCHRONIZED` 标志。当某个线程要访问某个方法的时候，会检查是否有 `ACC_SYNCHRONIZED`，如果有设置，则需要先获得监视器锁，然后开始执行方法，方法执行之后再释放监视器锁。这时如果其他线程来请求执行方法，会因为无法获得监视器锁而被阻断住。值得注意的是，如果在方法执行过程中，发生了异常，并且方法内部并没有处理该异常，那么在异常被抛到方法外面之前监视器锁会被自动释放。
 
-#### 同步代码块实现原理
+### 1.3.2 同步代码块实现原理
 
 同步代码块使用 `monitorenter` 和 `monitorexit` 两个指令实现。 [The Java® Virtual Machine Specification](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-6.html) 中有关于这两个指令的介绍：
 
@@ -192,7 +192,7 @@ public synchronized void doSth();
 
 大致内容如下： 可以把执行 `monitorenter` 指令理解为加锁，执行 `monitorexit` 理解为释放锁。 每个对象维护着一个记录着被锁次数的计数器。未被锁定的对象的该计数器为 0，当一个线程获得锁（执行 `monitorenter` ）后，该计数器自增变为 1 ，当同一个线程再次获得该对象的锁的时候，计数器再次自增。当同一个线程释放锁（执行 `monitorexit` 指令）的时候，计数器再自减。当计数器为 0 的时候。锁将被释放，其他线程便可以获得锁。
 
-#### synchronized 原理总结
+### 1.3.3 synchronized 原理总结
 
 同步方法通过 `ACC_SYNCHRONIZED` 关键字隐式的对方法进行加锁。当线程要执行的方法被标注上 `ACC_SYNCHRONIZED` 时，需要先获得锁才能执行该方法。
 
@@ -202,13 +202,13 @@ public synchronized void doSth();
 
 前面我们提到了无论是同步方法还是同步代码块，其实现其实都要依赖对象的监视器（Monitor），那么到底什么是 Monitor，Monitor 又是如何进行加锁和解锁的呢？
 
-### Monitor 的实现原理
+## 1.4 Monitor 的实现原理
 
 为了解决这类线程安全的问题，Java 提供了同步机制、互斥锁机制，这个机制保证了在同一时刻只有一个线程能访问共享资源。
 
 这个机制的保障来源于监视锁 Monitor，每个对象都拥有自己的监视锁 Monitor。当我们尝试获得对象的锁的时候，其实是对该对象拥有的 Monitor 进行操作。
 
-#### 什么是 Monitor
+### 1.4.1 什么是 Monitor
 
 先来举个例子，然后我们在上源码。我们可以把监视器理解为包含一个特殊的房间的建筑物，这个特殊房间同一时刻只能有一个客人（线程）。这个房间中包含了一些数据和代码。
 
@@ -226,7 +226,7 @@ Monitor 其实是一种同步工具，也可以说是一种同步机制，它通
 >
 > 通常提供 singal 机制：允许正持有“许可”的线程暂时放弃“许可”，等待某个谓词成真（条件变量），而条件成立后，当前进程可以“通知”正在等待这个条件变量的线程，让他可以重新去获得运行许可。
 
-#### Monitor 的代码实现
+### 1.4.2 Monitor 的代码实现
 
 在 Java 虚拟机(HotSpot)中，Monitor 是基于 C++ 实现的，由 [ObjectMonitor](https://github.com/openjdk-mirror/jdk7u-hotspot/blob/50bdefc3afe944ca74c3093e7448d6b889cd20d1/src/share/vm/runtime/objectMonitor.cpp) 实现的，其主要数据结构如下：
 
@@ -383,7 +383,7 @@ void      notifyAll(TRAPS);
 
 等方法。
 
-### Monitor 原理总结
+### 1.4.3 Monitor 原理总结
 
 上面介绍的就是 HotSpot 虚拟机中 Moniter 的的加锁以及解锁的原理。
 
@@ -395,7 +395,7 @@ void      notifyAll(TRAPS);
 
 所以，在 JDK1.6 中出现对锁进行了很多的优化，进而出现轻量级锁，偏向锁，锁消除，适应性自旋锁，锁粗化(自旋锁在 1.4 就有 只不过默认的是关闭的，JDK1.6 是默认开启的)，这些操作都是为了在线程之间更高效的共享数据 ，解决竞争问题。后面的文章会继续介绍这几种锁优化机制以及他们之间的关系。
 
-### 总结
+## 1.5 总结
 
 本文介绍了synchronized关键字，主要包括其用法和基本原理。
 
@@ -421,7 +421,7 @@ void      notifyAll(TRAPS);
 
 在前面的文章中，我们说过并发编程最大的挑战解决如何解决多个线程之前的原子性、有序性以及可见性。而synchronized作为Java并发模型中必不可少的一个关键字，那么他是如何解决这三个问题的呢，本文就来逐一分析一下。
 
-### synchronized与原子性
+## 2.1 synchronized与原子性
 
 原子性是指一个操作是不可中断的，要全部执行完成，要不就都不执行。
 
@@ -439,7 +439,7 @@ void      notifyAll(TRAPS);
 
 线程1在执行monitorenter指令的时候，会对Monitor进行加锁，加锁后其他线程无法获得锁，除非线程1主动解锁。即使在执行过程中，由于某种原因，比如CPU时间片用完，线程1放弃了CPU，但是，他并没有进行解锁。而由于synchronized的锁是可重入的，下一个时间片还是只能被他自己获取到，还是会继续执行代码。直到所有代码执行完。这就保证了原子性。
 
-### synchronized与有序性
+## 2.2 synchronized与有序性
 
 有序性即程序执行的顺序按照代码的先后顺序执行。
 
@@ -457,7 +457,7 @@ as-if-serial语义的意思指：不管怎么重排序，单线程程序的执�
 
 所以呢，由于synchronized修饰的代码，同一时间只能被同一线程访问。那么也就是单线程执行的。所以，可以保证其有序性。
 
-### synchronized与可见性
+## 2.3 synchronized与可见性
 
 可见性是指当多个线程访问同一个变量时，一个线程修改了这个变量的值，其他线程能够立即看得到修改的值。
 
@@ -469,7 +469,7 @@ Java内存模型规定了所有的变量都存储在主内存中，每条线程�
 
 所以，synchronized关键字锁住的对象，其值是具有可见性的。
 
-### 总结
+## 2.4 总结
 
 本文介绍了synchronized是如何保证多线程场景下的原子性、有序性以及可见性的。
 
@@ -497,7 +497,7 @@ Java内存模型规定了所有的变量都存储在主内存中，每条线程�
 
 这里简单说明一下，本文要介绍的这几个概念，以及后面要介绍的轻量级锁和偏向锁，其实对于使用他的开发者来说是屏蔽掉了的，也就是说，作为一个Java开发，你只需要知道你想在加锁的时候使用synchronized就可以了，具体的锁的优化是虚拟机根据竞争情况自行决定的。
 
-### 自旋锁
+## 3.1 自旋锁
 
 我们介绍的`synchronized`的实现方式时，说过，它是使用`Monitor`进行加锁，这是一种互斥锁，为了表示他对性能的影响我们称之为重量级锁。
 
@@ -528,7 +528,7 @@ Java内存模型规定了所有的变量都存储在主内存中，每条线程�
 
 由于自旋锁只是将当前线程不停地执行循环体，不进行线程状态的改变，所以响应速度更快。但当线程数不停增加时，性能下降明显，因为每个线程都需要执行，占用CPU时间。如果线程竞争不激烈，并且保持锁的时间短。适合使用自旋锁。
 
-### 锁消除
+## 3.2 锁消除
 
 除了自旋锁之后，JDK中还有一种锁的优化被称之为锁消除。还拿去银行取钱的例子说。
 
@@ -574,7 +574,7 @@ public void f() {
 
 总之，读者只需要知道，在使用`synchronized`的时候，如果JIT经过逃逸分析之后发现并无线程安全问题的话，就会做锁消除。
 
-### 锁粗化
+## 3.3 锁粗化
 
 很多人都知道，在代码中，需要加锁的时候，我们提倡尽量减小锁的粒度，这样可以避免不必要的阻塞。
 
@@ -614,7 +614,7 @@ synchronized(this){
 
 **这其实和我们要求的减小锁粒度并不冲突。减小锁粒度强调的是不要在银行柜台前做准备工作以及和办理业务无关的事情。而锁粗化建议的是，同一个人，要办理多个业务的时候，可以在同一个窗口一次性办完，而不是多次取号多次办理。**
 
-### 总结
+## 3.4 总结
 
 自Java 6/Java 7开始，Java虚拟机对内部锁的实现进行了一些优化。这些优化主要包括锁消除（Lock Elision）、锁粗化（Lock Coarsening）、偏向锁（Biased Locking）以及适应性自旋锁（Adaptive Locking）。这些优化仅在Java虚拟机server模式下起作用（即运行Java程序时我们可能需要在命令行中指定Java虚拟机参数“-server”以开启这些优化）。
 
