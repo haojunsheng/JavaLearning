@@ -37,11 +37,15 @@ GC参数、对象存活的判定、垃圾收集器（CMS、G1、ZGC、Epsilon）
 
 [即时编译器、编译优化](https://github.com/haojunsheng/JavaLearning/blob/master/jvmLearning/HotSpot.md)等相关知识。
 
-## 1.6 [类加载机制](https://github.com/haojunsheng/JavaLearning/blob/master/jvmLearning/class-loader.md)
+## 1.6 类加载机制
+
+[类加载机制](https://github.com/haojunsheng/JavaLearning/blob/master/jvmLearning/class-loader.md)
 
 双亲委派，破坏双亲委派。
 
-## 1.7 [常用Java命令](https://github.com/haojunsheng/JavaLearning/blob/master/jvmLearning/java-command.md)
+## 1.7 常用Java命令
+
+[常用Java命令](https://github.com/haojunsheng/JavaLearning/blob/master/jvmLearning/java-command.md)
 
 javac 、javap 、jps、jstack,jinfo、jstat 、jmap 、jhat
 
