@@ -1,23 +1,23 @@
 <!--ts-->
    * [前言](#前言)
-   * [<a href="https://www.hollischuang.com/archives/308" rel="nofollow">Java命令学习系列（零）——常见命令及Java Dump介绍</a>](#java命令学习系列零常见命令及java-dump介绍)
-      * [一、常用命令：](#一常用命令)
-      * [二、认识Java Dump：](#二认识java-dump)
-            * [什么是Java Dump？](#什么是java-dump)
-            * [Java Dump有什么用？](#java-dump有什么用)
-      * [三.制作Java Dump](#三制作java-dump)
-   * [1.<a href="https://www.hollischuang.com/archives/105" rel="nofollow">Java命令学习系列（一）——Jps</a>](#1java命令学习系列一jps)
+   * [Java命令学习系列（零）——常见命令及Java Dump介绍](#java命令学习系列零常见命令及java-dump介绍)
+      * [1. 常用命令：](#1-常用命令)
+      * [2. 认识Java Dump：](#2-认识java-dump)
+         * [2.1 什么是Java Dump？](#21-什么是java-dump)
+         * [2.2 Java Dump有什么用？](#22-java-dump有什么用)
+      * [3. 制作Java Dump](#3-制作java-dump)
+   * [1.Java命令学习系列（一）—Jps](#1java命令学习系列一jps)
       * [1.1位置](#11位置)
       * [1.2 功能](#12-功能)
       * [1.3 原理](#13-原理)
       * [1.4 使用](#14-使用)
       * [1.5 JPS失效处理](#15-jps失效处理)
       * [1.6 附：](#16-附)
-   * [2. <a href="https://www.hollischuang.com/archives/110" rel="nofollow">Java命令学习系列（二）——Jstack</a>](#2-java命令学习系列二jstack)
+   * [2. Java命令学习系列（二）——Jstack](#2-java命令学习系列二jstack)
       * [2.1 功能](#21-功能)
       * [2.2 线程状态](#22-线程状态)
-      * [2.2 Monitor](#22-monitor)
-      * [2.3 调用修饰](#23-调用修饰)
+      * [2.3 Monitor](#23-monitor)
+      * [2.4 调用修饰](#24-调用修饰)
       * [2.4 线程动作](#24-线程动作)
       * [2.5 线程Dump的分析](#25-线程dump的分析)
          * [2.5.1 原则](#251-原则)
@@ -26,33 +26,33 @@
       * [2.7 使用](#27-使用)
       * [2.8 死锁分析](#28-死锁分析)
       * [2.9 其他](#29-其他)
-   * [3. <a href="https://www.hollischuang.com/archives/303" rel="nofollow">Java命令学习系列（三）——Jmap</a>](#3-java命令学习系列三jmap)
+   * [3. Java命令学习系列（三）——Jmap](#3-java命令学习系列三jmap)
       * [3.1 什么是堆Dump](#31-什么是堆dump)
       * [3.2 基础知识](#32-基础知识)
       * [3.3 jmap](#33-jmap)
       * [3.4 举例](#34-举例)
       * [3.5 总结](#35-总结)
       * [3.6 错误总结](#36-错误总结)
-   * [4. <a href="https://www.hollischuang.com/archives/481" rel="nofollow">Java命令学习系列（四）——jstat</a>](#4-java命令学习系列四jstat)
+   * [4. Java命令学习系列（四）——jstat](#4-java命令学习系列四jstat)
       * [4.1 jstat 命令格式](#41-jstat-命令格式)
       * [4.2 参数解释：](#42-参数解释)
       * [4.3 option](#43-option)
       * [4.4 常见术语](#44-常见术语)
-   * [5. <a href="https://www.hollischuang.com/archives/1047" rel="nofollow">Java命令学习系列（五）——jhat</a>](#5-java命令学习系列五jhat)
+   * [5. Java命令学习系列（五）——jhat](#5-java命令学习系列五jhat)
       * [5.1 实例](#51-实例)
          * [5.1.1 一、导出dump文件](#511-一导出dump文件)
          * [5.1.2 二、解析Java堆转储文件,并启动一个 web server](#512-二解析java堆转储文件并启动一个-web-server)
-         * [5.1.3  三、分析](#513--三分析)
+         * [5.1.3  分析](#513--分析)
       * [5.2 用法摘要](#52-用法摘要)
       * [5.3 OQL](#53-oql)
-   * [6. <a href="https://www.hollischuang.com/archives/1094" rel="nofollow">Java命令学习系列（六）——jinfo</a>](#6-java命令学习系列六jinfo)
+   * [6. Java命令学习系列（六）——jinfo](#6-java命令学习系列六jinfo)
       * [6.1 用法摘要](#61-用法摘要)
       * [6.2 参考资料](#62-参考资料)
-   * [7. <a href="https://www.hollischuang.com/archives/1107" rel="nofollow">Java命令学习系列（七）——javap</a>](#7-java命令学习系列七javap)
+   * [7. Java命令学习系列（七）——javap](#7-java命令学习系列七javap)
       * [7.1 实例](#71-实例)
       * [7.2 用法摘要](#72-用法摘要)
       * [7.3 总结](#73-总结)
-   * [8. <a href="https://www.hollischuang.com/archives/1561" rel="nofollow">Java开发必须掌握的线上问题排查命令</a>](#8-java开发必须掌握的线上问题排查命令)
+   * [8. Java开发必须掌握的线上问题排查命令](#8-java开发必须掌握的线上问题排查命令)
       * [8.1 jps](#81-jps)
       * [8.2 jinfo](#82-jinfo)
       * [8.3 jstat](#83-jstat)
@@ -62,7 +62,7 @@
       * [8.7 常见问题定位过程](#87-常见问题定位过程)
       * [8.8 结语](#88-结语)
 
-<!-- Added by: anapodoton, at: Wed Feb 19 23:34:31 CST 2020 -->
+<!-- Added by: anapodoton, at: Mon Feb 24 15:52:14 CST 2020 -->
 
 <!--te-->
 
@@ -70,9 +70,11 @@
 
 java的常用命令十分的重要。
 
-# [Java命令学习系列（零）——常见命令及Java Dump介绍](https://www.hollischuang.com/archives/308)
+# Java命令学习系列（零）——常见命令及Java Dump介绍
 
-## 一、常用命令：
+[Java命令学习系列（零）——常见命令及Java Dump介绍](https://www.hollischuang.com/archives/308)
+
+## 1. 常用命令：
 
 在JDK的bin目彔下,包含了java命令及其他实用工具。
 
@@ -90,9 +92,9 @@ java的常用命令十分的重要。
 >
 > jvisualvm:功能强大的控制台。
 
-## 二、认识Java Dump：
+## 2. 认识Java Dump：
 
-#### 什么是Java Dump？
+### 2.1 什么是Java Dump？
 
 > Java虚拟机的运行时快照。将Java虚拟机运行时的状态和信息保存到文件。
 >
@@ -100,11 +102,11 @@ java的常用命令十分的重要。
 >
 > **堆Dump**,包含线程Dump,幵包含所有堆对象的状态。二进制格式。
 
-#### Java Dump有什么用？
+### 2.2 Java Dump有什么用？
 
 > 补足传统Bug分析手段的不足: 可在任何Java环境使用;信息量充足。 针对非功能正确性的Bug,主要为:多线程幵发、内存泄漏。
 
-## 三.制作Java Dump
+## 3. 制作Java Dump
 
 **使用Java虚拟机制作Dump**
 
@@ -133,7 +135,9 @@ java的常用命令十分的重要。
 
 ------
 
-# 1.[Java命令学习系列（一）——Jps](https://www.hollischuang.com/archives/105)
+# 1.Java命令学习系列（一）—Jps
+
+[Java命令学习系列（一）——Jps](https://www.hollischuang.com/archives/105)
 
 > jps位于jdk的bin目录下，其作用是显示当前系统的java进程情况，及其id号。 jps相当于Solaris进程工具ps。不象”gg”或”ps -ef grep java”，jps并不使用应用程序名来查找JVM实例。因此，**它查找所有的Java应用程序**，包括即使没有使用java执行体的那种（例如，定制的启动 器）。另外，**jps仅查找当前用户的Java进程**，而不是当前系统中的所有进程。
 
@@ -273,7 +277,9 @@ PS:jps命令有个地方很不好，似乎只能显示当前用户的java进程�
 
 **也可以直接使用命令行进行传递。**
 
-# 2. [Java命令学习系列（二）——Jstack](https://www.hollischuang.com/archives/110)
+# 2. Java命令学习系列（二）——Jstack
+
+[Java命令学习系列（二）——Jstack](https://www.hollischuang.com/archives/110)
 
 > jstack是java虚拟机自带的一种堆栈跟踪工具。
 
@@ -309,7 +315,7 @@ jstack用于生成java虚拟机当前时刻的线程快照。
 >
 > TERMINATED,已退出的。
 
-## 2.2 Monitor
+## 2.3 Monitor
 
 在多线程的 JAVA程序中，实现线程之间的同步，就要说说 Monitor。 **Monitor是 Java中用以实现线程之间的互斥与协作的主要手段**，它可以看成是对象或者 Class的锁。每一个对象都有，也仅有一个 monitor。下 面这个图，描述了线程和 Monitor之间关系，以 及线程的状态转换图：
 
@@ -330,7 +336,7 @@ synchronized(obj) {
 }
 ```
 
-## 2.3 调用修饰
+## 2.4 调用修饰
 
 表示线程在方法调用时,额外的重要的操作。线程Dump分析的重要信息。修饰上方的方法调用。
 
@@ -364,7 +370,7 @@ at com.jiuqi.dna.core.impl.ContextImpl.find
 at com.jiuqi.dna.bap.basedata.common.util.BaseDataCenter.findInfo
 ```
 
-通过synchronized关键字,没有获取到了对象的锁,线程在监视器的进入区等待。在调用栈顶出现,线程状态为Blocked。
+通过synchronized关键字,没有获取到了对象的锁,**线程在监视器的进入区等待**。在调用栈顶出现,线程状态为Blocked。
 
 **waiting on**
 
@@ -376,7 +382,7 @@ at com.jiuqi.dna.core.impl.WorkingManager.getWorkToDo
 at com.jiuqi.dna.core.impl.WorkingThread.run
 ```
 
-通过synchronized关键字,成功获取到了对象的锁后,调用了wait方法,进入对象的等待区等待。在调用栈顶出现,线程状态为WAITING或TIMED_WATING。
+通过synchronized关键字,成功获取到了对象的锁后,调用了wait方法,**进入对象的等待区等待**。在调用栈顶出现,线程状态为WAITING或TIMED_WATING。
 
 **parking to wait for**
 
@@ -552,7 +558,9 @@ hollis@hos:~$ jstack 29788
     at javaCommand.JStackDemo1.main(JStackDemo1.java:7)
 ```
 
-我们可以从这段堆栈信息中看出什么来呢？我们可以看到，当前一共有一条用户级别线程,线程处于runnable状态，执行到JStackDemo1.java的第七行。 看下面代码：
+我们可以从这段堆栈信息中看出什么来呢？我们可以看到，当前一共有一条用户级别线程,线程处于runnable状态，执行到JStackDemo1.java的第七行。
+
+ 看下面代码：
 
 ```java
 /**
@@ -656,41 +664,17 @@ class Suo {
 
 当我启动该程序时，我们看一下控制台：
 
-![thread_meitu_1](img/QQ20160118-0.png)
+![image-20200224150731618](img/image-20200224150731618.png)
 
 我们发现，程序只输出了两行内容，然后程序就不再打印其它的东西了，但是程序并没有停止。这样就产生了死锁。 当线程1使用`synchronized`锁住了o1的同时，线程2也是用`synchronized`锁住了o2。当两个线程都执行完第一个打印任务的时候，线程1想锁住o2，线程2想锁住o1。但是，线程1当前锁着o1，线程2锁着o2。所以两个想成都无法继续执行下去，就造成了死锁。
 
 然后，我们使用**jstack来看一下线程堆栈信息**：
 
-```
-Found one Java-level deadlock:
-=============================
-"Thread-1":
-  waiting to lock monitor 0x00007f0134003ae8 (object 0x00000007d6aa2c98, a java.lang.Object),
-  which is held by "Thread-0"
-"Thread-0":
-  waiting to lock monitor 0x00007f0134006168 (object 0x00000007d6aa2ca8, a java.lang.Object),
-  which is held by "Thread-1"
-
-Java stack information for the threads listed above:
-===================================================
-"Thread-1":
-    at javaCommand.DeadLockclass.run(JStackDemo.java:40)
-    - waiting to lock <0x00000007d6aa2c98> (a java.lang.Object)
-    - locked <0x00000007d6aa2ca8> (a java.lang.Object)
-    at java.lang.Thread.run(Thread.java:745)
-"Thread-0":
-    at javaCommand.DeadLockclass.run(JStackDemo.java:27)
-    - waiting to lock <0x00000007d6aa2ca8> (a java.lang.Object)
-    - locked <0x00000007d6aa2c98> (a java.lang.Object)
-    at java.lang.Thread.run(Thread.java:745)
-
-Found 1 deadlock.
-```
+![image-20200224151104032](img/image-20200224151104032.png)
 
 哈哈，堆栈写的很明显，它告诉我们 `Found one Java-level deadlock`，然后指出造成死锁的两个线程的内容。然后，又通过 `Java stack information for the threads listed above`来显示更详细的死锁的信息。 他说
 
-> Thread-1在想要执行第40行的时候，当前锁住了资源`<0x00000007d6aa2ca8>`,但是他在等待资源`<0x00000007d6aa2c98>` Thread-0在想要执行第27行的时候，当前锁住了资源`<0x00000007d6aa2c98>`,但是他在等待资源`<0x00000007d6aa2ca8>` 由于这两个线程都持有资源，并且都需要对方的资源，所以造成了死锁。 原因我们找到了，就可以具体问题具体分析，解决这个死锁了。
+> Thread-1在想要执行第36行的时候，当前锁住了资源`<0x00000007956ce2e8>`,但是他在等待资源`<0x00000007956ce2d8>` Thread-0在想要执行第23行的时候，当前锁住了资源`<0x00000007956ce2d8>`,但是他在等待资源`<0x00000007956ce2e8>` 由于这两个线程都持有资源，并且都需要对方的资源，所以造成了死锁。 原因我们找到了，就可以具体问题具体分析，解决这个死锁了。
 
 ## 2.9 其他
 
@@ -698,7 +682,9 @@ Found 1 deadlock.
 
 ------
 
-# 3. [Java命令学习系列（三）——Jmap](https://www.hollischuang.com/archives/303)
+# 3. Java命令学习系列（三）——Jmap
+
+ [Java命令学习系列（三）——Jmap](https://www.hollischuang.com/archives/303)
 
 > jmap是JDK自带的工具软件，主要用于打印指定Java进程(或核心文件、远程调试服务器)的共享对象内存映射或堆内存细节。可以使用jmap生成Heap Dump。在[Java命令学习系列（零）——常见命令及Java Dump介绍](http://www.hollischuang.com/archives/308)和[Java命令学习系列（二）——Jstack](http://www.hollischuang.com/archives/110)中分别有关于Java Dump以及线程 Dump的介绍。 **这篇文章主要介绍Java的堆Dump以及jamp命令**
 
@@ -749,7 +735,7 @@ where <option> is one of:
     -J<flag>             to pass <flag> directly to the runtime system
 ```
 
-> **指定进程号(pid)的进程** jmap [ option ] **指定核心文件** jmap [ option ] **指定远程调试服务器**jmap [ option ] [server-id@]
+指定进程号(pid)的进程** jmap [ option ] **指定核心文件** jmap [ option ] **指定远程调试服务器**jmap [ option ] [server-id@]
 
 ------
 
@@ -777,7 +763,7 @@ where <option> is one of:
 
 ## 3.4 举例
 
-**查看java 堆（heap）使用情况,**执行命令： `hollis@hos:~/workspace/design_apaas/apaasweb/control/bin$ jmap -heap 31846`
+**查看java 堆（heap）使用情况,**执行命令：  jmap -heap 31846
 
 ```shell
 Attaching to process ID 31846, please wait...
@@ -875,7 +861,9 @@ Error attaching to process: sun.jvm.hotspot.debugger.DebuggerException: Can’t 
 > 1. echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope 该方法在下次重启前有效。
 > 2. 永久有效方法 sudo vi /etc/sysctl.d/10-ptrace.conf 编辑下面这行: kernel.yama.ptrace_scope = 1 修改为: kernel.yama.ptrace_scope = 0 重启系统，使修改生效。
 
-# 4. [Java命令学习系列（四）——jstat](https://www.hollischuang.com/archives/481)
+# 4. Java命令学习系列（四）——jstat
+
+[Java命令学习系列（四）——jstat](https://www.hollischuang.com/archives/481)
 
 > jstat(JVM Statistics Monitoring Tool)是用于监控虚拟机各种运行状态信息的命令行工具。他可以显示本地或远程虚拟机进程中的类装载、内存、垃圾收集、JIT编译等运行数据，在没有GUI图形的服务器上，它是运行期定位虚拟机性能问题的首选工具。
 
@@ -921,6 +909,8 @@ count — 打印次数，如果缺省则打印无数次
 ```
 jstat -gc 5828 250 5
 ```
+
+![image-20200224153436959](img/image-20200224153436959.png)
 
 > 对于命令格式中的`VMID`与`LVMID`需要特别说明下：如果是本地虚拟机进程，`VMID`(Virtual Machine IDentifier,虚机标识符)和`LVMID`(Local Virtual Machine IDentifier,虚机标识符)是一致的，如果是远程虚拟机进程，那VMID的格式应当是：`[protocol:][//] lvmid [@hostname[:port]/servername]`
 
@@ -980,7 +970,9 @@ jstat -gc 5828 250 5
 
 ------
 
-# 5. [Java命令学习系列（五）——jhat](https://www.hollischuang.com/archives/1047)
+# 5. Java命令学习系列（五）——jhat
+
+[Java命令学习系列（五）——jhat](https://www.hollischuang.com/archives/1047)
 
 > jhat(Java Heap Analysis Tool),是一个用来分析java的堆情况的命令。之前的文章讲到过，使用[jmap](http://www.hollischuang.com/archives/303)可以生成Java堆的Dump文件。生成dump文件之后就可以用jhat命令，将dump文件转成html的形式，然后通过http访问可以查看堆情况。
 
@@ -1011,22 +1003,19 @@ public class JhatTest {
 
 **2、查看该进程的ID**
 
-```shell
-HollisMacBook-Air:apaas hollis$ jps -l
-68680 org.jetbrains.jps.cmdline.Launcher
-62247 com.intellij.rt.execution.application.AppMain
-69038 sun.tools.jps.Jps
-```
+jps -l
 
-使用[jps](http://www.hollischuang.com/archives/105)命令查看发现有三个java进程在运行，一个是我的IDEA使用的进程68680，一个是JPS命令使用的进程69038，另外一个就是上面那段代码运行的进程62247。
+![image-20200224153744765](img/image-20200224153744765.png)
+
+使用[jps](http://www.hollischuang.com/archives/105)命令查看发现有二个java进程在运行，一个是JPS命令使用的进程27356，另外一个就是上面那段代码运行的进程27355。
 
 **3、生成dump文件**
 
 ```shell
-HollisMacBook-Air:test hollis$ jmap -dump:format=b,file=heapDump 62247
-Dumping heap to /Users/hollis/workspace/test/heapDump ...
-Heap dump file created
+jmap -dump:format=b,file=heapDump 27355
 ```
+
+![image-20200224153850624](img/image-20200224153850624.png)
 
 以上命令可以将进程6900的堆dump文件导出到heapDump文件中。
 查看当前目录就能看到heapDump文件。
@@ -1041,18 +1030,9 @@ Heap dump file created
 
 ### 5.1.2 二、解析Java堆转储文件,并启动一个 web server
 
-```shell
-HollisMacBook-Air:apaas hollis$ jhat heapDump
-Reading from heapDump...
-Dump file created Thu Jan 21 18:59:51 CST 2016
-Snapshot read, resolving...
-Resolving 341297 objects...
-Chasing references, expect 68 dots....................................................................
-Eliminating duplicate references....................................................................
-Snapshot resolved.
-Started HTTP server on port 7000
-Server is ready.
-```
+jhat heapDump
+
+![image-20200224153915733](img/image-20200224153915733.png)
 
 使用jhat命令，就启动了一个http服务，端口是7000
 
@@ -1062,7 +1042,7 @@ Server is ready.
 
 ![QQ20160121-1](img/QQ20160121-1.png)
 
-### 5.1.3  三、分析
+### 5.1.3  分析
 
 在浏览器里面看到dump文件之后就可以进行分析了。这个页面会列出当前进程中的所有对像情况。
 
@@ -1159,7 +1139,9 @@ OQL帮助信息页面为: http://localhost:7000/oqlhelp/
 
 OQL的预发可以在帮助页面查看，这里就不详细讲解了。
 
-# 6. [Java命令学习系列（六）——jinfo](https://www.hollischuang.com/archives/1094)
+# 6. Java命令学习系列（六）——jinfo
+
+[Java命令学习系列（六）——jinfo](https://www.hollischuang.com/archives/1094)
 
 jinfo可以输出java进程、core文件或远程debug服务器的配置信息。这些配置信息包括JAVA系统参数及命令行参数,如果进程运行在64位虚拟机上，需要指明`-J-d64`参数，如：`jinfo -J-d64 -sysprops pid`
 
@@ -1216,7 +1198,9 @@ prints a help message
 
 [jinfo](http://docs.oracle.com/javase/7/docs/technotes/tools/share/jinfo.html)
 
-# 7. [Java命令学习系列（七）——javap](https://www.hollischuang.com/archives/1107)
+# 7. Java命令学习系列（七）——javap
+
+[Java命令学习系列（七）——javap](https://www.hollischuang.com/archives/1107)
 
 > javap是jdk自带的一个工具，可以对代码[反编译](http://www.hollischuang.com/archives/58)，也可以查看java编译器生成的字节码。
 
@@ -1339,7 +1323,9 @@ public class DocFooter extends java.applet.Applet {
 
 javap可以用于反编译和查看编译器编译后的字节码**。平时一般用`javap -c`比较多**，该命令用于列出每个方法所执行的JVM指令，并显示每个方法的字节码的实际作用。可以通过字节码和源代码的对比，深入分析java的编译原理，了解和解决各种Java原理级别的问题。
 
-# 8. [Java开发必须掌握的线上问题排查命令](https://www.hollischuang.com/archives/1561)
+# 8. Java开发必须掌握的线上问题排查命令
+
+[Java开发必须掌握的线上问题排查命令](https://www.hollischuang.com/archives/1561)
 
 作为一个合格的开发人员，不仅要能写得一手还代码，还有一项很重要的技能就是排查问题。这里提到的排查问题不仅仅是在coding的过程中debug等，还包括的就是线上问题的排查。由于在生产环境中，一般没办法debug（其实有些问题，debug也白扯。。。）,所以我们需要借助一些常用命令来查看运行时的具体情况，这些运行时信息包括但不限于运行日志、异常堆栈、堆使用情况、GC情况、JVM参数情况、线程情况等。
 
@@ -1467,15 +1453,11 @@ javap可以用于反编译和查看编译器编译后的字节码**。平时一�
 
 六、结合代码解决内存溢出或泄露问题。
 
-
-
 **死锁问题**
 
 一、使用`jps`查看线程ID
 
 二、使用`jstack 3331`：查看线程情况
-
-
 
 ## 8.8 结语
 

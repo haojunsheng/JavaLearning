@@ -1,6 +1,6 @@
 <!--ts-->
    * [前言](#前言)
-   * [1. <a href="https://www.hollischuang.com/archives/199" rel="nofollow">深度分析Java的ClassLoader机制（源码级别）</a>](#1-深度分析java的classloader机制源码级别)
+   * [1. 深度分析Java的ClassLoader机制（源码级别）](#1-深度分析java的classloader机制源码级别)
       * [1.1 源码分析](#11-源码分析)
       * [1.2 总结](#12-总结)
       * [1.3 类装载器ClassLoader（一个抽象类）描述一下JVM加载class文件的原理机制](#13-类装载器classloader一个抽象类描述一下jvm加载class文件的原理机制)
@@ -43,7 +43,7 @@
          * [4.4.3 对齐填充（Padding）](#443-对齐填充padding)
       * [4.5 对象的访问定位](#45-对象的访问定位)
 
-<!-- Added by: anapodoton, at: Thu Feb 20 17:08:11 CST 2020 -->
+<!-- Added by: anapodoton, at: Mon Feb 24 14:44:11 CST 2020 -->
 
 <!--te-->
 
@@ -55,7 +55,9 @@
 
 classLoader、类加载过程、双亲委派（破坏双亲委派）、模块化（jboss modules、osgi、jigsaw）
 
-# 1. [深度分析Java的ClassLoader机制（源码级别）](https://www.hollischuang.com/archives/199)
+# 1. 深度分析Java的ClassLoader机制（源码级别）
+
+[深度分析Java的ClassLoader机制（源码级别）](https://www.hollischuang.com/archives/199)
 
 > 写在前面：`Java`中的所有类，必须被装载到`jvm`中才能运行，这个装载工作是由`jvm`中的类装载器完成的，类装载器所做的工作实质是把类文件从硬盘读取到内存中，`JVM`在加载类的时候，都是通过`ClassLoader`的`loadClass（）`方法来加载class的，`loadClass`使用**双亲委派模式**。
 

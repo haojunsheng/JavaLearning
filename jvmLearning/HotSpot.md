@@ -36,28 +36,28 @@
       * [4.6 高级编译器调优](#46-高级编译器调优)
          * [4.6.1 编译线程](#461-编译线程)
       * [4.7 结束语](#47-结束语)
-   * [5. <a href="https://www.hollischuang.com/archives/2398" rel="nofollow">对象和数组并不是都在堆上分配内存的</a>](#5-对象和数组并不是都在堆上分配内存的)
+   * [5. 对象和数组并不是都在堆上分配内存的](#5-对象和数组并不是都在堆上分配内存的)
       * [5.1 JVM内存分配策略](#51-jvm内存分配策略)
       * [5.2 逃逸分析](#52-逃逸分析)
       * [5.3 对象的栈上内存分配](#53-对象的栈上内存分配)
       * [5.4 总结](#54-总结)
-   * [6. <a href="http://www.hollischuang.com/archives/2344" rel="nofollow">深入理解多线程（五）—— Java虚拟机的锁优化技术</a>（锁消除部分）](#6-深入理解多线程五-java虚拟机的锁优化技术锁消除部分)
+   * [6. 深入理解多线程（五）—— Java虚拟机的锁优化技术（锁消除部分）](#6-深入理解多线程五-java虚拟机的锁优化技术锁消除部分)
    * [7. Java Hotspot G1 GC的一些关键技术-美团](#7-java-hotspot-g1-gc的一些关键技术-美团)
-      * [前言](#前言-1)
-      * [G1中几个重要概念](#g1中几个重要概念)
-         * [Region](#region)
-         * [SATB](#satb)
-            * [RSet](#rset)
-         * [Pause Prediction Model](#pause-prediction-model)
-      * [GC过程](#gc过程)
-         * [G1 GC模式](#g1-gc模式)
-         * [GC日志](#gc日志)
-            * [Young GC日志](#young-gc日志)
-            * [global concurrent marking 日志](#global-concurrent-marking-日志)
-      * [后记](#后记)
-      * [参考文献](#参考文献)
+      * [7.1 前言](#71-前言)
+      * [7.2 G1中几个重要概念](#72-g1中几个重要概念)
+         * [7.2.1 Region](#721-region)
+         * [7.2.2 SATB](#722-satb)
+            * [7.2.2.1 RSet](#7221-rset)
+         * [7.2.3 Pause Prediction Model](#723-pause-prediction-model)
+      * [7.3 GC过程](#73-gc过程)
+         * [7.3.1 G1 GC模式](#731-g1-gc模式)
+         * [7.3.1 GC日志](#731-gc日志)
+            * [7.3.1.1 Young GC日志](#7311-young-gc日志)
+            * [7.3.1.2 global concurrent marking 日志](#7312-global-concurrent-marking-日志)
+      * [7.4 后记](#74-后记)
+      * [7.5 参考文献](#75-参考文献)
 
-<!-- Added by: anapodoton, at: Sun Feb 23 16:21:46 CST 2020 -->
+<!-- Added by: anapodoton, at: Mon Feb 24 14:22:29 CST 2020 -->
 
 <!--te-->
 
@@ -153,8 +153,6 @@ if (!constants->tag_at(index).is_unresolved_klass()) {
     } 
 }
 ```
-
-
 
 ## 1.2 对象的内存布局
 
@@ -753,7 +751,9 @@ Jstat 对 6006 号 ID 进程每 1000 毫秒执行一次： %jstat –printcompil
 
 参考：https://www.infoq.cn/article/OpenJDK-HotSpot-What-the-JIT/
 
-# 5. [对象和数组并不是都在堆上分配内存的](https://www.hollischuang.com/archives/2398)
+# 5. 对象和数组并不是都在堆上分配内存的
+
+ [对象和数组并不是都在堆上分配内存的](https://www.hollischuang.com/archives/2398)
 
 前段时间，给星球的球友们专门码了一篇文章《深入分析Java的编译原理》，其中深入的介绍了Java中的javac编译和JIT编译的区别及原理。并在文中提到：JIT编译除了具有缓存的功能外，还会对代码做各种优化，比如：逃逸分析、 锁消除、 锁膨胀、 方法内联、 空值检查消除、 类型检测   消除、 公共子表达式消除等。
 
@@ -931,7 +931,7 @@ static class User {
 
 那么你可以告诉他：不一定，随着JIT编译器的发展，在编译期间，如果JIT经过逃逸分析，发现有些对象没有逃逸出方法，那么有可能堆内存分配会被优化成栈内存分配。但是这也并不是绝对的。就像我们前面看到的一样，在开启逃逸分析之后，也并不是所有User对象都没有在堆上分配。
 
-# 6. [深入理解多线程（五）—— Java虚拟机的锁优化技术](http://www.hollischuang.com/archives/2344)（锁消除部分）
+# 6. 深入理解多线程（五）—— Java虚拟机的锁优化技术（锁消除部分）
 
 第五部分，锁消除部分。
 
@@ -941,7 +941,7 @@ static class User {
 
 [Java Hotspot G1 GC的一些关键技术](https://tech.meituan.com/2016/09/23/g1.html)
 
-## 前言
+## 7.1 前言
 
 G1 GC，全称Garbage-First Garbage Collector，通过-XX:+UseG1GC参数来启用，作为体验版随着JDK 6u14版本面世，在JDK 7u4版本发行时被正式推出，相信熟悉JVM的同学们都不会对它感到陌生。在JDK 9中，G1被提议设置为默认垃圾收集器（JEP 248）。在官网中，是这样描述G1的： > The Garbage-First (G1) collector is a server-style garbage collector, targeted for multi-processor machines with large memories. It meets garbage collection (GC) pause time goals with a high probability, while achieving high throughput. The G1 garbage collector is fully supported in Oracle JDK 7 update 4 and later releases. The G1 collector is designed for applications that: > * Can operate concurrently with applications threads like the CMS collector. > * Compact free space without lengthy GC induced pause times. > * Need more predictable GC pause durations. > * Do not want to sacrifice a lot of throughput performance. > * Do not require a much larger Java heap.
 
@@ -951,11 +951,11 @@ G1收集器的设计目标是取代CMS收集器，它同CMS相比，在以下方
 
 有了以上的特性，难怪有人说它是一款驾驭一切的垃圾收集器（[G1: One Garbage Collector To Rule Them All](http://www.infoq.com/articles/G1-One-Garbage-Collector-To-Rule-Them-All)）。本文带大家来了解一下G1 GC的一些关键技术，为能正确的使用它，做好理论基础的铺垫。
 
-## G1中几个重要概念
+## 7.2 G1中几个重要概念
 
 在G1的实现过程中，引入了一些新的概念，对于实现高吞吐、没有内存碎片、收集时间可控等功能起到了关键作用。下面我们就一起看一下G1中的这几个重要概念。
 
-### Region
+### 7.2.1 Region
 
 传统的GC收集器将连续的内存空间划分为新生代、老年代和永久代（JDK 8去除了永久代，引入了元空间Metaspace），这种划分的特点是各代的存储地址（逻辑地址，下同）是连续的。如下图所示：![传统GC内存布局](img/8a9db36e.png)
 
@@ -1011,7 +1011,7 @@ void HeapRegion::setup_heap_region_size(size_t initial_heap_size, size_t max_hea
 }
 ```
 
-### SATB
+### 7.2.2 SATB
 
 全称是Snapshot-At-The-Beginning，由字面理解，是GC开始时活着的对象的一个快照。它是通过Root Tracing得到的，作用是维持并发GC的正确性。 那么它是怎么维持并发GC的正确性的呢？根据三色标记算法，我们知道对象存在三种状态： * 白：对象没有被标记到，标记阶段结束后，会被当做垃圾回收掉。 * 灰：对象被标记了，但是它的field还没有被标记或标记完。 * 黑：对象被标记了，且它的所有field也被标记完了。
 
@@ -1047,7 +1047,7 @@ void G1SATBCardTableModRefBS::enqueue(oop pre_val) {
 
 SATB也是有副作用的，如果被替换的白对象就是要被收集的垃圾，这次的标记会让它躲过GC，这就是float garbage。因为SATB的做法精度比较低，所以造成的float garbage也会比较多。
 
-#### RSet
+#### 7.2.2.1 RSet
 
 全称是Remembered Set，是辅助GC过程的一种结构，典型的空间换时间工具，和Card Table有些类似。还有一种数据结构也是辅助GC的：Collection Set（CSet），它记录了GC要收集的Region集合，集合里的Region可以是任意年代的。在GC的时候，对于old->young和old->old的跨代对象引用，只要扫描对应的CSet中的RSet即可。 逻辑上说每个Region都有一个RSet，RSet记录了其他Region中的对象引用本Region中对象的关系，属于points-into结构（谁引用了我的对象）。而Card Table则是一种points-out（我引用了谁的对象）的结构，每个Card 覆盖一定范围的Heap（一般为512Bytes）。G1的RSet是在Card Table的基础上实现的：每个Region会记录下别的Region有指向自己的指针，并标记这些指针分别在哪些Card的范围内。 这个RSet其实是一个Hash Table，Key是别的Region的起始地址，Value是一个集合，里面的元素是Card Table的Index。
 
@@ -1069,7 +1069,7 @@ void oop_field_store(oop* field, oop new_value) {
 
 post-write barrier记录了跨Region的引用更新，更新日志缓冲区则记录了那些包含更新引用的Cards。一旦缓冲区满了，Post-write barrier就停止服务了，会由Concurrent refinement threads处理这些缓冲区日志。 RSet究竟是怎么辅助GC的呢？在做YGC的时候，只需要选定young generation region的RSet作为根集，这些RSet记录了old->young的跨代引用，避免了扫描整个old generation。 而mixed gc的时候，old generation中记录了old->old的RSet，young->old的引用由扫描全部young generation region得到，这样也不用扫描全部old generation region。所以RSet的引入大大减少了GC的工作量。
 
-### Pause Prediction Model
+### 7.2.3 Pause Prediction Model
 
 Pause Prediction Model 即停顿预测模型。它在G1中的作用是： >G1 uses a pause prediction model to meet a user-defined pause time target and selects the number of regions to collect based on the specified pause time target.
 
@@ -1120,11 +1120,11 @@ void AbsSeq::add(double val) {
 
 get_new_prediction就是我们开头说的方法，现在大家应该基本明白停顿预测模型的实现原理了。
 
-## GC过程
+## 7.3 GC过程
 
 讲完了一些基本概念，下面我们就来看看G1的GC过程是怎样的。
 
-### G1 GC模式
+### 7.3.1 G1 GC模式
 
 G1提供了两种GC模式，Young GC和Mixed GC，两种都是完全Stop The World的。 * Young GC：选定所有年轻代里的Region。通过控制年轻代的region个数，即年轻代内存大小，来控制young GC的时间开销。 * Mixed GC：选定所有年轻代里的Region，外加根据global concurrent marking统计得出收集收益高的若干老年代Region。在用户指定的开销目标范围内尽可能选择收益高的老年代Region。
 
@@ -1148,11 +1148,11 @@ Young GC发生的时机大家都知道，那什么时候发生Mixed GC呢？其�
 | -XX:ConcGCThreads=n                | 并发标记阶段，并行执行的线程数                               |
 | -XX:InitiatingHeapOccupancyPercent | 设置触发标记周期的 Java 堆占用率阈值。默认值是45%。这里的java堆占比指的是non_young_capacity_bytes，包括old+humongous |
 
-### GC日志
+### 7.3.1 GC日志
 
 G1收集器的日志与其他收集器有很大不同，源于G1独立的体系架构和数据结构，下面这两段日志来源于美团点评的CRM系统线上生产环境。
 
-#### Young GC日志
+#### 7.3.1.1 Young GC日志
 
 我们先来看看Young GC的日志：
 
@@ -1203,7 +1203,7 @@ Heap after GC invocations=13 (full 1):
 
 每个过程的作用如下： * garbage-first heap total 3145728K, used 336645K [0x0000000700000000, 0x00000007c0000000, 0x00000007c0000000) 这行表示使用了G1垃圾收集器，total heap 3145728K，使用了336645K。 * region size 1024K, 172 young (176128K), 13 survivors (13312K) Region大小为1M，青年代占用了172个（共176128K），幸存区占用了13个（共13312K）。 * Metaspace used 29944K, capacity 30196K, committed 30464K, reserved 1077248K class space used 3391K, capacity 3480K, committed 3584K, reserved 1048576K java 8的新特性，去掉永久区，添加了元数据区，这块不是本文重点，不再赘述。需要注意的是，之所以有committed和reserved，是因为没有设置MetaspaceSize=MaxMetaspaceSize。 * [GC pause (G1 Evacuation Pause) (young) GC原因，新生代minor GC。 * [G1Ergonomics (CSet Construction) start choosing CSet, _pending_cards: 1461, predicted base time: 35.25 ms, remaining time: 64.75 ms, target pause time: 100.00 ms] 发生minor GC和full GC时，所有相关region都是要回收的。而发生并发GC时，会根据目标停顿时间动态选择部分垃圾对并多的Region回收，这一步就是选择Region。_pending_cards是关于RSet的Card Table。predicted base time是预测的扫描card table时间。 * [G1Ergonomics (CSet Construction) add young regions to CSet, eden: 159 regions, survivors: 13 regions, predicted young region time: 44.09 ms] 这一步是添加Region到collection set，新生代一共159个Region，13个幸存区Region，这也和之前的（172 young (176128K), 13 survivors (13312K)）吻合。预计收集时间是44.09 ms。 * [G1Ergonomics (CSet Construction) finish choosing CSet, eden: 159 regions, survivors: 13 regions, old: 0 regions, predicted pause time: 79.34 ms, target pause time: 100.00 ms] 这一步是对上面两步的总结。预计总收集时间79.34ms。 * [Parallel Time: 8.1 ms, GC Workers: 4] 由于收集过程是多线程并行（并发）进行，这里是4个线程，总共耗时8.1ms（wall clock time） * [GC Worker Start (ms): Min: 27884.5, Avg: 27884.5, Max: 27884.5, Diff: 0.1] 收集线程开始的时间，使用的是相对时间，Min是最早开始时间，Avg是平均开始时间，Max是最晚开始时间，Diff是Max-Min（此处的0.1貌似有问题） * [Ext Root Scanning (ms): Min: 0.4, Avg: 0.8, Max: 1.2, Diff: 0.8, Sum: 3.1] 扫描Roots花费的时间，Sum表示total cpu time，下同。 * [Update RS (ms): Min: 0.0, Avg: 0.3, Max: 0.6, Diff: 0.6, Sum: 1.4] [Processed Buffers: Min: 0, Avg: 2.8, Max: 5, Diff: 5, Sum: 11] Update RS (ms)是每个线程花费在更新Remembered Set上的时间。 * [Scan RS (ms): Min: 0.0, Avg: 0.1, Max: 0.1, Diff: 0.1, Sum: 0.3] 扫描CS中的region对应的RSet，因为RSet是points-into，所以这样实现避免了扫描old generadion region，但是会产生float garbage。 * [Code Root Scanning (ms): Min: 0.0, Avg: 0.1, Max: 0.2, Diff: 0.2, Sum: 0.6] 扫描code root耗时。code root指的是经过JIT编译后的代码里，引用了heap中的对象。引用关系保存在RSet中。 * [Object Copy (ms): Min: 4.9, Avg: 5.1, Max: 5.2, Diff: 0.3, Sum: 20.4] 拷贝活的对象到新region的耗时。 * [Termination (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0] 线程结束，在结束前，它会检查其他线程是否还有未扫描完的引用，如果有，则”偷”过来，完成后再申请结束，这个时间是线程之前互相同步所花费的时间。 * [GC Worker Other (ms): Min: 0.0, Avg: 0.4, Max: 1.3, Diff: 1.3, Sum: 1.4] 花费在其他工作上（未列出）的时间。 * [GC Worker Total (ms): Min: 6.4, Avg: 6.8, Max: 7.8, Diff: 1.4, Sum: 27.2] 每个线程花费的时间和。 * [GC Worker End (ms): Min: 27891.0, Avg: 27891.3, Max: 27892.3, Diff: 1.3] 每个线程结束的时间。 * [Code Root Fixup: 0.5 ms] 用来将code root修正到正确的evacuate之后的对象位置所花费的时间。 * [Code Root Migration: 1.3 ms] 更新code root 引用的耗时，code root中的引用因为对象的evacuation而需要更新。 * [Code Root Purge: 0.0 ms] 清除code root的耗时，code root中的引用已经失效，不再指向Region中的对象，所以需要被清除。 * [Clear CT: 0.2 ms] 清除card table的耗时。 * [Other: 5.8 ms] [Choose CSet: 0.0 ms] [Ref Proc: 5.0 ms] [Ref Enq: 0.1 ms] [Redirty Cards: 0.0 ms] [Free CSet: 0.2 ms] 其他事项共耗时5.8ms，其他事项包括选择CSet，处理已用对象，引用入ReferenceQueues，释放CSet中的region到free list。 * [Eden: 159.0M(159.0M)->0.0B(301.0M) Survivors: 13.0M->11.0M Heap: 328.8M(3072.0M)->167.3M(3072.0M)] 新生代清空了，下次扩容到301MB。
 
-#### global concurrent marking 日志
+#### 7.3.1.2 global concurrent marking 日志
 
 对于global concurrent marking过程，它的日志如下所示：
 
@@ -1243,11 +1243,11 @@ Heap after GC invocations=13 (full 1):
 
 这次发生global concurrent marking的原因是：humongous allocation，上面提过在巨大对象分配之前，会检测到old generation 使用占比是否超过了 initiating heap occupancy percent（45%），因为 1449132032(used)+ 579608(allocation request:) > 1449551430(threshold)，所以触发了本次global concurrent marking。对于具体执行过程，上面的表格已经详细讲解了。值得注意的是上文中所说的initial mark往往伴随着一次YGC，在日志中也有体现：GC pause (G1 Humongous Allocation) (young) (initial-mark)。
 
-## 后记
+## 7.4 后记
 
 因为篇幅的关系，也受限于能力水平，本文只是简单了介绍了G1 GC的基本原理，很多细节没有涉及到，所以说只能算是为研究和使用它的同学打开了一扇门。一个日本人专门写了一本书《[徹底解剖「G1GC」 アルゴリズ](http://tatsu-zine.com/books/g1gc)》详细的介绍了G1 GC，这本书也被作者放到了GitHub上，详见参考文献5。另外，莫枢在这方面也研究的比较多，读者可以去[高级语言虚拟机论坛](http://hllvm.group.iteye.com/)向他请教，本文的很多内容也是我在此论坛上请教过后整理的。总而言之，G1是一款非常优秀的垃圾收集器，尽管还有些不完美（预测模型还不够智能），但是希望有更多的同学来使用它，研究它，提出好的建议，让它变的更加完善。
 
-## 参考文献
+## 7.5 参考文献
 
 1. [Getting Started with the G1 Garbage Collector](http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/G1GettingStarted/index.html)
 2. [请教G1算法的原理](http://hllvm.group.iteye.com/group/topic/44381)
