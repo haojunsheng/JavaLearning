@@ -83,7 +83,7 @@
 
 `javap`是jdk自带的一个工具，可以对代码反编译，也可以查看java编译器生成的字节码。`javap`和其他两个反编译工具最大的区别是他生成的文件并不是`java`文件，也不像其他两个工具生成代码那样更容易理解。拿一段简单的代码举例，如我们想分析Java 7中的`switch`是如何支持`String`的，我们先有以下可以编译通过的源代码：
 
-```
+```java
 public class switchDemoString {
     public static void main(String[] args) {
         String str = "world";
@@ -174,7 +174,7 @@ jad是一个比较不错的反编译工具，只要下载一个执行工具，�
 
 命令：`jad switchDemoString.class`
 
-```
+```java
 public class switchDemoString
 {
     public switchDemoString()
