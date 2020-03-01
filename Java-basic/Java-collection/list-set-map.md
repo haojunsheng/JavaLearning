@@ -1,4 +1,5 @@
 <!--ts-->
+
    * [前言](#前言)
    * [1. Collection接口](#1-collection接口)
       * [1.1 List接口](#11-list接口)
@@ -83,17 +84,11 @@ Set特点：元素无放入顺序，元素不可重复。
 
 ## 1.1 List接口
 
- [List.md](List/List.md) 
-
 **可以将元素维护在特定的序列中**。
 
 List接口为Collection直接接口。**List所代表的是有序的可重复Collection**，即它用某种特定的插入顺序来维护元素顺序。用户可以对列表中每个元素的插入位置进行精确地控制，同时可以根据元素的整数索引（在列表中的位置）访问元素，并搜索列表中的元素。实现List接口的集合主要有：ArrayList, LinkedList,Vector,Stack。
 
- [ArrayList-LinkedList-Vector.md](List/ArrayList-LinkedList-Vector.md) 
-
 ### 1.1.1 ArrayList
-
- [ArrayList.md](List/ArrayList.md) 
 
 ArrayList是一个**动态数组**，也是我们最常用的集合。它允许任何符合规则的元素插入甚至包括null。每一个ArrayList都有一个初始容量（10），该容量代表了数组的大小。随着容器中的元素不断增加，容器的大小也会随着增加。在每次向容器中增加元素的同时都会进行容量检查，当快溢出时，就会进行扩容操作。所以如果我们明确所插入元素的多少，最好指定一个初始容量值，避免过多的进行扩容操作而浪费时间. 效率。
 
@@ -102,8 +97,6 @@ size. isEmpty. get. set. iterator 和 listIterator 操作都以固定时间运�
 ArrayList擅长于随机访问。同时ArrayList是非同步的。
 
 ### 1.1.2 LinkedList
-
- [LinkedList.md](List/LinkedList.md) 
 
 同样实现List接口的LinkedList与ArrayList不同，ArrayList是一个动态数组，而LinkedList是一个双向链表。所以它除了有ArrayList的基本操作方法外还额外提供了get，remove，insert方法在LinkedList的首部或尾部。
 
@@ -114,17 +107,11 @@ List list = Collections.synchronizedList(new LinkedList(…));
 
 ### 1.1.3 Vector
 
- [Vector.md](List/Vector.md) 
-
 与ArrayList相似，但是Vector是同步的。所以说Vector是线程安全的动态数组。它的操作与ArrayList几乎一样。
 
 那么Vector和SynchronizedList的区别是什么呢？
 
- [SynchronizedList-vs-Vector.md](List/SynchronizedList-vs-Vector.md) 
-
 ### 1.1.4 Stack
-
- [Stack.md](List/Stack.md) 
 
 Stack继承自Vector，实现一个后进先出的堆栈。Stack提供5个额外的方法使得Vector得以被当作堆栈使用。基本的push和pop 方法，还有peek方法得到栈顶的元素，empty方法测试堆栈是否为空，search方法检测一个元素在堆栈中的位置。Stack刚创建后是空栈。
 
@@ -138,15 +125,11 @@ Stack继承自Vector，实现一个后进先出的堆栈。Stack提供5个额外
 
 是枚举的专用Set。所有的元素都是枚举类型。
 
-### 1.2.2 HashSet
-
- [HashSet.md](Set/HashSet.md) 
+### 1.2.2 HashSet  
 
 HashSet堪称查询速度最快的集合，因为其内部是以HashCode来实现的。它内部元素的顺序是由哈希码来决定的，所以它不保证set 的迭代顺序；特别是它不保证该顺序恒久不变。
 
 ### 1.2.3 TreeSet
-
- [TreeSet.md](Set/TreeSet.md) 
 
 基于TreeMap，生成一个总是处于排序状态的set，内部以TreeMap来实现。它是使用元素的自然顺序对元素进行排序，或者根据创建Set 时提供的`Comparator`进行排序，具体取决于使用的构造方法。
 
@@ -167,6 +150,8 @@ HashSet堪称查询速度最快的集合，因为其内部是以HashCode来实�
 List特点：元素有放入顺序，元素可重复 。 有顺序，即先放入的元素排在前面。
 
 Set特点：元素无放入顺序，元素不可重复。 无顺序，即先放入的元素不一定排在前面。 不可重复，即相同元素在set中只会保留一份。所以，有些场景下，set可以用来去重。 不过需要注意的是，set在元素插入时是要有一定的方法来判断元素是否重复的。这个方法很重要，决定了set中可以保存哪些元素。
+
+
 
 ### 1.4.2 ArrayList vs LinkedList vs Vector
 
@@ -204,19 +189,15 @@ Map的家族关系图谱。
 
 ## 2.1 HashMap
 
-以哈希表数据结构实现，查找对象时通过哈希函数计算其位置，它是为快速查询而设计的，其内部定义了一个hash表数组（Entry[] table），元素会通过哈希转换函数将元素的哈希地址转换成数组中存放的索引，如果有冲突，则使用散列链表的形式将所有相同哈希地址的元素串起来，可能通过查看HashMap.Entry的源码它是一个单链表结构。 [HashMap.md](Map/HashMap.md) 
+以哈希表数据结构实现，查找对象时通过哈希函数计算其位置，它是为快速查询而设计的，其内部定义了一个hash表数组（Entry[] table），元素会通过哈希转换函数将元素的哈希地址转换成数组中存放的索引，如果有冲突，则使用散列链表的形式将所有相同哈希地址的元素串起来，可能通过查看HashMap.Entry的源码它是一个单链表结构。  
 
 ##2.2. TreeMap
 
-键以某种排序规则排序，内部以red-black（红-黑）树数据结构实现，实现了SortedMap接口。
-
- [TreeMap.md](Map/TreeMap.md) 
+键以某种排序规则排序，内部以red-black（红-黑）树数据结构实现，实现了SortedMap接口。 
 
 ##2.3. HashTable
 
-也是以哈希表数据结构实现的，解决冲突时与HashMap也一样也是采用了散列链表的形式，不过性能比HashMap要低
-
- [HashTable.md](Map/HashTable.md) 
+也是以哈希表数据结构实现的，解决冲突时与HashMap也一样也是采用了散列链表的形式，不过性能比HashMap要低 
 
 ## 2.4 总结
 

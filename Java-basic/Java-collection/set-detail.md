@@ -2,16 +2,18 @@
    * [前言](#前言)
    * [1. HashSet](#1-hashset)
       * [前言](#前言-1)
-      * [定义](#定义)
-         * [1.1 <strong>基本属性</strong>](#11-基本属性)
-         * [1.2  <strong>构造函数</strong>](#12--构造函数)
-      * [2.方法](#2方法)
+      * [1.1 定义](#11-定义)
+      * [1.2 <strong>基本属性</strong>](#12-基本属性)
+      * [1.3  <strong>构造函数</strong>](#13--构造函数)
+      * [1.4 方法](#14-方法)
    * [2. TreeSet](#2-treeset)
-      * [一、TreeSet定义](#一treeset定义)
-      * [二、TreeSet主要方法](#二treeset主要方法)
-      * [三、最后](#三最后)
+      * [2.1 TreeSet定义](#21-treeset定义)
+      * [2.2 TreeSet主要方法](#22-treeset主要方法)
+      * [2.3 最后](#23-最后)
+   * [3. 总结](#3-总结)
+      * [3.1 TreeSet和LinkedHashSet都是有序的，那它们有何不同？](#31-treeset和linkedhashset都是有序的那它们有何不同)
 
-<!-- Added by: anapodoton, at: Sat Feb 29 00:05:50 CST 2020 -->
+<!-- Added by: anapodoton, at: Sun Mar  1 17:05:50 CST 2020 -->
 
 <!--te-->
 
@@ -29,7 +31,7 @@ java中提供的Set的实现主要有HashSet、LinkedHashSet、TreeSet、CopyOnW
 
 在前篇博文中（[java提高篇（二三）—–HashMap](http://www.cnblogs.com/chenssy/p/3521565.html)）详细讲解了HashMap的实现过程，对于HashSet而言，它是基于HashMap来实现的，底层采用HashMap来保存元素。所以如果对HashMap比较熟悉，那么HashSet是so  easy!!
 
-## 定义
+## 1.1 定义
 
 ```java
  public class HashSet<E>
@@ -39,7 +41,7 @@ java中提供的Set的实现主要有HashSet、LinkedHashSet、TreeSet、CopyOnW
 
 HashSet继承AbstractSet类，实现Set、Cloneable、Serializable接口。其中AbstractSet提供 Set 接口的骨干实现，从而最大限度地减少了实现此接口所需的工作。Set接口是一种不包括重复元素的Collection，它维持它自己的内部排序，所以随机访问没有任何意义。
 
-### 1.1 **基本属性**
+## 1.2 **基本属性**
 
 ```java
 //基于HashMap实现，底层使用HashMap保存所有元素
@@ -49,7 +51,7 @@ HashSet继承AbstractSet类，实现Set、Cloneable、Serializable接口。其�
         private static final Object PRESENT = new Object();
 ```
 
-### 1.2  **构造函数**
+## 1.3  **构造函数**
 
 ```java
         /**
@@ -94,7 +96,7 @@ HashSet继承AbstractSet类，实现Set、Cloneable、Serializable接口。其�
 
  从构造函数中可以看出HashSet所有的构造都是构造出一个新的HashMap，其中最后一个构造函数，为包访问权限是不对外公开，仅仅只在使用LinkedHashSet时才会发生作用。
 
-## 2.方法
+## 1.4 方法
 
  既然HashSet是基于HashMap，那么对于HashSet而言，其方法的实现过程是非常简单的。
 
@@ -128,7 +130,7 @@ isEmpty()，判断HashSet()集合是否为空，为空返回 `true，否则返�
     }
 ```
 
-contains()，判断某个元素是否存在于HashSet()中，存在返回true，否则返回false。更加确切的讲应该是要满足这种关系才能返回true：(o==null ? e==null : o.equals(e))。底层调用containsKey判断HashMap的key值是否为空。
+contains()，判断某个元素是否存在于HashSet()中，存在返回true，否则返回false。更加确切的讲应该是要满足这种关系才能返回`true：(o==null ? e==null : o.equals(e))`。底层调用containsKey判断HashMap的key值是否为空。
 
 ```java
  public boolean add(E e) {
@@ -136,7 +138,7 @@ contains()，判断某个元素是否存在于HashSet()中，存在返回true，
     }
 ```
 
-add()如果此 set 中尚未包含指定元素，则添加指定元素。如果此Set没有包含满足(e==null ? e2==null : e.equals(e2)) 的e2时，则将e2添加到Set中，否则不添加且返回false。由于底层使用HashMap的put方法将key = e，value=PRESENT构建成key-value键值对，当此e存在于HashMap的key中，则value将会覆盖原有value，但是key保持不变，所以如果将一个已经存在的e元素添加中HashSet中，新添加的元素是不会保存到HashMap中，所以这就满足了HashSet中元素不会重复的特性。
+add()如果此 set 中尚未包含指定元素，则添加指定元素。如果此Set没有包含满足`(e==null ? e2==null : e.equals(e2))` 的e2时，则将e2添加到Set中，否则不添加且返回false。由于底层使用HashMap的put方法将key = e，value=PRESENT构建成key-value键值对，当此e存在于HashMap的key中，则value将会覆盖原有value，但是key保持不变，所以如果将一个已经存在的e元素添加中HashSet中，新添加的元素是不会保存到HashMap中，所以这就满足了HashSet中元素不会重复的特性。
 
 ```java
  public boolean remove(Object o) {
@@ -176,7 +178,7 @@ clone返回此 `HashSet` 实例的浅表副本：并没有复制这些元素本�
 
 与HashSet是基于HashMap实现一样，TreeSet同样是基于TreeMap实现的。在《Java提高篇（二七）—–TreeMap》中LZ详细讲解了TreeMap实现机制，如果客官详情看了这篇博文或者多TreeMap有比较详细的了解，那么TreeSet的实现对您是喝口水那么简单。
 
-## 一、TreeSet定义
+## 2.1 TreeSet定义
 
 我们知道TreeMap是一个有序的二叉树，那么同理TreeSet同样也是一个有序的，它的作用是提供有序的Set集合。通过源码我们知道TreeSet基础AbstractSet，实现NavigableSet、Cloneable、Serializable接口。其中AbstractSet提供 `Set` 接口的骨干实现，从而最大限度地减少了实现此接口所需的工作。NavigableSet是扩展的 `SortedSet`，具有了为给定搜索目标报告最接近匹配项的导航方法，这就意味着它支持一系列的导航方法。比如查找与指定目标最匹配项。Cloneable支持克隆，Serializable支持序列化。
 
@@ -224,7 +226,7 @@ clone返回此 `HashSet` 实例的浅表副本：并没有复制这些元素本�
     }
 ```
 
-## 二、TreeSet主要方法
+## 2.2 TreeSet主要方法
 
 1、add：将指定的元素添加到此 set（如果该元素尚未存在于 set 中）。
 
@@ -236,7 +238,7 @@ clone返回此 `HashSet` 实例的浅表副本：并没有复制这些元素本�
 
 2、addAll：将指定 collection 中的所有元素添加到此 set 中。
 
-```
+```java
 public  boolean addAll(Collection<? extends E> c) {
         // Use linear-time version if applicable
         if (m.size()==0 && c.size() > 0 &&
@@ -257,7 +259,7 @@ public  boolean addAll(Collection<? extends E> c) {
 
 3、ceiling：返回此 set 中大于等于给定元素的最小元素；如果不存在这样的元素，则返回 null。
 
-```
+```java
  public E ceiling(E e) {
         return m.ceilingKey(e);
     }
@@ -265,7 +267,7 @@ public  boolean addAll(Collection<? extends E> c) {
 
 4、clear：移除此 set 中的所有元素。
 
-```
+```java
  public void clear() {
         m.clear();
     }
@@ -273,7 +275,7 @@ public  boolean addAll(Collection<? extends E> c) {
 
 5、clone：返回 TreeSet 实例的浅表副本。属于浅拷贝。
 
-```
+```java
 public Object clone() {
         TreeSet<E> clone = null;
         try {
@@ -289,7 +291,7 @@ public Object clone() {
 
 6、comparator：返回对此 set 中的元素进行排序的比较器；如果此 set 使用其元素的[自然顺序](mk:@MSITStore:G:%5CmyYunFile%5C????????????%5Cjdk6.ZH_cn.chm::/j2se6/api/java/lang/Comparable.html)，则返回 null。
 
-```
+```java
  public Comparator<? super E> comparator() {
         return m.comparator();
     }
@@ -297,7 +299,7 @@ public Object clone() {
 
 7、contains：如果此 set 包含指定的元素，则返回 true。
 
-```
+```java
  public boolean contains(Object o) {
         return m.containsKey(o);
     }
@@ -305,7 +307,7 @@ public Object clone() {
 
 8、descendingIterator：返回在此 set 元素上按降序进行迭代的迭代器。
 
-```
+```java
  public Iterator<E> descendingIterator() {
         return m.descendingKeySet().iterator();
     }
@@ -313,7 +315,7 @@ public Object clone() {
 
 9、descendingSet：返回此 set 中所包含元素的逆序视图。
 
-```
+```java
  public NavigableSet<E> descendingSet() {
         return new TreeSet<>(m.descendingMap());
     }
@@ -321,7 +323,7 @@ public Object clone() {
 
 10、first：返回此 set 中当前第一个（最低）元素。
 
-```
+```java
  public E first() {
         return m.firstKey();
     }
@@ -329,7 +331,7 @@ public Object clone() {
 
 11、floor：返回此 set 中小于等于给定元素的最大元素；如果不存在这样的元素，则返回 null。
 
-```
+```java
  public E floor(E e) {
         return m.floorKey(e);
     }
@@ -337,7 +339,7 @@ public Object clone() {
 
 12、headSet：返回此 set 的部分视图，其元素严格小于 toElement。
 
-```
+```java
  public SortedSet<E> headSet(E toElement) {
         return headSet(toElement, false);
     }
@@ -345,7 +347,7 @@ public Object clone() {
 
 13、higher：返回此 set 中严格大于给定元素的最小元素；如果不存在这样的元素，则返回 null。
 
-```
+```java
  public E higher(E e) {
         return m.higherKey(e);
     }
@@ -439,7 +441,7 @@ public Object clone() {
 
 23、tailSet：返回此 set 的部分视图
 
-```
+```java
     /
      * 返回此 set 的部分视图，其元素大于（或等于，如果 inclusive 为 true）fromElement。
      */
@@ -455,48 +457,46 @@ public Object clone() {
     }
 ```
 
-## 三、最后
+## 2.3 最后
 
 由于TreeSet是基于TreeMap实现的，所以如果我们对treeMap有了一定的了解，对TreeSet那是小菜一碟，我们从TreeSet中的源码可以看出，其实现过程非常简单，几乎所有的方法实现全部都是基于TreeMap的。
 
+# 3. 总结
 
+1. HashSet怎么保证添加元素不重复？
 
+   HashSet内部使用HashMap的key存储元素，以此来保证元素不重复；
 
+2. HashSet是有序的吗？
 
-关于Set的问题主要有：
+   HashSet是无序的，因为HashMap的key是无序的；
 
-（1）HashSet怎么保证添加元素不重复？
+3. HashSet是否允许null元素？
 
-（2）HashSet是有序的吗？
+   HashSet中允许有一个null元素，因为HashMap允许key为null；
 
-（3）HashSet是否允许null元素？
+4. HashSet是非线程安全的；
 
-（4）Set是否有get()方法？
+5. HashSet是没有get()方法的；
 
-（5）LinkedHashSet是有序的吗？怎么个有序法？
+6. LinkedHashSet的底层使用LinkedHashMap存储元素。
 
-（6）LinkedHashSet支持按元素访问顺序排序吗？
+7. LinkedHashSet是有序的吗？怎么个有序法？
 
-（8）TreeSet真的是使用TreeMap来存储元素的吗？
+   LinkedHashSet是有序的，它是按照插入的顺序排序的。
 
-（9）TreeSet是有序的吗？怎么个有序法？
+8. TreeSet底层使用NavigableMap存储元素；
 
-（10）TreeSet和LinkedHashSet有何不同？
+9. TreeSet是有序的；
 
-（11）TreeSet和SortedSet有什么区别和联系？
+10. TreeSet是非线程安全的；
 
-（12）CopyOnWriteArraySet是用Map实现的吗？
+11. TreeSet实现了NavigableSet接口，而NavigableSet继承自SortedSet接口；
 
-（13）CopyOnWriteArraySet是有序的吗？怎么个有序法？
+12. TreeSet实现了SortedSet接口；
 
-（14）CopyOnWriteArraySet怎么保证并发安全？
+## 3.1 TreeSet和LinkedHashSet都是有序的，那它们有何不同？
 
-（15）CopyOnWriteArraySet以何种方式保证元素不重复？
+LinkedHashSet并没有实现SortedSet接口，它的有序性主要依赖于LinkedHashMap的有序性，所以它的有序性是指按照插入顺序保证的有序性；
 
-（16）如何比较两个Set中的元素是否完全一致？
-
-（17）ConcurrentSkipListSet的底层是ConcurrentSkipListMap吗？
-
-（18）ConcurrentSkipListSet是有序的吗？怎么个有序法？
-
-关于Set的问题大概就这么多，你都能回答上来吗？
+而TreeSet实现了SortedSet接口，它的有序性主要依赖于NavigableMap的有序性，而NavigableMap又继承自SortedMap，这个接口的有序性是指按照key的自然排序保证的有序性，而key的自然排序又有两种实现方式，一种是key实现Comparable接口，一种是构造方法传入Comparator比较器。
