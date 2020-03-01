@@ -1,54 +1,62 @@
 <!--ts-->
    * [前言](#前言)
-   * [HashMap](#hashmap)
-      * [1. 什么是HashMap](#1-什么是hashmap)
-      * [2.HashMap和HashTable的区别](#2hashmap和hashtable的区别)
-      * [3. HashMap与HashSet的关系](#3-hashmap与hashset的关系)
-      * [3. HashMap 和 ConcurrentHashMap 的关系](#3-hashmap-和-concurrenthashmap-的关系)
-      * [4. HashMap实现原理分析](#4-hashmap实现原理分析)
-         * [4.1 定义](#41-定义)
-         * [4.2 构造函数](#42-构造函数)
-      * [5. HashMap的存取实现](#5-hashmap的存取实现)
-      * [6. 解决hash冲突的办法](#6-解决hash冲突的办法)
-      * [7. 再散列rehash过程](#7-再散列rehash过程)
-   * [HashTable](#hashtable)
-      * [前言](#前言-1)
-      * [1.定义](#1定义)
-      * [2. 构造方法](#2-构造方法)
-      * [3. 主要方法](#3-主要方法)
-      * [4. HashTable与HashMap的区别](#4-hashtable与hashmap的区别)
-   * [TreeMap](#treemap)
-      * [1.红黑树简介](#1红黑树简介)
-      * [2. TreeMap数据结构](#2-treemap数据结构)
-      * [3. TreeMap put()方法](#3-treemap-put方法)
-         * [3.1 红黑树增加节点](#31-红黑树增加节点)
-         * [3.2 TreeMap put()方法实现分析](#32-treemap-put方法实现分析)
-         * [3.3 TreeMap delete()方法](#33-treemap-delete方法)
-   * [4. 写在最后](#4-写在最后)
-   * [总结](#总结)
-      * [HashMap核心概念](#hashmap核心概念)
-         * [size 和 capacity](#size-和-capacity)
-         * [loadFactor 和 threshold](#loadfactor-和-threshold)
-         * [总结](#总结-1)
-      * [HashMap的初始化问题](#hashmap的初始化问题)
-         * [前言](#前言-2)
-         * [1.为什么要设置HashMap的初始化容量](#1为什么要设置hashmap的初始化容量)
-         * [2. HashMap中容量的初始化](#2-hashmap中容量的初始化)
-         * [3. HashMap中初始容量的合理值](#3-hashmap中初始容量的合理值)
-         * [4. 总结](#4-总结)
-      * [HashMap中的hash算法实现](#hashmap中的hash算法实现)
-         * [前言](#前言-3)
-         * [1. 哈希](#1-哈希)
-         * [2. HashMap 的数据结构](#2-hashmap-的数据结构)
-         * [4. 源码解析](#4-源码解析)
-            * [4.1 HashMap In Java 7](#41-hashmap-in-java-7)
-            * [4.2 HashTable In Java 7](#42-hashtable-in-java-7)
-            * [4.3 ConcurrentHashMap In Java 7](#43-concurrenthashmap-in-java-7)
-            * [4.4 HashMap In Java 8](#44-hashmap-in-java-8)
-            * [4.5 ConcurrentHashMap In Java 8](#45-concurrenthashmap-in-java-8)
-         * [5. 总结](#5-总结)
+   * [1. HashMap](#1-hashmap)
+      * [1.1 什么是HashMap](#11-什么是hashmap)
+      * [1.2 HashMap和HashTable的区别](#12-hashmap和hashtable的区别)
+      * [1.3 HashMap与HashSet的关系](#13-hashmap与hashset的关系)
+      * [1.4. HashMap 和 ConcurrentHashMap 的关系](#14-hashmap-和-concurrenthashmap-的关系)
+      * [1.5 HashMap实现原理分析](#15-hashmap实现原理分析)
+         * [1.5.1 定义](#151-定义)
+         * [1.5.2 属性](#152-属性)
+         * [1.5.3 构造函数](#153-构造函数)
+         * [1.5.4 为什么链表要变成红黑树](#154-为什么链表要变成红黑树)
+      * [1.6 HashMap的存取实现](#16-hashmap的存取实现)
+      * [1.7 解决hash冲突的办法](#17-解决hash冲突的办法)
+      * [1.8 再散列rehash过程](#18-再散列rehash过程)
+   * [2. HashTable](#2-hashtable)
+      * [2.0 前言](#20-前言)
+      * [2.1 定义](#21-定义)
+      * [2.2 构造方法](#22-构造方法)
+      * [2.3 主要方法](#23-主要方法)
+      * [2.4 HashTable与HashMap的区别](#24-hashtable与hashmap的区别)
+   * [3. TreeMap](#3-treemap)
+      * [3.1 红黑树简介](#31-红黑树简介)
+      * [3.2 红黑树总结](#32-红黑树总结)
+      * [3.3 TreeMap数据结构](#33-treemap数据结构)
+      * [3.4 TreeMap put()方法](#34-treemap-put方法)
+         * [3.4.1 红黑树增加节点](#341-红黑树增加节点)
+         * [3.4.2 TreeMap put()方法实现分析](#342-treemap-put方法实现分析)
+         * [3.4.3 TreeMap delete()方法](#343-treemap-delete方法)
+      * [3.5 写在最后](#35-写在最后)
+   * [4. 总结](#4-总结)
+      * [4.1 HashMap核心概念](#41-hashmap核心概念)
+         * [4.1.1 size 和 capacity](#411-size-和-capacity)
+         * [4.1.2 loadFactor 和 threshold](#412-loadfactor-和-threshold)
+         * [4.1.3 总结](#413-总结)
+      * [4.2 HashMap的初始化问题](#42-hashmap的初始化问题)
+         * [4.2.1 前言](#421-前言)
+         * [4.2.2 为什么要设置HashMap的初始化容量](#422-为什么要设置hashmap的初始化容量)
+         * [4.2.3 HashMap中容量的初始化](#423-hashmap中容量的初始化)
+         * [4.2.4 HashMap中初始容量的合理值](#424-hashmap中初始容量的合理值)
+         * [4.2.5 总结](#425-总结)
+      * [4.3 HashMap中的hash算法实现](#43-hashmap中的hash算法实现)
+         * [4.3.0 前言](#430-前言)
+         * [4.3.1 哈希](#431-哈希)
+         * [4.3.2 HashMap 的数据结构](#432-hashmap-的数据结构)
+         * [4.3.4 源码解析](#434-源码解析)
+            * [4.3.4.1 HashMap In Java 7](#4341-hashmap-in-java-7)
+            * [4.3.4.2 HashTable In Java 7](#4342-hashtable-in-java-7)
+            * [4.3.4.3 ConcurrentHashMap In Java 7](#4343-concurrenthashmap-in-java-7)
+            * [4.3.4.4 HashMap In Java 8](#4344-hashmap-in-java-8)
+            * [4.3.4.5 ConcurrentHashMap In Java 8](#4345-concurrenthashmap-in-java-8)
+         * [4.3.5 总结](#435-总结)
+      * [4.4  Java中的Map主要有哪几种？之间有什么区别](#44--java中的map主要有哪几种之间有什么区别)
+      * [4.5 Java中遍历Map的几种方式](#45-java中遍历map的几种方式)
+      * [4.6 hashCode()和equals()方法的作用，二者有什么关系？](#46-hashcode和equals方法的作用二者有什么关系)
+      * [4.7 LinkedHashMap是怎么实现的](#47-linkedhashmap是怎么实现的)
+      * [4.8 ConcurrentHashMap](#48-concurrenthashmap)
 
-<!-- Added by: anapodoton, at: Sat Feb 29 00:05:24 CST 2020 -->
+<!-- Added by: anapodoton, at: Sun Mar  1 13:29:55 CST 2020 -->
 
 <!--te-->
 
@@ -78,29 +86,29 @@ java中提供的Map的实现主要有HashMap、LinkedHashMap、WeakHashMap、Tre
 
 <img src="img/170940100064060.png" alt="2014071500003" style="zoom:50%;" />
 
-# HashMap
+# 1. HashMap
 
-## 1. 什么是HashMap
+## 1.1 什么是HashMap
 
 **基于哈希表的 Map 接口的实现**。此实现提供所有可选的映射操作，**并允许使用 null 值和 null 键。**（除了非同步和允许使用 null 之外，HashMap 类与 Hashtable 大致相同。）**此类不保证映射的顺序，特别是它不保证该顺序恒久不变。** 此实现假定哈希函数将元素适当地分布在各桶之间，可为基本操作（get 和 put）提供稳定的性能。迭代 collection 视图所需的时间与 HashMap 实例的“容量”（桶的数量）及其大小（键-值映射关系数）成比例。所以，如果迭代性能很重要，则不要将初始容量设置得太高（或将加载因子设置得太低）。
 
-## 2.HashMap和HashTable的区别
+## 1.2 HashMap和HashTable的区别
 
-> 1.**HashTable的方法是同步的**，在方法的前面都有synchronized来同步，**HashMap未经同步**，所以在多线程场合要手动同步
-> 2.**HashTable不允许null值**(key和value都不可以) ,**HashMap允许null值**(key和value都可以)。
-> 3.HashTable有一个contains(Object value)功能和containsValue(Object value)功能一样。
-> 4.HashTable使用Enumeration进行遍历，HashMap使用Iterator进行遍历。
-> 5.HashTable中hash数组默认大小是11，增加的方式是 old*2+1。HashMap中hash数组的默认大小是16，而且一定是2的指数。
-> 6.哈希值的使用不同，HashTable直接使用对象的hashCode，代码是这样的：
+1.**HashTable的方法是同步的**，在方法的前面都有synchronized来同步，**HashMap未经同步**，所以在多线程场合要手动同步
+2.**HashTable不允许null值**(key和value都不可以) ,**HashMap允许null值**(key和value都可以)。
+3.HashTable有一个contains(Object value)功能和containsValue(Object value)功能一样。
+4.HashTable使用Enumeration进行遍历，HashMap使用Iterator进行遍历。
+5.HashTable中hash数组默认大小是11，增加的方式是 old*2+1。HashMap中hash数组的默认大小是16，而且一定是2的指数。
+6.哈希值的使用不同，HashTable直接使用对象的hashCode，代码是这样的：
 
 ```
 int hash = key.hashCode();
 int index = (hash & 0x7FFFFFFF) % tab.length;
 ```
 
-> 而HashMap重新计算hash值，而且用与代替求模：
+而HashMap重新计算hash值，而且用与代替求模：
 
-```
+```java
 int hash = hash(k);
 int i = indexFor(hash, table.length);
 static int hash(Object x) {
@@ -112,35 +120,47 @@ return h & (length-1);
 }
 ```
 
-## 3. HashMap与HashSet的关系
+## 1.3 HashMap与HashSet的关系
 
-> 1、HashSet底层是采用HashMap实现的：
->
-> public HashSet() {
-> map = new HashMap<E,Object>();
-> }
->
-> 2、调用HashSet的add方法时，实际上是向HashMap中增加了一行(key-value对)，该行的key就是向HashSet增加的那个对象，该行的value就是一个Object类型的常量。
->
-> ```java
-> private static final Object PRESENT = new Object(); 
-> public boolean add(E e) { 
->  return map.put(e, PRESENT)==null; 
-> } 
-> public boolean remove(Object o) { 
->  return map.remove(o)==PRESENT; 
-> }
-> ```
+1、HashSet底层是采用HashMap实现的：
 
-## 3. HashMap 和 ConcurrentHashMap 的关系
+```java
+public HashSet() {
+map = new HashMap<E,Object>();
+}
+```
 
-> 关于这部分内容建议自己去翻翻源码，`ConcurrentHashMap` 也是一种线程安全的集合类，他和`HashTable`也是有区别的，主要区别就是加锁的粒度以及如何加锁，`ConcurrentHashMap`的加锁粒度要比`HashTable`更细一点。将数据分成一段一段的存储，然后给每一段数据配一把锁，当一个线程占用锁访问其中一个段数据的时候，其他段的数据也能被其他线程访问。
+2、调用HashSet的add方法时，实际上是向HashMap中增加了一行(key-value对)，该行的key就是向HashSet增加的那个对象，该行的value就是一个Object类型的常量。
 
-## 4. HashMap实现原理分析
+```java
+private static final Object PRESENT = new Object(); 
+public boolean add(E e) { 
+return map.put(e, PRESENT)==null; 
+} 
+public boolean remove(Object o) { 
+return map.remove(o)==PRESENT; 
+}
+```
 
-HashMap实现了Map接口，继承AbstractMap。其中Map接口定义了键映射到值的规则，而AbstractMap类提供 Map 接口的骨干实现，以最大限度地减少实现此接口所需的工作，其实AbstractMap类已经实现了Map，这里标注Map LZ觉得应该是更加清晰吧！
+## 1.4. HashMap 和 ConcurrentHashMap 的关系
 
-### 4.1 定义
+关于这部分内容建议自己去翻翻源码，`ConcurrentHashMap` 也是一种线程安全的集合类，他和`HashTable`也是有区别的，主要区别就是加锁的粒度以及如何加锁，`ConcurrentHashMap`的加锁粒度要比`HashTable`更细一点。将数据分成一段一段的存储，然后给每一段数据配一把锁，当一个线程占用锁访问其中一个段数据的时候，其他段的数据也能被其他线程访问。
+
+## 1.5 HashMap实现原理分析
+
+HashMap实现了Map接口，继承AbstractMap。其中Map接口定义了键映射到值的规则，而AbstractMap类提供 Map 接口的骨干实现，以最大限度地减少实现此接口所需的工作，其实AbstractMap类已经实现了Map。
+
+<img src="img/HashMap-structure.png" alt="HashMap-structure" style="zoom:50%;" />
+
+在Java中，HashMap的实现采用了（数组 + 链表 + 红黑树）的复杂结构，数组的一个元素又称作桶。
+
+在添加元素时，会根据hash值算出元素在数组中的位置，如果该位置没有元素，则直接把元素放置在此处，如果该位置有元素了，则把元素以链表的形式放置在链表的尾部。
+
+当一个链表的元素个数达到一定的数量（且数组的长度达到一定的长度）后，则把链表转化为红黑树，从而提高效率。
+
+数组的查询效率为O(1)，链表的查询效率是O(k)，红黑树的查询效率是O(log k)，k为桶中的元素个数，所以当元素数量非常多的时候，转化为红黑树能极大地提高效率。
+
+### 1.5.1 定义
 
 ```java
  public class HashMap<K,V>
@@ -148,7 +168,105 @@ HashMap实现了Map接口，继承AbstractMap。其中Map接口定义了键映�
     implements Map<K,V>, Cloneable, Serializable
 ```
 
-### 4.2 构造函数
+### 1.5.2 属性
+
+```java
+/**
+ * 默认的初始容量为16,容量为数组的长度，亦即桶的个数，默认为16，最大为2的30次方，当容量达到64时才可以树化。
+ */
+static final int DEFAULT_INITIAL_CAPACITY = 1 << 4;
+
+/**
+ * 最大的容量为2的30次方
+ */
+static final int MAXIMUM_CAPACITY = 1 << 30;
+
+/**
+ * 默认的装载因子,装载因子用来计算容量达到多少时才进行扩容，默认装载因子为0.75。
+ */
+static final float DEFAULT_LOAD_FACTOR = 0.75f;
+
+/**
+ * 当一个桶中的元素个数大于等于8时进行树化
+ */
+static final int TREEIFY_THRESHOLD = 8;
+
+/**
+ * 当一个桶中的元素个数小于等于6时把树转化为链表
+ */
+static final int UNTREEIFY_THRESHOLD = 6;
+
+/**
+ * 当桶的个数达到64的时候才进行树化
+ */
+static final int MIN_TREEIFY_CAPACITY = 64;
+
+/**
+ * 数组，又叫作桶（bucket）
+ */
+transient Node<K,V>[] table;
+
+/**
+ * 作为entrySet()的缓存
+ */
+transient Set<Map.Entry<K,V>> entrySet;
+
+/**
+ * 元素的数量
+ */
+transient int size;
+
+/**
+ * 修改次数，用于在迭代的时候执行快速失败策略
+ */
+transient int modCount;
+
+/**
+ * 当桶的使用数量达到多少时进行扩容，threshold = capacity * loadFactor
+ */
+int threshold;
+
+/**
+ * 装载因子
+ */
+final float loadFactor;
+```
+
+Node是一个典型的单链表节点，其中，hash用来存储key计算得来的hash值。
+
+```java
+static class Node<K,V> implements Map.Entry<K,V> {
+    final int hash;
+    final K key;
+    V value;
+    Node<K,V> next;
+}
+```
+
+TreeNode是一个神奇的类，它继承自LinkedHashMap中的Entry类，关于LinkedHashMap.Entry这个类我们后面再讲。
+
+TreeNode是一个典型的树型节点，其中，prev是链表中的节点，用于在删除元素的时候可以快速找到它的前置节点。
+
+```java
+// 位于HashMap中
+static final class TreeNode<K,V> extends LinkedHashMap.Entry<K,V> {
+    TreeNode<K,V> parent;  // red-black tree links
+    TreeNode<K,V> left;
+    TreeNode<K,V> right;
+    TreeNode<K,V> prev;    // needed to unlink next upon deletion
+    boolean red;
+}
+
+// 位于LinkedHashMap中，典型的双向链表节点
+static class Entry<K,V> extends HashMap.Node<K,V> {
+    Entry<K,V> before, after;
+    Entry(int hash, K key, V value, Node<K,V> next) {
+        super(hash, key, value, next);
+    }
+}
+```
+
+### 1.5.3 构造函数
 
 HashMap提供了三个构造函数：
 
@@ -156,7 +274,7 @@ HashMap提供了三个构造函数：
 - HashMap(int initialCapacity)：构造一个带指定初始容量和默认加载因子 (0.75) 的空 HashMap。
 - HashMap(int initialCapacity, float loadFactor)：构造一个带指定初始容量和加载因子的空 HashMap。
 
-在这里提到了两个参数：初始容量，加载因子。这两个参数是影响HashMap性能的重要参数，其中容量表示哈希表中桶的数量，初始容量是创建哈希表时的容量，加载因子是哈希表在其容量自动增加之前可以达到多满的一种尺度，它衡量的是一个散列表的空间的使用程度，负载因子越大表示散列表的装填程度越高，反之愈小。对于使用链表法的散列表来说，查找一个元素的平均时间是O(1+a)，因此如果负载因子越大，对空间的利用更充分，然而后果是查找效率的降低；如果负载因子太小，那么散列表的数据将过于稀疏，对空间造成严重浪费。系统默认负载因子为0.75，一般情况下我们是无需修改的。
+在这里提到了两个参数：**初始容量，加载因子**。这两个参数是影响HashMap性能的重要参数，其中容量表示哈希表中桶的数量，初始容量是创建哈希表时的容量，加载因子是哈希表在其容量自动增加之前可以达到多满的一种尺度，它衡量的是一个散列表的空间的使用程度，负载因子越大表示散列表的装填程度越高，反之愈小。对于使用链表法的散列表来说，查找一个元素的平均时间是O(1+a)，因此如果负载因子越大，对空间的利用更充分，然而后果是查找效率的降低；如果负载因子太小，那么散列表的数据将过于稀疏，对空间造成严重浪费。系统默认负载因子为0.75，一般情况下我们是无需修改的。
 
 HashMap是一种支持快速存取的数据结构，要了解它的性能必须要了解它的数据结构。
 
@@ -214,33 +332,41 @@ static class Entry<K,V> implements Map.Entry<K,V> {
 
 **1. HashMap的数据结构** 数据结构中有`数组`和`链表`来实现对数据的存储，但这两者基本上是两个极端。
 
-> **数组**:数组必须事先定义固定的长度（元素个数），不能适应数据动态地增减的情况。当数据增加时，可能超出原先定义的元素个数；当数据减少时，造成内存浪费。
->
-> > 数组是静态分配内存，并且在内存中连续。
-> > 数组利用下标定位，时间复杂度为O(1)
-> > 数组插入或删除元素的时间复杂度O(n)
-> > 数组的特点是：*寻址容易，插入和删除困难*；
->
-> **链表**:链表存储区间离散，占用内存比较宽松。
->
-> > 链表是动态分配内存，并不连续。
-> > 链表定位元素时间复杂度O(n)
-> > 链表插入或删除元素的时间复杂度O(1)
-> > 链表的特点是：*寻址困难，插入和删除容易。*
+**数组**:数组必须事先定义固定的长度（元素个数），不能适应数据动态地增减的情况。当数据增加时，可能超出原先定义的元素个数；当数据减少时，造成内存浪费。
+
+数组是静态分配内存，并且在内存中连续。
+数组利用下标定位，时间复杂度为O(1)
+数组插入或删除元素的时间复杂度O(n)
+数组的特点是：*寻址容易，插入和删除困难*；
+
+**链表**:链表存储区间离散，占用内存比较宽松。
+
+链表是动态分配内存，并不连续。
+链表定位元素时间复杂度O(n)
+链表插入或删除元素的时间复杂度O(1)
+链表的特点是：*寻址困难，插入和删除容易。*
 
 **哈希表**
 
-那么我们能不能综合两者的特性，做出一种寻址容易，插入删除也容易的数据结构？答案是肯定的，这就是我们要提起的哈希表。`哈希表（(Hash table）`既满足了数据的查找方便，同时不占用太多的内容空间，使用也十分方便。
+那么我们能不能综合两者的特性，做出一种寻址容易，插入删除也容易的数据结构？答案是肯定的，这就是我们要提起的哈希表。`哈希表（(Hash table）`既满足了数据的查找方便，同时不占用太多的内容空间,使用也十分方便。
 
-　　哈希表有多种不同的实现方法，我接下来解释的是最常用的一种方法—— 拉链法，我们可以理解为“链表的数组” ，如图：
+哈希表有多种不同的实现方法，我接下来解释的是最常用的一种方法—— 拉链法，我们可以理解为“链表的数组” ，如图：
 
-![image](img/image-1024x622-20200216172312968.jpg)从上图我们可以发现哈希表是由数组+链表组成的，一个长度为16的数组中，每个元素存储的是一个链表的头结点。那么这些元素是按照什么样的规则存储到数组中呢。一般情况是通过hash(key)%len获得，也就是元素的key的哈希值对数组长度取模得到。比如上述哈希表中，12%16=12,28%16=12,108%16=12,140%16=12。所以12、28、108以及140都存储在数组下标为12的位置。 　　HashMap其实也是一个线性的数组实现的,所以可以理解为其存储数据的容器就是一个线性数组。这可能让我们很不解，一个线性的数组怎么实现按键值对来存取数据呢？这里HashMap有做一些处理。 　　首先HashMap里面实现一个静态内部类Entry，其重要的属性有 key , value, next，从属性key,value我们就能很明显的看出来Entry就是HashMap键值对实现的一个基础bean，我们上面说到HashMap的基础就是一个线性数组，这个数组就是Entry[]，Map里面的内容都保存在Entry[]里面。
+<img src="img/image-1024x622-20200216172312968.jpg" alt="image" style="zoom:50%;" />
 
-## 5. HashMap的存取实现
+从上图我们可以发现哈希表是由数组+链表组成的，一个长度为16的数组中，每个元素存储的是一个链表的头结点。那么这些元素是按照什么样的规则存储到数组中呢。一般情况是通过hash(key)%len获得，也就是元素的key的哈希值对数组长度取模得到。比如上述哈希表中，12%16=12,28%16=12,108%16=12,140%16=12。所以12、28、108以及140都存储在数组下标为12的位置。 　　
+
+**HashMap其实也是一个线性的数组实现的**,所以可以理解为其存储数据的容器就是一个线性数组。这可能让我们很不解，一个线性的数组怎么实现按键值对来存取数据呢？这里HashMap有做一些处理。首先HashMap里面实现一个静态内部类Entry，其重要的属性有 key , value, next，从属性key,value我们就能很明显的看出来Entry就是HashMap键值对实现的一个基础bean，我们上面说到HashMap的基础就是一个线性数组，这个数组就是Entry[]，Map里面的内容都保存在Entry[]里面。
+
+### 1.5.4 为什么链表要变成红黑树
+
+
+
+## 1.6 HashMap的存取实现
 
 既然是线性数组，为什么能随机存取？这里HashMap用了一个小算法，大致是这样实现：
 
-```
+```java
 // 存储时:
 int hash = key.hashCode(); // 这个hashCode方法这里不详述,只要理解每个key的hash是一个固定的int值
 int index = hash % Entry[].length;
@@ -258,8 +384,6 @@ return Entry[index];
 
 这里HashMap里面用到链式数据结构的一个概念。上面我们提到过Entry类里面有一个`next`属性，作用是指向下一个Entry。
 打个比方， 第一个键值对A进来，通过计算其key的hash得到的index=0，记做:Entry[0] = A。一会后又进来一个键值对B，通过计算其index也等于0，现在怎么办？HashMap会这样做:B.next = A,Entry[0] = B,如果又进来C,index也等于0,那么C.next = B,Entry[0] = C；这样我们发现index=0的地方其实存取了A,B,C三个键值对,他们通过next这个属性链接在一起。所以疑问不用担心。也就是说数组中存储的是最后插入的元素。到这里为止，HashMap的大致实现，我们应该已经清楚了。
-
-
 
 ```java
 public V put(K key, V value) {
@@ -293,7 +417,7 @@ void addEntry(int hash, K key, V value, int bucketIndex) {
 }
 ```
 
-> 当然HashMap里面也包含一些优化方面的实现，这里也说一下。比如：Entry[]的长度一定后，随着map里面数据的越来越长，这样同一个index的链就会很长，会不会影响性能？HashMap里面设置一个因子，随着map的size越来越大，Entry[]会以一定的规则加长长度。
+当然HashMap里面也包含一些优化方面的实现，这里也说一下。比如：Entry[]的长度一定后，随着map里面数据的越来越长，这样同一个index的链就会很长，会不会影响性能？HashMap里面设置一个因子，随着map的size越来越大，Entry[]会以一定的规则加长长度。
 
 **2）get**
 
@@ -333,7 +457,6 @@ null key总是存放在Entry[]数组的第一个元素。
         return null;
     }
 
-
 private V getForNullKey() {
     for (Entry<K,V> e = table[0]; e != null; e = e.next) {
         if (e.key == null)
@@ -348,7 +471,7 @@ private V getForNullKey() {
 HashMap存取时，都需要计算当前key应该对应Entry[]数组哪个元素，即计算数组下标；算法如下：
 
 ```java
- /**
+   /**
      * Returns index for hash code h.
      */
     static int indexFor(int h, int length) {
@@ -374,13 +497,13 @@ public HashMap(int initialCapacity, float loadFactor) {
     }
 ```
 
-## 6. 解决hash冲突的办法
+## 1.7 解决hash冲突的办法
 
-> 开放定址法（线性探测再散列，二次探测再散列，伪随机探测再散列） 再哈希法 链地址法 建立一个公共溢出区 **Java中hashmap的解决办法就是采用的链地址法。**
+开放定址法（线性探测再散列，二次探测再散列，伪随机探测再散列）,再哈希法,链地址法,建立一个公共溢出区 **Java中hashmap的解决办法就是采用的链地址法。**
 
-## 7. 再散列rehash过程
+## 1.8 再散列rehash过程
 
-> 当哈希表的容量超过默认容量时，必须调整table的大小。当容量已经达到最大可能值时，那么该方法就将容量调整到Integer.MAX_VALUE返回，这时，需要创建一张新表，将原表的映射到新表中。
+当哈希表的容量超过默认容量时，必须调整table的大小。当容量已经达到最大可能值时，那么该方法就将容量调整到Integer.MAX_VALUE返回，这时，需要创建一张新表，将原表的映射到新表中。
 
 ```java
  /**
@@ -410,8 +533,6 @@ public HashMap(int initialCapacity, float loadFactor) {
         threshold = (int)(newCapacity * loadFactor);
     }
 
-
-
 /**
  * Transfers all entries from current table to newTable.
  */
@@ -435,15 +556,13 @@ void transfer(Entry[] newTable) {
 }
 ```
 
+# 2. HashTable
 
-
-# HashTable
-
-## 前言
+## 2.0 前言
 
 在java中与有两个类都提供了一个多种用途的hashTable机制，他们都可以将可以key和value结合起来构成键值对通过put(key,value)方法保存起来，然后通过get(key)方法获取相对应的value值。一个是前面提到的HashMap，还有一个就是马上要讲解的HashTable。对于HashTable而言，它在很大程度上和HashMap的实现差不多，如果我们对HashMap比较了解的话，对HashTable的认知会提高很大的帮助。他们两者之间只存在几点的不同，这个后面会阐述。
 
-## 1.定义
+## 2.1 定义
 
 HashTable在Java中的定义如下：
 
@@ -467,19 +586,23 @@ loadFactor：加载因子。
 
 modCount：用来实现“fail-fast”机制的（也就是快速失败）。所谓快速失败就是在并发集合中，其进行迭代操作时，若有其他线程对其进行结构性的修改，这时迭代器会立马感知到，并且立即抛出ConcurrentModificationException异常，而不是等到迭代完成之后才告诉你（你已经出错了）。
 
-## 2. 构造方法
+## 2.2 构造方法
 
 在HashTabel中存在5个构造函数。通过这5个构造函数我们构建出一个我想要的HashTable。
 
+```
 public Hashtable() {
 this(11, 0.75f);
 }
+```
 
 默认构造函数，容量为11，加载因子为0.75。
 
+```
 public Hashtable(int initialCapacity) {
 this(initialCapacity, 0.75f);
 }
+```
 
 用指定初始容量和默认的加载因子 (0.75) 构造一个新的空哈希表。
 
@@ -525,7 +648,7 @@ public Hashtable(Map<? extends K, ? extends V> t) {
     }
 ```
 
-## 3. 主要方法
+## 2.3 主要方法
 
 HashTable的API对外提供了许多方法，这些方法能够很好帮助我们操作HashTable，但是这里我只介绍两个最根本的方法：put、get。
 
@@ -660,7 +783,7 @@ public synchronized V get(Object key) {
     }
 ```
 
-## 4. HashTable与HashMap的区别
+## 2.4 HashTable与HashMap的区别
 
 HashTable和HashMap存在很多的相同点，但是他们还是有几个比较重要的不同点。
 
@@ -685,7 +808,7 @@ if (key == null)
 
 **第三：** Hashtable的方法是同步的，而HashMap的方法不是。所以有人一般都建议如果是涉及到多线程同步时采用HashTable，没有涉及就采用HashMap，但是在Collections类中存在一个静态方法：synchronizedMap()，该方法创建了一个线程安全的Map对象，并把它作为一个封装的对象来返回，所以通过Collections类的synchronizedMap方法是可以我们你同步访问潜在的HashMap。这样君该如何选择呢？？？
 
-# TreeMap
+# 3. TreeMap
 
 TreeMap的实现是红黑树算法的实现，所以要了解TreeMap就必须对红黑树有一定的了解,其实这篇博文的名字叫做：根据红黑树的算法来分析TreeMap的实现，但是为了与Java提高篇系列博文保持一致还是叫做TreeMap比较好。通过这篇博文你可以获得如下知识点：
 
@@ -696,7 +819,35 @@ TreeMap的实现是红黑树算法的实现，所以要了解TreeMap就必须对
 
 我想通过这篇博文你对TreeMap一定有了更深的认识。好了，下面先简单普及红黑树知识。
 
-## 1.红黑树简介
+## 3.1 红黑树简介
+
+> 二叉查找树-》红黑树(解决二叉查找树失衡的问题) -》
+
+二叉查找树(BST):
+
+1.**左**子树上所有结点的值均**小于或等于**它的根结点的值。
+
+2.**右**子树上所有结点的值均**大于或等于**它的根结点的值。
+
+3.左、右子树也分别为二叉排序树。
+
+红黑树()：
+
+1.节点是红色或黑色。
+
+2.根节点是黑色。
+
+3.每个叶子节点都是黑色的空节点（NIL节点）。
+
+4 每个红色节点的两个子节点都是黑色。(从每个叶子到根的所有路径上不能有两个连续的红色节点)
+
+5.从任一节点到其每个叶子的所有路径都包含相同数目的黑色节点。
+
+推论：**红黑树从根节点到叶子的最长路径不会超过最短路径的2倍**。
+
+添加或者删除节点的时候，可能会出现不满足红黑树性质的情况，这个时候我们需要进行调整，调整的方法有**变色和旋转**。变色分为红变黑和黑变红。
+
+
 
 红黑树又称红-黑二叉树，它首先是一颗二叉树，它具有二叉树所有的特性。同时红黑树更是一颗**自平衡的排序二叉树。**
 
@@ -710,9 +861,11 @@ TreeMap的实现是红黑树算法的实现，所以要了解TreeMap就必须对
 
 1. 每个节点都只能是红色或者黑色
 2. 根节点是黑色
-3. 每个叶节点（NIL节点，空节点）是黑色的。
+3. null节点是黑色
 4. 如果一个结点是红的，则它两个子节点都是黑的。也就是说在一条路径上不能出现**相邻的两个红色结点**。
 5. 从任一节点到其每个叶子的所有路径都包含相同数目的黑色节点。
+
+性质5的推论：如果一个结点存在黑子结点，那么该结点肯定有两个子结点。
 
 这些约束强制了红黑树的关键性质: 从根到叶子的最长的可能路径不多于最短的可能路径的两倍长。结果是这棵树大致上是平衡的。因为操作比如插入. 删除和查找某个值的最坏情况时间都要求与树的高度成比例，这个在高度上的理论上限允许红黑树在最坏情况下都是高效的，而不同于普通的二叉查找树。所以红黑树它是复杂而高效的，其检索效率O(log *n*)。下图为一颗典型的红黑二叉树。
 
@@ -724,12 +877,6 @@ TreeMap的实现是红黑树算法的实现，所以要了解TreeMap就必须对
 
 ![2014051700005](img/222222354347786-2903686.gif)
 
-（图片来自：<http://www.cnblogs.com/yangecnu/p/Introduce-Red-Black-Tree.html>）
-
-------
-
-本节参考文献：<http://baike.baidu.com/view/133754.htm?fr=aladdin>—–百度百科
-
 **注：**由于本文主要是讲解Java中TreeMap，所以并没有对红黑树进行非常深入的了解和研究，如果诸位想对其进行更加深入的研究Lz提供几篇较好的博文：
 
 **1. [红黑树系列集锦](http://blog.csdn.net/v_JULY_v/article/category/774945)**
@@ -738,7 +885,27 @@ TreeMap的实现是红黑树算法的实现，所以要了解TreeMap就必须对
 
 **3. [红黑树](http://blog.csdn.net/eric491179912/article/details/6179908)**
 
-## 2. TreeMap数据结构
+## 3.2 红黑树总结
+
+1. 我们究竟为什么要用红黑树呢？
+
+我的理解是：事情当然要从二叉查找树开始说起，二叉查找树可以让我们以logn的时间复杂度来查找，但是可能会出现失衡的情况，所以我们引入了AVL平衡二叉树，AVL的要求十分的严格，左右子树的高度差不能大于1，虽然满足了查找的要求，但随之而来的是在插入和删除的过程中频繁的调整树，这在工程的实现中是很浪费的，所以为了进行折中，我们定义了精细化的规则，不再需要左右子树的高度差小于1，只需要满足**红黑树从根节点到叶子的最长路径不会超过最短路径的2倍。**这样我们就不必频繁的调整树。
+
+**本质上我们是使用红色和黑色来追踪树的高度，左旋的本质是增加左树的高度，右旋的本质是增加右树的高度。**
+
+2. 红黑树的性质和推论？
+
+   1. 每个节点都只能是红色或者黑色
+   2. 根节点是黑色
+   3. null节点是黑色
+   4. 如果一个结点是红的，则它两个子节点都是黑的。也就是说在一条路径上不能出现**相邻的两个红色结点**。
+   5. 从任一节点到其每个叶子的所有路径都包含相同数目的黑色节点。
+
+     性质5的推论：如果一个结点存在黑子结点，那么该结点肯定有两个子结点。
+
+   推论6：**红黑树从根节点到叶子的最长路径不会超过最短路径的2倍**
+
+## 3.3 TreeMap数据结构
 
 TreeMap的定义如下：
 
@@ -786,9 +953,9 @@ TreeMap中同时也包含了如下几个重要的属性：
 
 **注：** 前面只是开胃菜，下面是本篇博文的重中之重，在下面两节我将重点讲解treeMap的put(). delete()方法。通过这两个方法我们会了解红黑树增加. 删除节点的核心算法。
 
-## 3. TreeMap put()方法
+## 3.4 TreeMap put()方法
 
-### 3.1 红黑树增加节点
+### 3.4.1 红黑树增加节点
 
 红黑树在新增节点过程中比较复杂，复杂归复杂它同样必须要依据上面提到的五点规范，同时由于规则1. 2. 3基本都会满足，下面我们主要讨论规则4. 5。假设我们这里有一棵最简单的树，我们规定新增的节点为N. 它的父节点为P. P的兄弟节点为U. P的父节点为G。
 
@@ -815,15 +982,13 @@ TreeMap中同时也包含了如下几个重要的属性：
 8. 从任一节点到其每个叶子的所有路径都包含相同数目的黑色节点。
 
 **一. 为跟节点**
-若新插入的节点N没有父节点，则直接当做根据节点插入即可，同时将颜色设置为黑色。（如图一（1））
+若新插入的节点N没有父节点，则直接当做根据节点插入即可，同时将颜色设置为黑色。
 
 **二. 父节点为黑色**
 
-这种情况新节点N同样是直接插入，同时颜色为红色，由于根据规则四它会存在两个黑色的叶子节点，值为null。同时由于新增节点N为红色，所以通过它的子节点的路径依然会保存着相同的黑色节点数，同样满足规则5。（如图一（2））
+这种情况新节点N同样是直接插入，同时颜色为红色，由于根据规则四它会存在两个黑色的叶子节点，值为null。同时由于新增节点N为红色，所以通过它的子节点的路径依然会保存着相同的黑色节点数，同样满足规则5。
 
 ![2014051700008](img/222222373717226-2903820.png)
-
-（图一）
 
 **三. 若父节点P和P的兄弟节点U都为红色**
 
@@ -845,7 +1010,7 @@ TreeMap中同时也包含了如下几个重要的属性：
 
 上面展示了红黑树新增节点的五种情况，这五种情况涵盖了所有的新增可能，不管这棵红黑树多么复杂，都可以根据这五种情况来进行生成。下面就来分析Java中的TreeMap是如何来实现红黑树的。
 
-### 3.2 TreeMap put()方法实现分析
+### 3.4.2 TreeMap put()方法实现分析
 
 在TreeMap的put()的实现方法中主要分为两个步骤，第一：构建排序二叉树，第二：平衡二叉树。
 
@@ -858,7 +1023,7 @@ TreeMap中同时也包含了如下几个重要的属性：
 
 按照这个步骤我们就可以将一个新增节点添加到排序二叉树中合适的位置。如下：
 
-```
+```java
     public V put(K key, V value) {
                //用t表示二叉树的当前节点
                 Entry<K,V> t = root;
@@ -935,7 +1100,7 @@ TreeMap中同时也包含了如下几个重要的属性：
 
 上面代码中do{}代码块是实现排序二叉树的核心算法，通过该算法我们可以确认新增节点在该树的正确位置。找到正确位置后将插入即可，这样做了其实还没有完成，因为我知道TreeMap的底层实现是红黑树，红黑树是一棵平衡排序二叉树，普通的排序二叉树可能会出现失衡的情况，所以下一步就是要进行调整。fixAfterInsertion(e); 调整的过程务必会涉及到红黑树的左旋. 右旋. 着色三个基本操作。代码如下：
 
-```
+```java
     /**
          * 新增节点后的修复操作
          * x 表示新增节点
@@ -1021,7 +1186,7 @@ TreeMap中同时也包含了如下几个重要的属性：
 
 所谓左旋转，就是将新增节点（N）当做其父节点（P），将其父节点P当做新增节点（N）的左子节点。即：G.left —> N ,N.left —> P。
 
-```
+```java
     private void rotateLeft(Entry<K,V> p) {
             if (p != null) {
                 //获取P的右子节点，其实这里就相当于新增节点N（情况四而言）
@@ -1054,7 +1219,7 @@ TreeMap中同时也包含了如下几个重要的属性：
 
 所谓右旋转即，P.right —> G. G.parent —> P。
 
-```
+```java
     private void rotateRight(Entry<K,V> p) {
             if (p != null) {
                 //将L设置为P的左子树
@@ -1083,15 +1248,11 @@ TreeMap中同时也包含了如下几个重要的属性：
         }
 ```
 
-```
 左旋. 右旋的示意图如下：
-```
 
 ![2014051700004](img/222222425437080-2903849.gif)                   
 
 ![2014051700005](img/222222452156364-2903849.gif)
-
-（图片来自：<http://www.cnblogs.com/yangecnu/p/Introduce-Red-Black-Tree.html>）
 
 着色：setColor()
 
@@ -1104,7 +1265,7 @@ TreeMap中同时也包含了如下几个重要的属性：
         }
 ```
 
-### 3.3 TreeMap delete()方法
+### 3.4.3 TreeMap delete()方法
 
 红黑树删除节点
 
@@ -1187,7 +1348,7 @@ W为红色，那么其子节点X1. X2必定全部为黑色，父节点P也为黑
 
 
 
-```
+```java
 private void deleteEntry(Entry<K,V> p) {
         modCount++;      //修改次数 +1
         size--;          //元素个数 -1
@@ -1254,7 +1415,7 @@ private void deleteEntry(Entry<K,V> p) {
 
 **（1）** 除是寻找替代节点replacement，其实现方法为successor()。如下：
 
-```
+```java
 static <K,V> TreeMap.Entry<K,V> successor(Entry<K,V> t) {
         if (t == null)
             return null;
@@ -1290,7 +1451,7 @@ static <K,V> TreeMap.Entry<K,V> successor(Entry<K,V> t) {
 
 删除完节点后，就要根据情况来对红黑树进行复杂的调整：fixAfterDeletion()。
 
-```
+```java
 private void fixAfterDeletion(Entry<K,V> x) {
         // 删除节点需要一直迭代，知道 直到 x 不是根节点，且 x 的颜色是黑色
         while (x != root && colorOf(x) == BLACK) {
@@ -1382,7 +1543,7 @@ private void fixAfterDeletion(Entry<K,V> x) {
 
 这是红黑树在删除节点后，对树的平衡性进行调整的过程，其实现过程与上面四种复杂的情况一一对应，所以在这个源码的时候一定要对着上面提到的四种情况看。
 
-# 4. 写在最后
+## 3.5 写在最后
 
 这篇博文确实是有点儿长，在这里非常感谢各位看客能够静下心来读完，我想你通过读完这篇博文一定收获不小。同时这篇博文很大篇幅都在阐述红黑树的实现过程，对Java 的TreeMap聊的比较少，但是我认为如果理解了红黑树的实现过程，对TreeMap那是手到擒来，小菜一碟。
 
@@ -1394,14 +1555,13 @@ private void fixAfterDeletion(Entry<K,V> x) {
 
 1. 红黑树数据结构剖析：<http://www.cnblogs.com/fanzhidongyzby/p/3187912.html>
 2. 红黑二叉树详解及理论分析 ：<http://blog.csdn.net/kartorz/article/details/8865997>
-3. 教你透彻了解红黑树：[blog.csdn.net/v_july_v/article/details/6105630](https://www.cnblogs.com/chenssy/p/blog.csdn.net/v_july_v/article/details/6105630)
 4. 经典算法研究系列：五. 红黑树算法的实现与剖析 ：<http://blog.csdn.net/v_JULY_v/article/details/6109153>
 5. 示例，红黑树插入和删除过程：<http://saturnman.blog.163.com/blog/static/557611201097221570/>
 6. 红黑二叉树详解及理论分析 ：<http://blog.csdn.net/kartorz/article/details/8865997>
 
-# 总结
+# 4. 总结
 
-## HashMap核心概念
+## 4.1 HashMap核心概念
 
 很多人在通过阅读源码的方式学习Java，这是个很好的方式。而JDK的源码自然是首选。在JDK的众多类中，我觉得HashMap及其相关的类是设计的比较好的。很多人读过HashMap的代码，不知道你们有没有和我一样，觉得HashMap中关于容量相关的参数定义的太多了，傻傻分不清楚。
 
@@ -1418,7 +1578,7 @@ private void fixAfterDeletion(Entry<K,V> x) {
 HashMap类中有以下主要成员变量：
 
 - transient int size;
-  - 记录了Map中KV对的个数
+  - 记录了Map中KV对的个数,数组的长度(实际的长度)
 - loadFactor
   - 装载印子，用来衡量HashMap满的程度。loadFactor的默认值为0.75f（`static final float DEFAULT_LOAD_FACTOR = 0.75f;`）。
 - int threshold;
@@ -1428,7 +1588,7 @@ HashMap类中有以下主要成员变量：
 
 可能看完了你还是有点蒙，size和capacity之间有啥关系？为啥要定义这两个变量。loadFactor和threshold又是干啥的？
 
-### size 和 capacity
+### 4.1.1 size 和 capacity
 
 HashMap中的size和capacity之间的区别其实解释起来也挺简单的。我们知道，HashMap就像一个“桶”，那么capacity就是这个桶“当前”最多可以装多少元素，而size表示这个桶已经装了多少元素。来看下以下代码：
 
@@ -1484,7 +1644,7 @@ HashMap中的size和capacity之间的区别其实解释起来也挺简单的。�
 
 > 这里有一个小建议：在初始化HashMap的时候，应该尽量指定其大小。尤其是当你已知map中存放的元素个数时。（《阿里巴巴Java开发规约》）
 
-### loadFactor 和 threshold
+### 4.1.2 loadFactor 和 threshold
 
 前面我们提到过，HashMap有扩容机制，就是当达到扩容条件时会进行扩容，从16扩容到32、64、128…
 
@@ -1494,7 +1654,7 @@ HashMap中的size和capacity之间的区别其实解释起来也挺简单的。�
 
 在HashMap中，threshold = loadFactor * capacity。
 
-loadFactor是装载因子，表示HashMap满的程度，默认值为0.75f，设置成0.75有一个好处，那就是0.75正好是3/4，而capacity又是2的幂。所以，两个数的乘积都是整数。
+loadFactor是装载因子，表示HashMap满的程度，默认值为0.75f，设置成0.75有一个好处，那就是**0.75正好是3/4，而capacity又是2的幂。所以，两个数的乘积都是整数**。
 
 对于一个默认的HashMap来说，默认情况下，当其size大于12(16*0.75)时就会触发扩容。
 
@@ -1552,7 +1712,7 @@ loadFactor是装载因子，表示HashMap满的程度，默认值为0.75f，设�
 
 输出结果：
 
-```
+```shell
 capacity : 16
 size : 12
 threshold : 12
@@ -1568,17 +1728,15 @@ loadFactor : 0.75
 
 HashMap中还提供了一个支持传入initialCapacity,loadFactor两个参数的方法，来初始化容量和装载因子。不过，一般不建议修改loadFactor的值。
 
-### 总结
+### 4.1.3 总结
 
 HashMap中size表示当前共有多少个KV对，capacity表示当前HashMap的容量是多少，默认值是16，每次扩容都是成倍的。loadFactor是装载因子，当Map中元素个数超过`loadFactor* capacity`的值时，会触发扩容。`loadFactor* capacity`可以用threshold表示。
 
 PS：文中分析基于JDK1.8.0_73
 
+## 4.2 HashMap的初始化问题
 
-
-## HashMap的初始化问题
-
-### 前言
+### 4.2.1 前言
 
 在《[HashMap中傻傻分不清楚的那些概念](http://www.hollischuang.com/archives/2416)》文章中，我们介绍了HashMap中和容量相关的几个概念，简单介绍了一下HashMap的扩容机制。
 
@@ -1586,7 +1744,7 @@ PS：文中分析基于JDK1.8.0_73
 
 本文，延续上一篇文章，我们再来深入学习下，到底应不应该设置HashMap的默认容量？如果真的要设置HashMap的初始容量，我们应该设置多少？
 
-### 1.为什么要设置HashMap的初始化容量
+### 4.2.2 为什么要设置HashMap的初始化容量
 
 我们之前提到过，《阿里巴巴Java开发手册》中建议我们设置HashMap的初始化容量。
 
@@ -1652,7 +1810,7 @@ public static void main(String[] args) {
 
 从上面的代码示例中，我们还发现，同样是设置初始化容量，设置的数值不同也会影响性能，那么当我们已知HashMap中即将存放的KV个数的时候，容量设置成多少为好呢？
 
-### 2. HashMap中容量的初始化
+### 4.2.3 HashMap中容量的初始化
 
 在上一篇文章中，我们通过代码实例其实介绍过，默认情况下，当我们设置HashMap的初始化容量时，实际上HashMap会采用第一个大于该数值的2的幂作为初始化容量。
 
@@ -1773,7 +1931,7 @@ int n = cap - 1;
     return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
 ```
 
-### 3. HashMap中初始容量的合理值
+### 4.2.4 HashMap中初始容量的合理值
 
 当我们使用`HashMap(int initialCapacity)`来初始化容量的时候，jdk会默认帮我们计算一个相对合理的值当做初始容量。那么，是不是我们只需要把已知的HashMap中即将存放的元素个数直接传给initialCapacity就可以了呢？
 
@@ -1819,7 +1977,7 @@ static int capacity(int expectedSize) {
 
 所以，我可以认为，当我们明确知道HashMap中元素的个数的时候，把默认容量设置成expectedSize / 0.75F + 1.0F 是一个在性能上相对好的选择，但是，同时也会牺牲些内存。
 
-### 4. 总结
+### 4.2.5 总结
 
 当我们想要在代码中创建一个HashMap的时候，如果我们已知这个Map中即将存放的元素个数，给HashMap设置初始容量可以在一定程度上提升效率。
 
@@ -1827,7 +1985,7 @@ static int capacity(int expectedSize) {
 
 但是，为了最大程度的避免扩容带来的性能消耗，我们建议可以把默认容量的数字设置成expectedSize / 0.75F + 1.0F 。在日常开发中，可以使用
 
-```
+```java
 Map<String, String> map = Maps.newHashMapWithExpectedSize(10);
 ```
 
@@ -1839,11 +1997,9 @@ Map<String, String> map = Maps.newHashMapWithExpectedSize(10);
 
 **putAll中其实是已经有了expectedSize的值，所以可以使用该公式，但是put中，并没有该值。**
 
+## 4.3 HashMap中的hash算法实现
 
-
-## HashMap中的hash算法实现
-
-### 前言
+### 4.3.0 前言
 
 你知道HashMap中hash方法的具体实现吗？
 
@@ -1855,7 +2011,7 @@ Map<String, String> map = Maps.newHashMapWithExpectedSize(10);
 
 如果你不能很好的回答这些问题，那么你需要好好看看这篇文章。文中涉及到大量代码和计算机底层原理知识。绝对的干货满满。整个互联网，把hash()分析的如此透彻的，别无二家。
 
-### 1. 哈希
+### 4.3.1 哈希
 
 **Hash，一般翻译做“散列”，也有直接音译为“哈希”的，就是把任意长度的输入，通过散列算法，变换成固定长度的输出，该输出就是散列值。**这种转换是一种压缩映射，也就是，散列值的空间通常远小于输入的空间，<u>不同的输入可能会散列成相同的输出</u>(**碰撞**)，所以不可能从散列值来唯一的确定输入值。简单的说就是一种将任意长度的消息压缩到某一固定长度的消息摘要的函数。
 
@@ -1888,7 +2044,7 @@ Map<String, String> map = Maps.newHashMapWithExpectedSize(10);
 - 建立公共溢出区
   - 将哈希表分为基本表和溢出表两部分，发生冲突的元素都放入溢出表中。
 
-### 2. HashMap 的数据结构
+### 4.3.2 HashMap 的数据结构
 
 在Java中，保存数据有两种比较简单的数据结构：数组和链表。**数组的特点是：寻址容易，插入和删除困难；而链表的特点是：寻址困难，插入和删除容易。**上面我们提到过，常用的哈希函数的冲突解决办法中有一种方法叫做链地址法，其实就是将数组和链表组合在一起，发挥了两者的优势，我们可以将其理解为链表的数组。
 
@@ -1896,7 +2052,7 @@ Map<String, String> map = Maps.newHashMapWithExpectedSize(10);
 
 我们可以从上图看到，左边很明显是个数组，数组的每个成员是一个链表。该数据结构所容纳的所有元素均包含一个指针，用于元素间的链接。我们根据元素的自身特征把元素分配到不同的链表中去，反过来我们也正是通过这些特征找到正确的链表，再从链表中找出正确的元素。其中，根据元素特征计算元素数组下标的方法就是哈希算法，即本文的主角hash()函数（当然，还包括indexOf()函数）。
 
-###3. hash方法
+###4.3.3 hash方法
 
 我们拿JDK 1.7的HashMap为例，其中定义了一个final int hash(Object k) 方法，其主要被以下方法引用。
 
@@ -1904,7 +2060,7 @@ Map<String, String> map = Maps.newHashMapWithExpectedSize(10);
 
 上面的方法主要都是增加和删除方法，这不难理解，当我们要对一个链表数组中的某个元素进行增删的时候，首先要知道他应该保存在这个链表数组中的哪个位置，即他在这个数组中的下标。而hash()方法的功能就是根据Key来定位其在HashMap中的位置。HashTable、ConcurrentHashMap同理。
 
-### 4. 源码解析
+### 4.3.4 源码解析
 
 首先，在同一个版本的Jdk中，HashMap、HashTable以及ConcurrentHashMap里面的hash方法的实现是不同的。再不同的版本的JDK中（Java7 和 Java8）中也是有区别的。我会尽量全部介绍到。相信，看文这篇文章，你会彻底理解hash方法。
 
@@ -1916,7 +2072,7 @@ Map<String, String> map = Maps.newHashMapWithExpectedSize(10);
 >
 > indexFor ：该方法主要是将hash生成的整型转换成链表数组中的下标。
 
-#### 4.1 HashMap In Java 7
+#### 4.3.4.1 HashMap In Java 7
 
 ```java
 final int hash(Object k) {
@@ -1941,15 +2097,15 @@ static int indexFor(int h, int length) {
 
 这里我们假设length为16(2^n)和15，h为5、6、7。
 
-![](https://ws3.sinaimg.cn/large/006tKfTcly1g0f21a77u8j30ge05v0t7.jpg)
+<img src="img/image-20200301123447593.png" alt="image-20200301123447593" style="zoom:50%;" />
+
+
 
 当n=15时，6和7的结果一样，这样表示他们在table存储的位置是相同的，也就是产生了碰撞，6、7就会在一个位置形成链表，这样就会导致查询速度降低。诚然这里只分析三个数字不是很多，那么我们就看0-15。
 
-![](https://ws4.sinaimg.cn/large/006tKfTcly1g0f21oco6aj30gk0alab6.jpg)
+   <img src="img/image-20200301123559806.png" alt="image-20200301123559806" style="zoom:50%;" />
 
 从上面的图表中我们看到总共发生了8此碰撞，同时发现浪费的空间非常大，有1、3、5、7、9、11、13、15处没有记录，也就是没有存放数据。这是因为他们在与14进行&运算时，得到的结果最后一位永远都是0，即0001、0011、0101、0111、1001、1011、1101、1111位置处是不可能存储数据的，空间减少，进一步增加碰撞几率，这样就会导致查询速度慢。而当length = 16时，length – 1 = 15 即1111，那么进行低位&运算时，值总是与原来hash值相同，而进行高位运算时，其值等于其低位值。所以说当length = 2^n时，不同的hash值发生碰撞的概率比较小，这样就会使得数据在table数组中分布较均匀，查询速度也较快。
-
-
 
 > **效率高，还可以很好的解决负数的问题。**
 
@@ -2009,7 +2165,7 @@ return h ^ (h >>> 7) ^ (h >>> 4);
 
 > 其实，使用位运算代替取模运算，除了性能之外，还有一个好处就是**可以很好的解决负数**的问题。因为我们知道，hashcode的结果是int类型，而int的取值范围是-2^31 ~ 2^31 – 1，即[ -2147483648, 2147483647]；这里面是包含负数的，我们知道，对于一个负数取模还是有些麻烦的。如果使用二进制的位运算的话就可以很好的避免这个问题。首先，不管hashcode的值是正数还是负数。length-1这个值一定是个正数。那么，他的二进制的第一位一定是0（有符号数用最高位作为符号位，“0”代表“+”，“1”代表“-”），这样里两个数做按位与运算之后，第一位一定是个0，也就是，得到的结果一定是个正数。
 
-#### 4.2 HashTable In Java 7
+#### 4.3.4.2 HashTable In Java 7
 
 上面是Java 7中HashMap的`hash`方法以及`indexOf`方法的实现，那么接下来我们要看下，线程安全的HashTable是如何实现的，和HashMap有何不同，并试着分析下不同的原因。以下是Java 7中HashTable的hash方法的实现。
 
@@ -2042,7 +2198,7 @@ private int hash(Object k) {
 - 在取模计算时，如果模数是2的幂，那么我们可以直接使用位运算来得到结果，效率要大大高于做除法。所以从hash计算的效率上，又是HashMap更胜一筹。
 - 但是，HashMap为了提高效率使用位运算代替哈希，这又引入了哈希分布不均匀的问题，所以HashMap为解决这问题，又对hash算法做了一些改进，进行了扰动计算。
 
-#### 4.3 ConcurrentHashMap In Java 7
+#### 4.3.4.3 ConcurrentHashMap In Java 7
 
 ```java
 private int hash(Object k) {
@@ -2069,7 +2225,7 @@ int j = (hash >>> segmentShift) & segmentMask;
 
 上面这段关于ConcurrentHashMap的hash实现其实和HashMap如出一辙。都是通过位运算代替取模，然后再对hashcode进行扰动。区别在于，ConcurrentHashMap 使用了一种变种的Wang/Jenkins 哈希算法，其主要母的也是为了把高位和低位组合在一起，避免发生冲突。至于为啥不和HashMap采用同样的算法进行扰动，我猜这只是程序员自由意志的选择吧。至少我目前没有办法证明哪个更优。
 
-#### 4.4 HashMap In Java 8
+#### 4.3.4.4 HashMap In Java 8
 
 在Java 8 之前，HashMap和其他基于map的类都是通过链地址法解决冲突，它们使用单向链表来存储相同索引值的元素。在最坏的情况下，这种方式会将HashMap的get方法的性能从`O(1)`降低到`O(n)`。为了解决在频繁冲突时hashmap性能降低的问题，Java 8中使用平衡树来替代链表存储冲突的元素。这意味着我们可以将最坏情况下的性能从`O(n)`提高到`O(logn)`。关于HashMap在Java 8中的优化，我后面会有文章继续深入介绍。
 
@@ -2097,7 +2253,7 @@ HashTable In Java 8
 
 这其实和Java 7中的实现几乎无差别，就不做过多的介绍了。
 
-#### 4.5 ConcurrentHashMap In Java 8
+#### 4.3.4.5 ConcurrentHashMap In Java 8
 
 Java 8 里面的求hash的方法从hash改为了spread。实现方式如下：
 
@@ -2109,7 +2265,7 @@ static final int spread(int h) {
 
 Java 8的ConcurrentHashMap同样是通过Key的哈希值与数组长度取模确定该Key在数组中的索引。同样为了避免不太好的Key的hashCode设计，它通过如下方法计算得到Key的最终哈希值。不同的是，Java 8的ConcurrentHashMap作者认为引入红黑树后，即使哈希冲突比较严重，寻址效率也足够高，所以作者并未在哈希值的计算上做过多设计，只是将Key的hashCode值与其高16位作异或并保证最高位为0（从而保证最终结果为正整数）。
 
-### 5. 总结
+### 4.3.5 总结
 
 至此，我们已经分析完了HashMap、HashTable以及ConcurrentHashMap分别在Jdk 1.7 和 Jdk 1.8中的实现。我们可以发现，为了保证哈希的结果可以分散、为了提高哈希的效率，JDK在一个小小的hash方法上就有很多考虑，做了很多事情。当然，我希望我们不仅可以深入了解背后的原理，还要学会这种对代码精益求精的态度。
 
@@ -2123,112 +2279,248 @@ Jdk的源代码，每一行都很有意思，都值得花时间去钻研、推�
 
 [知乎问题](https://www.zhihu.com/question/51784530)中 @二大王 和 @Anra的答案
 
+## 4.4  Java中的Map主要有哪几种？之间有什么区别
+
+|      | HashMap | HashTable |
+| ---- | ------- | --------- |
+|      |         |           |
+|      |         |           |
+|      |         |           |
+
+## 4.5 Java中遍历Map的几种方式
+
+1. 在for-each循环中使用entries来遍历
+
+   这是最常见的并且在大多数情况下也是最可取的遍历方式。在键值都需要时使用。
+
+   ```java
+   Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+    
+   for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+    
+       System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+    
+   }
+   ```
+
+   注意：for-each循环在java 5中被引入所以该方法只能应用于java 5或更高的版本中。如果你遍历的是一个空的map对象，for-each循环将抛出NullPointerException，因此在遍历前你总是应该检查空引用。
+
+2. 在for-each循环中遍历keys或values
+
+   如果只需要map中的键或者值，你可以通过keySet或values来实现遍历，而不是用entrySet。
+
+   ```java
+   Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+   //遍历map中的键
+   for (Integer key : map.keySet()) {
+       System.out.println("Key = " + key);
+   }
+    
+   //遍历map中的值
+   for (Integer value : map.values()) {
+       System.out.println("Value = " + value);
+   }
+   ```
+
+   该方法比entrySet遍历在性能上稍好（快了10%），而且代码更加干净。
+
+3. 使用Iterator遍历
+
+   使用泛型：
+
+   ```java
+   Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+    
+   Iterator<Map.Entry<Integer, Integer>> entries = map.entrySet().iterator();
+    
+   while (entries.hasNext()) {
+    
+       Map.Entry<Integer, Integer> entry = entries.next();
+    
+       System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+    
+   }
+   ```
+
+   不使用泛型：
+
+   ```java
+   Map map = new HashMap();
+    
+   Iterator entries = map.entrySet().iterator();
+    
+   while (entries.hasNext()) {
+    
+       Map.Entry entry = (Map.Entry) entries.next();
+    
+       Integer key = (Integer)entry.getKey();
+    
+       Integer value = (Integer)entry.getValue();
+    
+       System.out.println("Key = " + key + ", Value = " + value);
+    
+   }
+   ```
+
+   你也可以在keySet和values上应用同样的方法。
+
+   该种方式看起来冗余却有其优点所在。首先，在老版本java中这是惟一遍历map的方式。另一个好处是，你可以在遍历时调用iterator.remove()来删除entries，另两个方法则不能。根据javadoc的说明，如果在for-each遍历中尝试使用此方法，结果是不可预测的。
+
+   从性能方面看，该方法类同于for-each遍历（即方法二）的性能。
+
+4. 通过键找值遍历（效率低）
+
+   ```java
+   Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+    
+   for (Integer key : map.keySet()) {
+    
+       Integer value = map.get(key);
+    
+       System.out.println("Key = " + key + ", Value = " + value);
+    
+   }
+   ```
+
+   作为方法一的替代，这个代码看上去更加干净；但实际上它相当慢且无效率。因为从键取值是耗时的操作（与方法一相比，在不同的Map实现中该方法慢了20%~200%）。如果你安装了FindBugs，它会做出检查并警告你关于哪些是低效率的遍历。所以尽量避免使用。
+
+## 4.6 hashCode()和equals()方法的作用，二者有什么关系？
+
+所有Java类的父类——`java.lang.Object`中定义了两个重要的方法：
+
+```
+public boolean equals(Object obj)
+public int hashCode()
+```
+
+本文首先会给出一个错误使用这两个方法的例子，然后再解释equals和hashcode是如何协同工作的。
+
+**一个常犯的错误**
+
+先看以下代码：
+
+```java
+import java.util.HashMap;
+
+public class Apple {
+    private String color;
+
+    public Apple(String color) {
+        this.color = color;
+    }
+
+    public boolean equals(Object obj) {
+        if(obj==null) return false;
+        if (!(obj instanceof Apple))
+            return false;   
+        if (obj == this)
+            return true;
+        return this.color.equals(((Apple) obj).color);
+    }
+
+    public static void main(String[] args) {
+        Apple a1 = new Apple("green");
+        Apple a2 = new Apple("red");
+
+        //hashMap stores apple type and its quantity
+        HashMap<Apple, Integer> m = new HashMap<Apple, Integer>();
+        m.put(a1, 10);
+        m.put(a2, 20);
+        System.out.println(m.get(new Apple("green")));
+    }
+}
+```
+
+上面的代码执行过程中，先是创建个两个Apple，一个green apple和一个red apple，然后将这来两个apple存储在map中，存储之后再试图通过map的get方法获取到其中green apple的实例。读者可以试着执行以上代码，数据结果为null。也就是说刚刚通过put方法放到map中的green apple并没有通过get方法获取到。你可能怀疑是不是green apple并没有被成功的保存到map中，但是，通过debug工具可以看到，它已经被保存成功了。
+
+**hashcode()惹的祸**
+
+造成以上问题的原因其实比较简单，是因为代码中并没有重写`hashcode`方法。`hashcode`和`equals`的约定关系如下：
+
+> 1、如果两个对象相等，那么他们一定有相同的哈希值（hash code）。
+>
+> 2、如果两个对象的哈希值相等，那么这两个对象有可能相等也有可能不相等。（需要再通过equals来判断）
+
+如果你了解Map的工作原理，那么你一定知道，它是通过把key值进行hash来定位对象的，这样可以提供比线性存储更好的性能。实际上，Map的底层数据结构就是一个数组的数组（准确的说其实是一个链表+数组）。第一个数组的索引值是key的哈希码。通过这个索引可以定位到第二个数组，第二个数组通过使用equals方法进行线性搜索的方式来查找对象。([HashMap完全解读](https://47.99.194.156/archives/82))
+
+<img src="img/image-20200301125511206.png" alt="image-20200301125511206" style="zoom: 33%;" />
+
+其实，一个哈希码可以映射到一个桶（bucket）中，`hashcode`的作用就是先确定对象是属于哪个桶的。如果多个对象有相同的哈希值，那么他们可以放在同一个桶中。如果有不同的哈希值，则需要放在不同的桶中。至于同一个桶中的各个对象之前如何区分就需要使用`equals`方法了。
+
+hashcode方法的默认实现会为每个对象返回一个不同的int类型的值。所以，上面的代码中，第二个apple被创建出来时他将具有不同的哈希值。可以通过重写hashCode方法来解决。
+
+```
+public int hashCode(){
+    return this.color.hashCode();   
+}
+```
+
+**总结**
+
+在判断两个对象是否相等时，不要只使用equals方法判断。还要考虑其哈希码是否相等。尤其是和hashMap等与hash相关的数据结构一起使用时。
 
 
-参考资料： Java中的Map主要有哪几种？之间有什么区别。链接：https://t.zsxq.com/j2fAQfu 
 
-问：Java中的Map主要有哪几种？之间有什么区别。 解： Java中的Map主要有HashMap、HashTable、LinkedHashMap、ConcurrentHashMap这几种常用的。 简单的区别如下： HashMap 是非线程安全的。 HashTable 是线程安全的。 LinkedHashMap 是 HashMap 的一个子类，它保留插入的顺序。 ConcurrentHashMap 也是线程安全的，在加锁粒度上比HashTable要细，性能会更好一些。
+## 4.7 LinkedHashMap是怎么实现的
 
-Java中遍历Map的几种方式。链接：https://t.zsxq.com/ujYFUfu 
+[LinkedHashMap是怎么实现的](http://cmsblogs.com/?p=4733)
 
-问：Java中遍历Map的几种方式。 解： 方法一 在for-each循环中使用entries来遍历 这是最常见的并且在大多数情况下也是最可取的遍历方式。在键值都需要时使用。 Map<Integer, Integer> map = new HashMap<Integer, Integer>(); for (Map.Entry<Integer, Integer> entry : map.entrySet()) { System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue()); } 注意：for-each循环在java 5中被引入所以该方法只能应用于java 5或更高的版本中。如果你遍历的是一个空的map对象，for-each循环将抛出NullPointerException，因此在遍历前你总是应该检查空引用。 方法二 在for-each循环中遍历keys或values。 如果只需要map中的键或者值，你可以通过keySet或values来实现遍历，而不是用entrySet。 Map<Integer, Integer> map = new HashMap<Integer, Integer>(); //遍历map中的键 for (Integer key : map.keySet()) { System.out.println("Key = " + key); } //遍历map中的值 for (Integer value : map.values()) { System.out.println("Value = " + value); } 该方法比entrySet遍历在性能上稍好（快了10%），而且代码更加干净。 方法三使用Iterator遍历 使用泛型： Map<Integer, Integer> map = new HashMap<Integer, Integer>(); Iterator<Map.Entry<Integer, Integer>> entries = map.entrySet().iterator(); while (entries.hasNext()) { Map.Entry<Integer, Integer> entry = entries.next(); System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue()); } 不使用泛型： Map map = new HashMap(); Iterator entries = map.entrySet().iterator(); while (entries.hasNext()) { Map.Entry entry = (Map.Entry) entries.next(); Integer key = (Integer)entry.getKey(); Integer value = (Integer)entry.getValue(); System.out.println("Key = " + key + ", Value = " + value); } 你也可以在keySet和values上应用同样的方法。 该种方式看起来冗余却有其优点所在。首先，在老版本java中这是惟一遍历map的方式。另一个好处是，你可以在遍历时调用iterator.remove()来删除entries，另两个方法则不能。根据javadoc的说明，如果在for-each遍历中尝试使用此方法，结果是不可预测的。 从性能方面看，该方法类同于for-each遍历（即方法二）的性能。 方法四、通过键找值遍历（效率低） Map<Integer, Integer> map = new HashMap<Integer, Integer>(); for (Integer key : map.keySet()) { Integer value = map.get(key); System.out.println("Key = " + key + ", Value = " + value); } 作为方法一的替代，这个代码看上去更加干净；但实际上它相当慢且无效率。因为从键取值是耗时的操作（与方法一相比，在不同的Map实现中该方法慢了20%~200%）。如果你安装了FindBugs，它会做出检查并警告你关于哪些是低效率的遍历。所以尽量避免使用。 总结 如果仅需要键(keys)或值(values)使用方法二。如果你使用的语言版本低于java 5，或是打算在遍历时删除entries，必须使用方法三。否则使用方法一(键值都要)。 参考资料：
+LinkedHashMap可以看成是 LinkedList + HashMap。
 
-[Java中如何遍历Map对象的4种方法 - CSDN博客](https://blog.csdn.net/tjcyjd/article/details/11111401)
+LinkedHashMap继承HashMap，拥有HashMap的所有特性，并且额外增加的按一定顺序访问的特性。
 
-HashMap和HashTable有何不同？链接：https://t.zsxq.com/e66QNr3
+<img src="img/LinkedHashMap-structure.png" alt="LinkedHashMap-structure" style="zoom: 50%;" />
 
-HashMap 和 ConcurrentHashMap 的区别？链接：https://t.zsxq.com/Rb6uVVv 
+（1）LinkedHashMap继承自HashMap，具有HashMap的所有特性；
 
-同样是线程安全的Map，HashTable和ConcurrentHashMap之间有什么区别？链接：https://t.zsxq.com/q3Nnaqf 
+（2）LinkedHashMap内部维护了一个双向链表存储所有的元素；
 
-hashCode()和equals()方法的作用，二者有什么关系？链接：https://t.zsxq.com/rRZBeAY HashMap和TreeMap的区别是什么？链接：https://t.zsxq.com/a23JYr7 ConcurrentHashMap和LinkedHashMap有什么区别？链接：https://t.zsxq.com/UF6yrJA 所有的类都可以作为Map的key吗？有什么需要注意的吗？链接：https://t.zsxq.com/vNJAmAI 什么是ConcurrentSkipListMap？他和ConcurrentHashMap有什么区别？链接：https://t.zsxq.com/vB2NbuN
+（3）如果accessOrder为false，则可以按插入元素的顺序遍历元素；
 
+（4）如果accessOrder为true，则可以按访问元素的顺序遍历元素；
 
+（5）LinkedHashMap的实现非常精妙，很多方法都是在HashMap中留的钩子（Hook），直接实现这些Hook就可以实现对应的功能了，并不需要再重写put()等方法；
 
-关于Map的问题主要有：
+（6）默认的LinkedHashMap并不会移除旧元素，如果需要移除旧元素，则需要重写removeEldestEntry()方法设定移除策略；
 
-（1）什么是散列表？
+（7）LinkedHashMap可以用来实现LRU缓存淘汰策略；
 
-（2）怎么实现一个散列表？
+## 4.8 ConcurrentHashMap
 
-（3）java中HashMap实现方式的演进？
+（1）ConcurrentHashMap是HashMap的线程安全版本；
 
-（4）HashMap的容量有什么特点？
+（2）ConcurrentHashMap采用（数组 + 链表 + 红黑树）的结构存储元素；
 
-（5）HashMap是怎么进行扩容的？
+（3）ConcurrentHashMap相比于同样线程安全的HashTable，效率要高很多；
 
-（6）HashMap中的元素是否是有序的？
+（4）ConcurrentHashMap采用的锁有 synchronized，CAS，自旋锁，分段锁，volatile等；
 
-（7）HashMap何时进行树化？何时进行反树化？
+（5）ConcurrentHashMap中没有threshold和loadFactor这两个字段，而是采用sizeCtl来控制；
 
-（8）HashMap是怎么进行缩容的？
+（6）sizeCtl = -1，表示正在进行初始化；
 
-（9）HashMap插入、删除、查询元素的时间复杂度各是多少？
+（7）sizeCtl = 0，默认值，表示后续在真正初始化的时候使用默认容量；
 
-（10）HashMap中的红黑树实现部分可以用其它数据结构代替吗？
+（8）sizeCtl > 0，在初始化之前存储的是传入的容量，在初始化或扩容后存储的是下一次的扩容门槛；
 
-（11）LinkedHashMap是怎么实现的？
+（9）sizeCtl = (resizeStamp << 16) + (1 + nThreads)，表示正在进行扩容，高位存储扩容邮戳，低位存储扩容线程数加1；
 
-（12）LinkedHashMap是有序的吗？怎么个有序法？
+（10）更新操作时如果正在进行扩容，当前线程协助扩容；
 
-（13）LinkedHashMap如何实现LRU缓存淘汰策略？
+（11）更新操作会采用synchronized锁住当前桶的第一个元素，这是分段锁的思想；
 
-（14）WeakHashMap使用的数据结构？
+（12）整个扩容过程都是通过CAS控制sizeCtl这个字段来进行的，这很关键；
 
-（15）WeakHashMap具有什么特性？
+（13）迁移完元素的桶会放置一个ForwardingNode节点，以标识该桶迁移完毕；
 
-（16）WeakHashMap通常用来做什么？
+（14）元素个数的存储也是采用的分段思想，类似于LongAdder的实现；
 
-（17）WeakHashMap使用String作为key是需要注意些什么？为什么？
+（15）元素个数的更新会把不同的线程hash到不同的段上，减少资源争用；
 
-（18）什么是弱引用？
+（16）元素个数的更新如果还是出现多个线程同时更新一个段，则会扩容段（CounterCell）；
 
-（19）红黑树具有哪些特性？
+（17）获取元素个数是把所有的段（包括baseCount和CounterCell）相加起来得到的；
 
-（20）TreeMap就有序的吗？怎么个有序法？
+（18）查询操作是不会加锁的，所以ConcurrentHashMap不是强一致性的；
 
-（21）TreeMap是否需要扩容？
-
-（22）什么是左旋？什么是右旋？
-
-（23）红黑树怎么插入元素？
-
-（24）红黑树怎么删除元素？
-
-（25）为什么要进行平衡？
-
-（26）如何实现红黑树的遍历？
-
-（27）TreeMap中是怎么遍历的？
-
-（28）TreeMap插入、删除、查询元素的时间复杂度各是多少？
-
-（29）HashMap在多线程环境中什么时候会出现问题？
-
-（30）ConcurrentHashMap的存储结构？
-
-（31）ConcurrentHashMap是怎么保证并发安全的？
-
-（32）ConcurrentHashMap是怎么扩容的？
-
-（33）ConcurrentHashMap的size()方法的实现知多少？
-
-（34）ConcurrentHashMap是强一致性的吗？
-
-（35）ConcurrentHashMap不能解决什么问题？
-
-（36）ConcurrentHashMap中哪些地方运用到分段锁的思想？
-
-（37）什么是伪共享？怎么避免伪共享？
-
-（38）什么是跳表？
-
-（40）ConcurrentSkipList是有序的吗？
-
-（41）ConcurrentSkipList是如何保证线程安全的？
-
-（42）ConcurrentSkipList插入、删除、查询元素的时间复杂度各是多少？
-
-（43）ConcurrentSkipList的索引具有什么特性？
-
-（44）为什么Redis选择使用跳表而不是红黑树来实现有序集合？
+（19）ConcurrentHashMap中不能存储key或value为null的元素；

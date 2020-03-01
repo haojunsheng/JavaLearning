@@ -9,6 +9,7 @@
          * [<strong>1.2.4 删除</strong>](#124-删除)
          * [<strong>1.2.5 查找</strong>](#125-查找)
          * [<strong>1.2.6 扩容</strong>](#126-扩容)
+         * [1.2.7 ArrayList是怎么实现序列化和反序列化的？](#127-arraylist是怎么实现序列化和反序列化的)
    * [2. LinkedList](#2-linkedlist)
       * [2.1 概述](#21-概述)
       * [2.2 源码分析](#22-源码分析)
@@ -42,14 +43,11 @@
       * [4.4 fail-fast vs fail-safe](#44-fail-fast-vs-fail-safe)
          * [4.4.1 前言](#441-前言)
          * [4.4.2 快速失败](#442-快速失败)
-         * [集合类中的fail-fast](#集合类中的fail-fast)
-         * [异常复现](#异常复现)
-         * [异常原理](#异常原理)
          * [4.4.3 安全失败](#443-安全失败)
          * [4.4.4 Copy-On-Write](#444-copy-on-write)
       * [4.5 <strong>如何在遍历的同时删除ArrayList中的元素</strong>](#45-如何在遍历的同时删除arraylist中的元素)
 
-<!-- Added by: anapodoton, at: Fri Feb 28 23:57:34 CST 2020 -->
+<!-- Added by: anapodoton, at: Sun Mar  1 13:29:37 CST 2020 -->
 
 <!--te-->
 
@@ -86,7 +84,7 @@ ArrayList是实现List接口的动态数组，所谓动态就是它的大小是�
 
 **注意，ArrayList实现不是同步的**。如果多个线程同时访问一个ArrayList实例，而其中至少一个线程从结构上修改了列表，那么它必须保持外部同步。所以为了保证同步，最好的办法是在创建时完成，以防止意外对列表进行不同步的访问：
 
-```
+```java
 List list = Collections.synchronizedList(new ArrayList(...));
 ```
 
@@ -96,7 +94,7 @@ ArrayList我们使用的实在是太多了，非常熟悉，所以在这里将�
 
 ### 1.2.1 底层使用数组
 
-```
+```java
  private transient Object[] elementData;
 ```
 
@@ -388,6 +386,87 @@ public void trimToSize() {
     }
 ```
 
+### 1.2.7 ArrayList是怎么实现序列化和反序列化的？
+
+```java
+/**
+     * The array buffer into which the elements of the ArrayList are stored.
+     * The capacity of the ArrayList is the length of this array buffer. Any
+     * empty ArrayList with elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA
+     * will be expanded to DEFAULT_CAPACITY when the first element is added.
+     */
+    transient Object[] elementData; // non-private to simplify nested class access
+```
+
+我们知道elementData是真正存放元素的地方，但是加了transient字段是为了什么呢？
+
+原来我们是自己实现了writeObject和readObject方法，来控制序列化。
+
+```java
+	/**
+     * Save the state of the <tt>ArrayList</tt> instance to a stream (that
+     * is, serialize it).
+     *
+     * @serialData The length of the array backing the <tt>ArrayList</tt>
+     *             instance is emitted (int), followed by all of its elements
+     *             (each an <tt>Object</tt>) in the proper order.
+     */
+private void writeObject(java.io.ObjectOutputStream s)
+        throws java.io.IOException{
+    // 防止序列化期间有修改
+    int expectedModCount = modCount;
+    // 写出非transient非static属性（会写出size属性）
+    s.defaultWriteObject();
+
+    // 写出元素个数
+    s.writeInt(size);
+
+    // 依次写出元素
+    for (int i=0; i<size; i++) {
+        s.writeObject(elementData[i]);
+    }
+
+    // 如果有修改，抛出异常
+    if (modCount != expectedModCount) {
+        throw new ConcurrentModificationException();
+    }
+}
+
+private void readObject(java.io.ObjectInputStream s)
+        throws java.io.IOException, ClassNotFoundException {
+    // 声明为空数组
+    elementData = EMPTY_ELEMENTDATA;
+
+    // 读入非transient非static属性（会读取size属性）
+    s.defaultReadObject();
+
+    // 读入元素个数，没什么用，只是因为写出的时候写了size属性，读的时候也要按顺序来读
+    s.readInt();
+
+    if (size > 0) {
+        // 计算容量
+        int capacity = calculateCapacity(elementData, size);
+        SharedSecrets.getJavaOISAccess().checkArray(s, Object[].class, capacity);
+        // 检查是否需要扩容
+        ensureCapacityInternal(size);
+
+        Object[] a = elementData;
+        // 依次读取元素到数组中
+        for (int i=0; i<size; i++) {
+            a[i] = s.readObject();
+        }
+    }
+}
+```
+
+查看writeObject()方法可知，先调用s.defaultWriteObject()方法，再把size写入到流中，再把元素一个一个的写入到流中。
+
+一般地，只要实现了Serializable接口即可自动序列化，writeObject()和readObject()是为了自己控制序列化的方式，这两个方法必须声明为private，在java.io.ObjectStreamClass#getPrivateMethod()方法中通过反射获取到writeObject()这个方法。
+
+在ArrayList的writeObject()方法中先调用了s.defaultWriteObject()方法，这个方法是写入非static非transient的属性，在ArrayList中也就是size属性。同样地，在readObject()方法中先调用了s.defaultReadObject()方法解析出了size属性。
+
+elementData定义为transient的优势，**自己根据size序列化真实的元素，而不是根据数组的长度序列化元素，减少了空间占用。**
+
 # 2. LinkedList
 
 ## 2.1 概述
@@ -396,7 +475,7 @@ LinkedList与ArrayList一样实现List接口，只是ArrayList是List接口的�
 
 LinkedList实现所有可选的列表操作，并允许所有的元素包括null。
 
-除了实现 List 接口外，LinkedList 类还为在列表的开头及结尾 get、remove 和 insert 元素提供了统一的命名方法。这些操作允许将链接列表用作堆栈、队列或双端队列。 
+除了实现 List 接口外，LinkedList 类还为在列表的开头及结尾 get、remove 和 insert 元素提供了统一的命名方法。**这些操作允许将链接列表用作堆栈、队列或双端队列**。 
 
 此类实现 Deque 接口，为 add、poll 提供先进先出队列操作，以及其他堆栈和双端队列操作。
 
@@ -655,7 +734,7 @@ private E remove(Entry<E> e) {
 
 ## 3.1 Vector简介
 
-Vector可以实现可增长的对象数组。与数组一样，它包含可以使用整数索引进行访问的组件。不过，Vector的大小是可以增加或者减小的，以便适应创建Vector后进行添加或者删除操作。
+Vector可以实现**可增长的对象数组**。与数组一样，它包含可以使用整数索引进行访问的组件。不过，Vector的大小是可以增加或者减小的，以便适应创建Vector后进行添加或者删除操作。
 
 Vector实现List接口，继承AbstractList类，所以我们可以将其看做队列，支持相关的添加、删除、修改、遍历等功能。
 
@@ -959,9 +1038,22 @@ Stack的实现非常简单，仅有一个构造方法，五个实现方法（从
 
 ## 4.1 ArrayList vs LinkedList vs Vector
 
-问：Java中的List有几种实现，各有什么不同？ 解：List主要有ArrayList、LinkedList与Vector几种实现。这三者都实现了List 接口，使用方式也很相似,主要区别在于因为实现方式的不同,所以对不同的操作具有不同的效率。 ArrayList 是一个可改变大小的数组.当更多的元素加入到ArrayList中时,其大小将会动态地增长.内部的元素可以直接通过get与set方法进行访问,因为ArrayList本质上就是一个数组. LinkedList 是一个双链表,在添加和删除元素时具有比ArrayList更好的性能.但在get与set方面弱于ArrayList. 当然,这些对比都是指数据量很大或者操作很频繁的情况下的对比,如果数据和运算量很小,那么对比将失去意义. Vector 和ArrayList类似,但属于强同步类。如果你的程序本身是线程安全的(thread-safe,没有在多个线程之间共享同一个集合/对象),那么使用ArrayList是更好的选择。 Vector和ArrayList在更多元素添加进来时会请求更大的空间。Vector每次请求其大小的双倍空间，而ArrayList每次对size增长50%. 而 LinkedList 还实现了 Queue 接口,该接口比List提供了更多的方法,包括 offer(),peek(),poll()等. 注意: 默认情况下ArrayList的初始容量非常小,所以如果可以预估数据量的话,分配一个较大的初始值属于最佳实践,这样可以减少调整大小的开销。
+问：Java中的List有几种实现，各有什么不同？ 解：List主要有ArrayList、LinkedList与Vector几种实现。这三者都实现了List 接口，使用方式也很相似,主要区别在于因为实现方式的不同,所以对不同的操作具有不同的效率。
 
+- ArrayList 是一个可改变大小的数组.当更多的元素加入到ArrayList中时,其大小将会动态地增长.内部的元素可以直接通过get与set方法进行访问,因为ArrayList本质上就是一个数组. 
 
+- LinkedList 是一个双链表,在添加和删除元素时具有比ArrayList更好的性能.但在get与set方面弱于ArrayList. 当然,这些对比都是指数据量很大或者操作很频繁的情况下的对比,如果数据和运算量很小,那么对比将失去意义. 
+- Vector 和ArrayList类似,但属于强同步类。如果你的程序本身是线程安全的(thread-safe,没有在多个线程之间共享同一个集合/对象),那么使用ArrayList是更好的选择。 Vector和ArrayList在更多元素添加进来时会请求更大的空间。Vector每次请求其大小的双倍空间，而ArrayList每次对size增长50%. 
+- 而 LinkedList 还实现了 Queue 接口,该接口比List提供了更多的方法,包括 offer(),peek(),poll()等. 注意: 默认情况下ArrayList的初始容量非常小,所以如果可以预估数据量的话,分配一个较大的初始值属于最佳实践,这样可以减少调整大小的开销。
+
+|          | [ArrayList](https://github.com/haojunsheng/JavaLearning/blob/master/Java-basic/Java-collection/list-detail.md#1-arraylist) | [LinkedList](https://github.com/haojunsheng/JavaLearning/blob/master/Java-basic/Java-collection/list-detail.md#2-linkedlist) | [Vector](https://github.com/haojunsheng/JavaLearning/blob/master/Java-basic/Java-collection/list-detail.md#3-vector) | [Stack](https://github.com/haojunsheng/JavaLearning/blob/master/Java-basic/Java-collection/list-detail.md#stack) |
+| -------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 实现方式 | 数组                                                         | 链表                                                         | 数组                                                         | 继承自Vector,实现一个后进先出的堆栈                          |
+| 线程安全 | 否                                                           | 否                                                           | 是                                                           | 是                                                           |
+| 默认容量 | 10                                                           |                                                              |                                                              |                                                              |
+| 扩容     | 1.5倍                                                        |                                                              | 2倍                                                          |                                                              |
+| 特性     |                                                              | size，表示大小；first,last；Node定义双向链表。               |                                                              |                                                              |
+| 适用     | 查找                                                         | 插入，删除                                                   |                                                              |                                                              |
 
 List 是一个接口，它继承于Collection的接口。它代表着有序的队列。当我们讨论List的时候，一般都和Set作比较。
 
@@ -1095,7 +1187,15 @@ LinkedList remove: 85768810
 
 ## 4.2 synchronizedList vs Vector?
 
-问：知道什么是synchronizedList吗？他和Vector有何区别？ 解： Vector是java.util包中的一个类。 SynchronizedList是java.util.Collections中的一个静态内部类。 在多线程的场景中可以直接使用Vector类，也可以使用Collections.synchronizedList(List list)方法来返回一个线程安全的List。 1.如果使用add方法，那么他们的扩容机制不一样。 2.SynchronizedList可以指定锁定的对象。即锁粒度是同步代码块。而Vector的锁粒度是同步方法。 3.SynchronizedList有很好的扩展和兼容功能。他可以将所有的List的子类转成线程安全的类。 4.使用SynchronizedList的时候，进行遍历时要手动进行同步处理。 5.SynchronizedList可以指定锁定的对象。
+问：知道什么是synchronizedList吗？他和Vector有何区别？ 解： Vector是java.util包中的一个类。 SynchronizedList是java.util.Collections中的一个静态内部类。 在多线程的场景中可以直接使用Vector类，也可以使用Collections.synchronizedList(List list)方法来返回一个线程安全的List。
+
+ 1.如果使用add方法，那么他们的扩容机制不一样。 
+
+2.SynchronizedList可以指定锁定的对象。即锁粒度是同步代码块。而Vector的锁粒度是同步方法。 3.SynchronizedList有很好的扩展和兼容功能。他可以将所有的List的子类转成线程安全的类。
+
+ 4.使用SynchronizedList的时候，进行遍历时要手动进行同步处理。 
+
+5.SynchronizedList可以指定锁定的对象。
 
 
 
@@ -1107,19 +1207,17 @@ Vector是java.util包中的一个类。 SynchronizedList是java.util.Collections
 
 首先，我们知道Vector和Arraylist都是List的子类，他们底层的实现都是一样的。所以这里比较如下两个`list1`和`list2`的区别：
 
-```
+```java
 List<String> list = new ArrayList<String>();
 List list2 =  Collections.synchronizedList(list);
 Vector<String> list1 = new Vector<String>();
 ```
 
-
-
 ### 4.2.1 add方法
 
 **Vector的实现：**
 
-```
+```java
 public void add(int index, E element) {
     insertElementAt(element, index);
 }
@@ -1145,7 +1243,7 @@ private void ensureCapacityHelper(int minCapacity) {
 
 **synchronizedList的实现：**
 
-```
+```java
 public void add(int index, E element) {
    synchronized (mutex) {
        list.add(index, element);
@@ -1155,7 +1253,7 @@ public void add(int index, E element) {
 
 这里，使用同步代码块的方式调用ArrayList的add()方法。ArrayList的add方法内容如下：
 
-```
+```java
 public void add(int index, E element) {
     rangeCheckForAdd(index);
     ensureCapacityInternal(size + 1);  // Increments modCount!!
@@ -1190,7 +1288,7 @@ public E remove(int index) {
 
 ArrayList类的remove方法内容如下：
 
-```
+```java
 public E remove(int index) {
     rangeCheck(index);
 
@@ -1209,7 +1307,7 @@ public E remove(int index) {
 
 **Vector的实现：**
 
-```
+```java
 public synchronized E remove(int index) {
         modCount++;
         if (index >= elementCount)
@@ -1266,7 +1364,7 @@ public synchronized E remove(int index) {
 
 什么是快速失败（fail-fast）和安全失败（fail-safe）？它们又和什么内容有关系。以上两点就是这篇文章的内容，废话不多话，正文请慢用。
 
-我们都接触 HashMap、ArrayList 这些集合类，这些在 java.util 包的集合类就都是快速失败的；而  java.util.concurrent 包下的类都是安全失败，比如：ConcurrentHashMap。
+我们都接触 HashMap、ArrayList 这些集合类，这些在 **java.util 包的集合类就都是快速失败**的；而  **java.util.concurrent 包下的类都是安全失败**，比如：ConcurrentHashMap。
 
 ### 4.4.2 快速失败
 
@@ -1276,11 +1374,11 @@ public synchronized E remove(int index) {
 
 大概意思是：在系统设计中，快速失效系统一种可以立即报告任何可能表明故障的情况的系统。快速失效系统通常设计用于停止正常操作，而不是试图继续可能存在缺陷的过程。这种设计通常会在操作中的多个点检查系统的状态，因此可以及早检测到任何故障。快速失败模块的职责是检测错误，然后让系统的下一个最高级别处理错误。
 
-其实，这是一种理念，说白了就是在做系统设计的时候先考虑异常情况，一旦发生异常，直接停止并上报。
+其实，这是一种理念，说白了就是**在做系统设计的时候先考虑异常情况，一旦发生异常，直接停止并上报**。
 
 举一个最简单的fail-fast的例子：
 
-```
+```java
 public int divide(int divisor,int dividend){
     if(dividend == 0){
         throw new RuntimeException("dividend can't be null");
@@ -1299,21 +1397,21 @@ public int divide(int divisor,int dividend){
 
 原因是Java的集合类中运用了fail-fast机制进行设计，一旦使用不当，触发fail-fast机制设计的代码，就会发生非预期情况。
 
-### 集合类中的fail-fast
+**集合类中的fail-fast**
 
 我们通常说的Java中的fail-fast机制，默认指的是Java集合的一种错误检测机制。当多个线程对部分集合进行结构上的改变的操作时，有可能会产生fail-fast机制，这个时候就会抛出ConcurrentModificationException（后文用CME代替）。
 
-CMException，当方法检测到对象的并发修改，但不允许这种修改时就抛出该异常。
+**CMException，当方法检测到对象的并发修改，但不允许这种修改时就抛出该异常。**
 
 很多时候正是因为代码中抛出了CMException，很多程序员就会很困惑，明明自己的代码并没有在多线程环境中执行，为什么会抛出这种并发有关的异常呢？这种情况在什么情况下才会抛出呢？我们就来深入分析一下。
 
-### 异常复现
+**异常复现**
 
 在Java中， 如果在foreach 循环里对某些集合元素进行元素的 remove/add 操作的时候，就会触发fail-fast机制，进而抛出CMException。
 
 如以下代码：
 
-```
+```java
 List<String> userNames = new ArrayList<String>() {{
     add("Hollis");
     add("hollis");
@@ -1345,7 +1443,7 @@ at com.hollis.ForEach.main(ForEach.java:22)
 
 我们使用[jad](https://www.hollischuang.com/archives/58)工具，对编译后的class进行反编译，得到以下代码：
 
-```
+```java
 public static void main(String[] args) {
     // 使用ImmutableList初始化一个List
     List<String> userNames = new ArrayList<String>() {{
@@ -1370,7 +1468,7 @@ public static void main(String[] args) {
 
 可以发现，foreach其实是依赖了while循环和Iterator实现的。
 
-### 异常原理
+**异常原理**
 
 通过以上代码的异常堆栈，我们可以跟踪到真正抛出异常的代码是：
 
@@ -1380,7 +1478,7 @@ java.util.ArrayList$Itr.checkForComodification(ArrayList.java:909)
 
 该方法是在iterator.next()方法中调用的。我们看下该方法的实现：
 
-```
+```java
 final void checkForComodification() {
     if (modCount != expectedModCount)
         throw new ConcurrentModificationException();
@@ -1390,6 +1488,36 @@ final void checkForComodification() {
 如上，在该方法中对modCount和expectedModCount进行了比较，如果二者不想等，则抛出CMException。
 
 那么，modCount和expectedModCount是什么？是什么原因导致他们的值不想等的呢？
+
+```java
+ /**
+     * The number of times this list has been <i>structurally modified</i>.
+     * Structural modifications are those that change the size of the
+     * list, or otherwise perturb it in such a fashion that iterations in
+     * progress may yield incorrect results.
+     *
+     * <p>This field is used by the iterator and list iterator implementation
+     * returned by the {@code iterator} and {@code listIterator} methods.
+     * If the value of this field changes unexpectedly, the iterator (or list
+     * iterator) will throw a {@code ConcurrentModificationException} in
+     * response to the {@code next}, {@code remove}, {@code previous},
+     * {@code set} or {@code add} operations.  This provides
+     * <i>fail-fast</i> behavior, rather than non-deterministic behavior in
+     * the face of concurrent modification during iteration.
+     *
+     * <p><b>Use of this field by subclasses is optional.</b> If a subclass
+     * wishes to provide fail-fast iterators (and list iterators), then it
+     * merely has to increment this field in its {@code add(int, E)} and
+     * {@code remove(int)} methods (and any other methods that it overrides
+     * that result in structural modifications to the list).  A single call to
+     * {@code add(int, E)} or {@code remove(int)} must add no more than
+     * one to this field, or the iterators (and list iterators) will throw
+     * bogus {@code ConcurrentModificationExceptions}.  If an implementation
+     * does not wish to provide fail-fast iterators, this field may be
+     * ignored.
+     */
+    protected transient int modCount = 0;
+```
 
 modCount是ArrayList中的一个成员变量。它表示该集合实际被修改的次数。
 
@@ -1433,15 +1561,15 @@ private void fastRemove(int index) {
 
 简单画一张图描述下以上场景：
 
-![img](img/15551448234429.jpg)￼
+<img src="img/15551448234429.jpg" alt="img" style="zoom:50%;" />￼
 
-简单总结一下，之所以会抛出CMException异常，是因为我们的代码中使用了增强for循环，而在增强for循环中，集合遍历是通过iterator进行的，但是元素的add/remove却是直接使用的集合类自己的方法。这就导致iterator在遍历的时候，会发现有一个元素在自己不知不觉的情况下就被删除/添加了，就会抛出一个异常，用来提示用户，可能发生了并发修改！
+简单总结一下，**之所以会抛出CMException异常，是因为我们的代码中使用了增强for循环，而在增强for循环中，集合遍历是通过iterator进行的，但是元素的add/remove却是直接使用的集合类自己的方法。这就导致iterator在遍历的时候，会发现有一个元素在自己不知不觉的情况下就被删除/添加了，就会抛出一个异常，用来提示用户，可能发生了并发修改！**
 
 所以，在使用Java的集合类的时候，如果发生CMException，优先考虑fail-fast有关的情况，实际上这里并没有真的发生并发，只是Iterator使用了fail-fast的保护机制，只要他发现有某一次修改是未经过自己进行的，那么就会抛出异常。
 
 关于如何解决这种问题，我们在《为什么阿里巴巴禁止在 foreach 循环里进行元素的 remove/add 操作》中介绍过，这里不再赘述了。
 
-
+**总结**：
 
 遍历删除List中的元素有很多种方法，当运用不当的时候就会产生问题。下面主要看看以下几种遍历删除List中元素的形式：
 
@@ -1456,7 +1584,7 @@ private void fastRemove(int index) {
 ```java
 /**  
  * 使用增强的for循环  
- * 在循环过程中从List中删除非基本数据类型以后，继续循环List时会报ConcurrentModificationException  
+ * 在循环过程中从List中删除非基本数据类型以后，继续循环List时会报ConcurrentModificationException 
  */    
 public void listRemove() {    
     List<Student> students = this.getStudents();    
@@ -1465,8 +1593,6 @@ public void listRemove() {
             students.remove(stu);    
     }    
 }    
-
-
 
 /**  
  * 像这种使用增强的for循环对List进行遍历删除，但删除之后马上就跳出的也不会出现异常  
@@ -1480,7 +1606,6 @@ public void listRemoveBreak() {
         }    
     }    
 }    
-
 
 /**  
  * 这种不使用增强的for循环的也可以正常删除和遍历,  
@@ -1500,8 +1625,6 @@ public void listRemove2() {
         }    
     }    
 }    
-
-
 
 /**  
  * 使用Iterator的方式可以顺利删除和遍历  
@@ -1546,7 +1669,7 @@ java.util.concurrent包下的容器都是fail-safe的，可以在多线程下并
 
 我们拿CopyOnWriteArrayList这个fail-safe的集合类来简单分析一下。
 
-```
+```java
 public static void main(String[] args) {
     List<String> userNames = new CopyOnWriteArrayList<String>() {{
         add("Hollis");
@@ -1575,7 +1698,7 @@ fail-safe集合的所有对集合的修改都是先拷贝一份副本，然后�
 
 但是，虽然基于拷贝内容的优点是避免了ConcurrentModificationException，但同样地，迭代器并不能访问到修改后的内容。如以下代码：
 
-```
+```java
 public static void main(String[] args) {
     List<String> userNames = new CopyOnWriteArrayList<String>() {{
         add("Hollis");
@@ -1614,11 +1737,11 @@ H
 
 ### 4.4.4 Copy-On-Write
 
-在了解了CopyOnWriteArrayList之后，不知道大家会不会有这样的疑问：他的add/remove等方法都已经加锁了，还要copy一份再修改干嘛？多此一举？同样是线程安全的集合，这玩意和Vector有啥区别呢？
+在了解了[CopyOnWriteArrayList](http://cmsblogs.com/?p=4729)之后，不知道大家会不会有这样的疑问：他的add/remove等方法都已经加锁了，还要copy一份再修改干嘛？多此一举？同样是线程安全的集合，这玩意和Vector有啥区别呢？
 
-Copy-On-Write简称COW，是一种用于程序设计中的优化策略。其基本思路是，从一开始大家都在共享同一个内容，当某个人想要修改这个内容的时候，才会真正把内容Copy出去形成一个新的内容然后再改，这是一种延时懒惰策略。
+Copy-On-Write简称COW，是一种用于程序设计中的优化策略。**其基本思路是，从一开始大家都在共享同一个内容，当某个人想要修改这个内容的时候，才会真正把内容Copy出去形成一个新的内容然后再改，这是一种延时懒惰策略。**
 
-CopyOnWrite容器即写时复制的容器。通俗的理解是当我们往一个容器添加元素的时候，不直接往当前容器添加，而是先将当前容器进行Copy，复制出一个新的容器，然后新的容器里添加元素，添加完元素之后，再将原容器的引用指向新的容器。
+CopyOnWrite容器即写**时复制的容器**。通俗的理解是当我们往一个容器添加元素的时候，不直接往当前容器添加，而是先将当前容器进行Copy，复制出一个新的容器，然后新的容器里添加元素，添加完元素之后，再将原容器的引用指向新的容器。
 
 CopyOnWriteArrayList中add/remove等写方法是需要加锁的，目的是为了避免Copy出N个副本出来，导致并发写。
 
@@ -1636,43 +1759,6 @@ public E get(int index) {
 
 ## 4.5 **如何在遍历的同时删除ArrayList中的元素**
 
-问：如何在遍历的同时删除ArrayList中的元素。 解： 常见的删除有以下几种： /** * 使用增强的for循环 * 在循环过程中从List中删除非基本数据类型以后，继续循环List时会报ConcurrentModificationException */ public void listRemove() { List<Student> students = this.getStudents(); for (Student stu : students) { if (stu.getId() == 2) students.remove(stu); } } /** * 像这种使用增强的for循环对List进行遍历删除，但删除之后马上就跳出的也不会出现异常 */ public void listRemoveBreak() { List<Student> students = this.getStudents(); for (Student stu : students) { if (stu.getId() == 2) { students.remove(stu); break; } } } /** * 这种不使用增强的for循环的也可以正常删除和遍历, * 这里所谓的正常是指它不会报异常，但是删除后得到的 * 数据不一定是正确的，这主要是因为删除元素后，被删除元素后 * 的元素索引发生了变化。假设被遍历list中共有10个元素，当 * 删除了第3个元素后，第4个元素就变成了第3个元素了，第5个就变成 * 了第4个了，但是程序下一步循环到的索引是第4个， * 这时候取到的就是原本的第5个元素了。 */ public void listRemove2() { List<Student> students = this.getStudents(); for (int i=0; i<students.size(); i++) { if (students.get(i).getId()%3 == 0) { Student student = students.get(i); students.remove(student); } } } /** * 使用Iterator的方式可以顺利删除和遍历 */ public void iteratorRemove() { List<Student> students = this.getStudents(); System.out.println(students); Iterator<Student> stuIter = students.iterator(); while (stuIter.hasNext()) { Student student = stuIter.next(); if (student.getId() % 2 == 0) stuIter.remove();//这里要使用Iterator的remove方法移除当前对象，如果使用List的remove方法，则同样会出现ConcurrentModificationException } System.out.println(students); } 建议使用最后一种，即使用Iterator的方式在遍历过程中删除元素
+问：如何在遍历的同时删除ArrayList中的元素。 解： 常见的删除有以下几种： 
 
-（1）ArrayList和LinkedList有什么区别？
-
-（2）ArrayList是怎么扩容的？
-
-（3）ArrayList插入、删除、查询元素的时间复杂度各是多少？
-
-（4）怎么求两个集合的并集、交集、差集？
-
-（5）ArrayList是怎么实现序列化和反序列化的？
-
-（6）集合的方法toArray()有什么问题？
-
-（7）什么是fail-fast？
-
-（8）LinkedList是单链表还是双链表实现的？
-
-（9）LinkedList除了作为List还有什么用处？
-
-（10）LinkedList插入、删除、查询元素的时间复杂度各是多少？
-
-（11）什么是随机访问？
-
-（12）哪些集合支持随机访问？他们都有哪些共性？
-
-（13）CopyOnWriteArrayList是怎么保证并发安全的？
-
-（14）CopyOnWriteArrayList的实现采用了什么思想？
-
-（15）CopyOnWriteArrayList是不是强一致性的？
-
-（16）CopyOnWriteArrayList适用于什么样的场景？
-
-（17）CopyOnWriteArrayList插入、删除、查询元素的时间复杂度各是多少？
-
-（18）CopyOnWriteArrayList为什么没有size属性？
-
-（19）比较古老的集合Vector和Stack有什么缺陷？
 
