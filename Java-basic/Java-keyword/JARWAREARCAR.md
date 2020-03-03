@@ -1,5 +1,3 @@
-[TOC]
-
 # 前言
 
 ## JAR (`Java Archive file`)

@@ -849,7 +849,7 @@ AIO 有三个特点，它的特点也可以说明它是如何完成异步这样�
 
 # 7. 五种IO模型
 
-可以参考我的博客。
+可以参考我的[博客](https://github.com/haojunsheng/NetworkLearning/blob/master/unix-network-socket-api.md#62-io%E6%A8%A1%E5%9E%8B)。
 
 ## 7.1 同步 vs 异步
 
