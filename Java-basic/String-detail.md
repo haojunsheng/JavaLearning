@@ -1174,8 +1174,6 @@ s = s.concat("ef");
 
 如果你需要一个可修改的字符串，应该使用StringBuffer 或者 StringBuilder。否则会有大量时间浪费在垃圾回收上，因为每次试图修改都有新的string对象被创建出来。
 
-
-
 # 5. 为什么Java要把字符串设计成不可变的
 
 [为什么Java要把字符串设计成不可变的](https://www.hollischuang.com/archives/1246)

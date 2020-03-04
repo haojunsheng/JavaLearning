@@ -1,18 +1,15 @@
 <!--ts-->
-   * [<a href="https://www.hollischuang.com/archives/61" rel="nofollow">Java中的Switch对整型、字符型、字符串型的具体实现细节</a>](#java中的switch对整型字符型字符串型的具体实现细节)
-      * [switch对整型支持的实现](#switch对整型支持的实现)
-      * [switch对字符型支持的实现](#switch对字符型支持的实现)
-      * [switch对字符串支持的实现](#switch对字符串支持的实现)
+   * [switch对整型支持的实现](#switch对整型支持的实现)
+   * [switch对字符型支持的实现](#switch对字符型支持的实现)
+   * [switch对字符串支持的实现](#switch对字符串支持的实现)
 
-<!-- Added by: anapodoton, at: Sat Feb 15 21:52:05 CST 2020 -->
+<!-- Added by: anapodoton, at: Wed Mar  4 23:40:01 CST 2020 -->
 
 <!--te-->
 
-#  [Java中的Switch对整型、字符型、字符串型的具体实现细节](https://www.hollischuang.com/archives/61)
-
 Java 7中，switch的参数可以是String类型了，这对我们来说是一个很方便的改进。到目前为止switch支持这样几种数据类型：`byte` `short` `int` `char` `String` 。但是，作为一个程序员我们不仅要知道他有多么好用，还要知道它是如何实现的，switch对整型的支持是怎么实现的呢？对字符型是怎么实现的呢？String类型呢？有一点Java开发经验的人这个时候都会猜测switch对String的支持是使用equals()方法和hashcode()方法。那么到底是不是这两个方法呢？接下来我们就看一下，switch到底是如何实现的。
 
-##  switch对整型支持的实现
+#  switch对整型支持的实现
 
 下面是一段很简单的Java代码，定义一个int型变量a，然后使用switch语句进行判断。执行这段代码输出内容为5，那么我们将下面这段代码反编译，看看他到底是怎么实现的。
 
@@ -62,7 +59,7 @@ public class switchDemoInt
 
 我们发现，反编译后的代码和之前的代码比较除了多了两行注释以外没有任何区别，那么我们就知道，**switch对int的判断是直接比较整数的值**。
 
-## switch对字符型支持的实现
+# switch对字符型支持的实现
 
 直接上代码：
 
@@ -110,7 +107,7 @@ public class switchDemoChar
 
 通过以上的代码作比较我们发现：对char类型进行比较的时候，实际上比较的是ascii码，编译器会把char型变量转换成对应的int型变量
 
-##  switch对字符串支持的实现
+#  switch对字符串支持的实现
 
 还是先上代码：
 

@@ -1,4 +1,5 @@
 <!--ts-->
+
    * [前言](#前言)
    * [一个常犯的错误](#一个常犯的错误)
    * [hashcode()惹的祸](#hashcode惹的祸)
@@ -95,7 +96,7 @@ public boolean equals(Object obj) {
 }
 ```
 
-我们知道所有的对象都拥有标识(内存地址)和状态(数据)，同时“==”比较两个对象的的内存地址，所以说使用Object的equals()方法是比较两个对象的内存地址是否相等，即若object1.equals(object2)为true，则表示equals1和equals2实际上是引用同一个对象。虽然有时候Object的equals()方法可以满足我们一些基本的要求，但是我们必须要清楚我们很大部分时间都是进行两个对象的比较，这个时候Object的equals()方法就不可以了，实际上JDK中，String、Math等封装类都对equals()方法进行了重写。下面是String的equals()方法：
+我们知道所有的对象都拥有标识(内存地址)和状态(数据)，**同时“==”比较两个对象的的内存地址**，所以说使用Object的equals()方法是比较两个对象的内存地址是否相等，即若object1.equals(object2)为true，则表示equals1和equals2实际上是引用同一个对象。虽然有时候Object的equals()方法可以满足我们一些基本的要求，但是我们必须要清楚我们很大部分时间都是进行两个对象的比较，这个时候Object的equals()方法就不可以了，实际上JDK中，String、Math等封装类都对equals()方法进行了重写。下面是String的equals()方法：
 
 ```java
 public boolean equals(Object anObject) {
@@ -121,7 +122,7 @@ public boolean equals(Object anObject) {
    }
 ```
 
-对于这个代码段:if (v1[i++] != v2[j++])return false;我们可以非常清晰的看到String的equals()方法是进行内容比较，而不是引用比较。至于其他的封装类都差不多。
+对于这个代码段:if (v1[i++] != v2[j++])return false;我们可以非常清晰的看到**String的equals()方法是进行内容比较，而不是引用比较**。至于其他的封装类都差不多。
 
 在Java规范中，它对equals()方法的使用必须要遵循如下几个规则：
 
@@ -259,6 +260,3 @@ public class Test {
 对于那e1!=e2我们非常容易理解，因为他们不仅需要比较name,还需要比较id。但是p1即等于e1也等于e2，这是非常奇怪的，因为e1、e2明明是两个不同的类，但为什么会出现这个情况？首先p1.equals(e1)，是调用p1的equals方法，该方法使用instanceof关键字来检查e1是否为Person类，这里我们再看看instanceof：判断其左边对象是否为其右边类的实例，也可以用来判断继承中的子类的实例是否为父类的实现。他们两者存在继承关系，肯定会返回true了，而两者name又相同，所以结果肯定是true。
 
 所以出现上面的情况就是使用了关键字instanceof，这是非常容易“专空子”的。故在 **覆写equals时推荐使用getClass进行类型判断。而不是使用instanceof。**
-
-
-
