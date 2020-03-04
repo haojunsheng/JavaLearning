@@ -1,13 +1,3 @@
-<!--ts-->
-      * [构造器](#构造器)
-      * [protected关键字](#protected关键字)
-      * [向上转型](#向上转型)
-      * [谨慎继承](#谨慎继承)
-
-<!-- Added by: anapodoton, at: Sat Feb 15 16:08:44 CST 2020 -->
-
-<!--te-->
-
 在讲解之前我们先看一个例子，该例子是前篇博文（[java提高篇—–理解java的三大特性之封装](http://www.cnblogs.com/chenssy/p/3351835.html)）的。
 
 ![继承—01](https://ws1.sinaimg.cn/large/006tKfTcly1g0cwxvorqgj30pm07n416.jpg)
