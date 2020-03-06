@@ -1,7 +1,4 @@
-> 对于 Java 各个版本的特性，特别是 Java 8 的新知识点，我们都应该有所了解。
-> 前排申明和好文推荐：[闪烁之狐](http://blinkfox.com/) » [Java5新特性及使用](http://blinkfox.com/java5xin-te-xing-ji-shi-yong/) » [Java6新特性及使用](http://blinkfox.com/java6xin-te-xing-ji-shi-yong/) » [Java7新特性及使用](http://blinkfox.com/java7xin-te-xing-ji-shi-yong/) » [Java8新特性及使用(一)](http://blinkfox.com/java8xin-te-xing-ji-shi-yong-2/) » [Java8新特性及使用(二)](http://blinkfox.com/java8xin-te-xing-ji-shi-yong-er/)
-
-## （一）Java 5 相关知识点
+## 1. Java 5 相关知识点
 
 > 参考文章：[jdk 1.5新特性](https://www.kancloud.cn/alex_wsc/java/466883)
 
@@ -692,7 +689,7 @@ blue
 
 ------
 
-## （二）Java 6 相关知识点
+## 2. Java 6 相关知识点
 
 > 关于 JDK 1.6 的新特性，了解一下就可以了...如果有兴趣深入研究的童鞋，右转这里：[Java6新特性及使用](http://blinkfox.com/java6xin-te-xing-ji-shi-yong/)
 
@@ -791,7 +788,7 @@ JDK6 中提供了java.io.Console 类专用来访问基于字符的控制台设�
 
 ------
 
-## （三）JAVA 7 相关知识点
+## 3. JAVA 7 相关知识点
 
 > 之前已经写过一篇详细介绍 Java 7 特性的文章了，这里就直接黏了：[Java 7新特性](https://www.jianshu.com/p/6bc2e4c82f6b)
 
@@ -1199,7 +1196,7 @@ public class CountTask extends RecursiveTask<Integer> {
 
 ------
 
-## （四）Java 8 相关知识点
+## 4. Java 8 相关知识点
 
 > 关于 Java 8 中新知识点，面试官会让你说说 Java 8 你了解多少，下面分享一下我收集的 Java 8 新增的知识点的内容，前排申明引用自：[Java8新特性及使用](http://blinkfox.com/java8xin-te-xing-ji-shi-yong-2/)
 
@@ -1841,7 +1838,7 @@ Java8中，HashMap内部实现又引入了红黑树（数组+链表+红黑树）
 
 ------
 
-## （五）Java 9 相关知识点
+## 5. Java 9 相关知识点
 
 > 引用自文章：[Java 9 中的 9 个新特性](http://www.importnew.com/24528.html)、[Java 9 新特性概述——IBM](https://www.ibm.com/developerworks/cn/java/the-new-features-of-Java-9/index.html)、[【译】使用示例带你提前了解 Java 9 中的新特性](https://yifeng.studio/2017/03/12/translation-java-9-features-with-examples/)
 

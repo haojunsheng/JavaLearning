@@ -242,18 +242,16 @@ void invalidate()
 
   传递格式如
 
-   
-
   ```
-  /path/Servlet;jsessionid=sessionid
+/path/Servlet;jsessionid=sessionid
   ```
-
+  
   2.使用响应对象中的encodeURL(String path)
 
   实现 jsessionid 的自动拼接
 
   ```
-  String path = resp.encodeURL("path/Servlet");
+String path = resp.encodeURL("path/Servlet");
   ```
-
+  
   - **推荐方式：②**

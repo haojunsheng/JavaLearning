@@ -1,5 +1,3 @@
-[TOC]
-
 # 1.什么是 Servlet
 
 学习一个东西就要先去了解它是什么东西。
@@ -9,8 +7,6 @@ Servlet 取自两个单词：Server、Applet （很符合 sun 公司的命名特
 狭义的Servlet是指Java语言实现的一个接口，广义的Servlet是指任何实现了这个Servlet接口的类，一般情况下，人们将Servlet理解为后者。Servlet运行于支持Java的应用服务器中。从原理上讲，Servlet可以响应任何类型的请求，但绝大多数情况下Servlet只用来扩展基于HTTP协议的Web服务器。
 
 > 实际上，Servlet 就像是一个规范，想象一下我们的 USB 接口，它不仅约束了U盘的大小和形状，同样也约束了电脑的插槽，Servlet 也是如此，它不仅约束了服务器端如何实现规范，也约束着 Java Web 项目的结构，为什么这样说，我们下面再来讲，**编写一个 Servlet 其实就是按照 Servlet 规范编写一个 Java 类。**
-
-
 
 # 2. Servlet 与 Servlet 容器 
 
@@ -90,9 +86,8 @@ Servlet obj = cache.get("xxx.xxx");
 # 5. Servlet 生命周期
 
 在 Web 容器中，Servlet 主要经历 4 个阶段，如下图：
-![Servlet 生命周期](https://ws1.sinaimg.cn/large/006tKfTcly1g0jw6ou52tj30jg0700tb.jpg)
+**加载 Servlet：**当 Tomcat **第一次访问 Servlet** 的时候，Tomcat 会负责**创建 Servlet 的实例。**
 
-1. **加载 Servlet：**当 Tomcat **第一次访问 Servlet** 的时候，Tomcat 会负责**创建 Servlet 的实例。**
 2. **初始化 Servlet：**当 Servlet 被实例化之后，Tomcat 会调用 **init()** 方法来初始化这个对象。
 3. **处理服务：**当浏览器**访问 Servlet** 的时候，Servlet 会调用 **service()** 方法处理请求。
 4. **销毁：**当 **Tomcat 关闭**或者**检测到 Servlet 要从 Tomcat 删除**的时候，会自动调用 **destroy()** 方法，让该实例所占用的资源释放掉。一个 Servlet 如果长时间不被使用的话，也会被 Tomcat 自动销毁。

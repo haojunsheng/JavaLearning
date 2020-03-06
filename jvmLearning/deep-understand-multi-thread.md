@@ -946,3 +946,137 @@ synchronized(this){
 自Java 6/Java 7开始，Java虚拟机对内部锁的实现进行了一些优化。这些优化主要包括锁消除（Lock Elision）、锁粗化（Lock Coarsening）、偏向锁（Biased Locking）以及适应性自旋锁（Adaptive Locking）。这些优化仅在Java虚拟机server模式下起作用（即运行Java程序时我们可能需要在命令行中指定Java虚拟机参数“-server”以开启这些优化）。
 
 本文主要介绍了自旋锁、锁粗化和锁消除的概念。在JIT编译过程中，虚拟机会根据情况使用这三种技术对锁进行优化，目的是减少锁的竞争，提升性能。
+
+# 6. 用 wait-notify 写一段代码来解决生产者-消费者问题
+
+这是常考的基础类型的题，只要记住在同步块中调用 wait() 和 notify()方法，如果阻塞，通过循环来测试等待条件。
+
+```java
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Java program to solve Producer Consumer problem using wait and notify
+ * method in Java. Producer Consumer is also a popular concurrency design pattern.
+ *
+ * @author Javin Paul
+ */
+public class ProducerConsumerSolution {
+
+    public static void main(String args[]) {
+        Vector sharedQueue = new Vector();
+        int size = 4;
+        Thread prodThread = new Thread(new Producer(sharedQueue, size), "Producer");
+        Thread consThread = new Thread(new Consumer(sharedQueue, size), "Consumer");
+        prodThread.start();
+        consThread.start();
+    }
+}
+
+class Producer implements Runnable {
+
+    private final Vector sharedQueue;
+    private final int SIZE;
+
+    public Producer(Vector sharedQueue, int size) {
+        this.sharedQueue = sharedQueue;
+        this.SIZE = size;
+    }
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 7; i++) {
+            System.out.println("Produced: " + i);
+            try {
+                produce(i);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Producer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        }
+    }
+
+    private void produce(int i) throws InterruptedException {
+
+        // wait if queue is full
+        while (sharedQueue.size() == SIZE) {
+            synchronized (sharedQueue) {
+                System.out.println("Queue is full " + Thread.currentThread().getName()
+                                    + " is waiting , size: " + sharedQueue.size());
+
+                sharedQueue.wait();
+            }
+        }
+
+        // producing element and notify consumers
+        synchronized (sharedQueue) {
+            sharedQueue.add(i);
+            sharedQueue.notifyAll();
+        }
+    }
+}
+
+class Consumer implements Runnable {
+
+    private final Vector sharedQueue;
+    private final int SIZE;
+
+    public Consumer(Vector sharedQueue, int size) {
+        this.sharedQueue = sharedQueue;
+        this.SIZE = size;
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                System.out.println("Consumed: " + consume());
+                Thread.sleep(50);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Consumer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        }
+    }
+
+    private int consume() throws InterruptedException {
+        // wait if queue is empty
+        while (sharedQueue.isEmpty()) {
+            synchronized (sharedQueue) {
+                System.out.println("Queue is empty " + Thread.currentThread().getName()
+                                    + " is waiting , size: " + sharedQueue.size());
+
+                sharedQueue.wait();
+            }
+        }
+
+        // Otherwise consume element and notify waiting producer
+        synchronized (sharedQueue) {
+            sharedQueue.notifyAll();
+            return (Integer) sharedQueue.remove(0);
+        }
+    }
+}
+
+Output:
+Produced: 0
+Queue is empty Consumer is waiting , size: 0
+Produced: 1
+Consumed: 0
+Produced: 2
+Produced: 3
+Produced: 4
+Produced: 5
+Queue is full Producer is waiting , size: 4
+Consumed: 1
+Produced: 6
+Queue is full Producer is waiting , size: 4
+Consumed: 2
+Consumed: 3
+Consumed: 4
+Consumed: 5
+Consumed: 6
+Queue is empty Consumer is waiting , size: 0
+```
+

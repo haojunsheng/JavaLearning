@@ -1,5 +1,3 @@
-[TOC]
-
 # 1.装配 Bean 的概述
 
 前面已经介绍了 Spring IoC 的理念和设计，这一篇文章将介绍的是如何将自己开发的 Bean 装配到 Spring IoC 容器中。

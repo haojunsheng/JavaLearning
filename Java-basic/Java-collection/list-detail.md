@@ -1,4 +1,5 @@
 <!--ts-->
+
    * [前言](#前言)
    * [1. ArrayList](#1-arraylist)
       * [1.1 ArrayList概述](#11-arraylist概述)
@@ -1197,7 +1198,15 @@ LinkedList remove: 85768810
 
 5.SynchronizedList可以指定锁定的对象。
 
-
+|                | SynchronizedList                 | Vector    |
+| -------------- | -------------------------------- | --------- |
+| 包             | java.util.Collections            | java.util |
+| 线程安全       | 是                               | 是        |
+| 扩容机制       | 1.5倍                            | 2倍       |
+| 同步方式       | 同步代码块                       | 同步方法  |
+| 扩展性和兼容性 | 将所有list的子类转成线程安全的类 |           |
+| 遍历           | 需要手动同步                     |           |
+| 锁定对象       | 可以指定锁定的对象(构造函数传入) | this对象  |
 
 Vector是java.util包中的一个类。 SynchronizedList是java.util.Collections中的一个静态内部类。
 
