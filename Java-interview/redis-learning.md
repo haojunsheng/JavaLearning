@@ -14,7 +14,19 @@
 
  ## 2.1 缓存和数据库双写一致性问题
 
- ## 2.2 缓存雪崩问题
+ ## 2.2 缓存击穿问题
+
+缓存穿透是指查询一个一定不存在的数据，由于缓存是不命中时需要从[数据库](http://lib.csdn.net/base/14)查询，查不到数据则不写入缓存，这将导致这个不存在的数据每次请求都要到数据库去查询，造成缓存穿透。
+
+解决：
+
+1. 利用互斥锁，缓存失效的时候，先去获得锁，得到锁了，再去请求数据库。没得到锁，则休眠一段时间重试
+
+2. 采用异步更新策略，无论key是否取到值，都直接返回。value值中维护一个缓存失效时间，缓存如果过期，异步起一个线程去读数据库，更新缓存。需要做缓存预热(项目启动前，先加载缓存)操作。
+
+3. 提供一个能迅速判断请求是否有效的拦截机制，比如，利用布隆过滤器，内部维护一系列合法有效的key。迅速判断出，请求所携带的Key是否合法有效。如果不合法，则直接返回。
+
+ ## 2.3 缓存雪崩问题
 
 如果缓存集中在一段时间内失效，发生大量的缓存穿透，所有的查询都落在数据库上，造成了缓存雪崩。
 
@@ -26,18 +38,6 @@
 2. 可以通过缓存reload机制，预先去更新缓存，再即将发生大并发访问前手动触发加载缓存
 3. 不同的key，设置不同的过期时间，让缓存失效的时间点尽量均匀
 4. 做二级缓存，或者双缓存策略。A1为原始缓存，A2为拷贝缓存，A1失效时，可以访问A2，A1缓存失效时间设置为短期，A2设置为长期。
-
- ## 2.3 缓存击穿问题
-
-缓存穿透是指查询一个一定不存在的数据，由于缓存是不命中时需要从[数据库](http://lib.csdn.net/base/14)查询，查不到数据则不写入缓存，这将导致这个不存在的数据每次请求都要到数据库去查询，造成缓存穿透。
-
-解决：
-
-1. 利用互斥锁，缓存失效的时候，先去获得锁，得到锁了，再去请求数据库。没得到锁，则休眠一段时间重试
-
-2. 采用异步更新策略，无论key是否取到值，都直接返回。value值中维护一个缓存失效时间，缓存如果过期，异步起一个线程去读数据库，更新缓存。需要做缓存预热(项目启动前，先加载缓存)操作。
-
-3. 提供一个能迅速判断请求是否有效的拦截机制，比如，利用布隆过滤器，内部维护一系列合法有效的key。迅速判断出，请求所携带的Key是否合法有效。如果不合法，则直接返回。
 
  ## 2.4 缓存的并发竞争问题
 
@@ -74,170 +74,6 @@
  ## 3.3 采用了非阻塞I/O多路复用机制
 
  参照上图，简单来说，就是。我们的redis-client在操作的时候，会产生具有不同事件类型的socket。在服务端，有一段I/0多路复用程序，将其置入队列之中。然后，文件事件分派器，依次去队列中取，转发到不同的事件处理器中。
-
-
-
-# 二、数据类型
-
-| 数据类型 | 可以存储的值           | 操作                                                         |
-| -------- | ---------------------- | ------------------------------------------------------------ |
-| STRING   | 字符串、整数或者浮点数 | 对整个字符串或者字符串的其中一部分执行操作 对整数和浮点数执行自增或者自减操作 |
-| LIST     | 列表                   | 从两端压入或者弹出元素 对单个或者多个元素进行修剪， 只保留一个范围内的元素 |
-| SET      | 无序集合               | 添加、获取、移除单个元素 检查一个元素是否存在于集合中 计算交集、并集、差集 从集合里面随机获取元素 |
-| HASH     | 包含键值对的无序散列表 | 添加、获取、移除单个键值对 获取所有键值对 检查某个键是否存在 |
-| ZSET     | 有序集合               | 添加、获取、删除元素 根据分值范围或者成员来获取元素 计算一个键的排名 |
-
-> [What Redis data structures look like](https://redislabs.com/ebook/part-1-getting-started/chapter-1-getting-to-know-redis/1-2-what-redis-data-structures-look-like/)
-
-## STRING
-
-[![img](img/68747470733a2f2f63732d6e6f7465732d313235363130393739362e636f732e61702d6775616e677a686f752e6d7971636c6f75642e636f6d2f36303139623264622d626333652d343430382d623664382d3936303235663434383164362e706e67.png)](https://camo.githubusercontent.com/741c9153e1c49eeec9f29ea80a06bf444a767903/68747470733a2f2f63732d6e6f7465732d313235363130393739362e636f732e61702d6775616e677a686f752e6d7971636c6f75642e636f6d2f36303139623264622d626333652d343430382d623664382d3936303235663434383164362e706e67)
-
-
-
-```
-> set hello world
-OK
-> get hello
-"world"
-> del hello
-(integer) 1
-> get hello
-(nil)
-```
-
-## LIST
-
-[![img](img/68747470733a2f2f63732d6e6f7465732d313235363130393739362e636f732e61702d6775616e677a686f752e6d7971636c6f75642e636f6d2f66623332373631312d376532622d346632662d396635622d3338353932643430386630372e706e67.png)](https://camo.githubusercontent.com/f6a0fffb6f97f71425a2d839fcc0f93b7042446e/68747470733a2f2f63732d6e6f7465732d313235363130393739362e636f732e61702d6775616e677a686f752e6d7971636c6f75642e636f6d2f66623332373631312d376532622d346632662d396635622d3338353932643430386630372e706e67)
-
-
-
-```
-> rpush list-key item
-(integer) 1
-> rpush list-key item2
-(integer) 2
-> rpush list-key item
-(integer) 3
-
-> lrange list-key 0 -1
-1) "item"
-2) "item2"
-3) "item"
-
-> lindex list-key 1
-"item2"
-
-> lpop list-key
-"item"
-
-> lrange list-key 0 -1
-1) "item2"
-2) "item"
-```
-
-## SET
-
-[![img](img/68747470733a2f2f63732d6e6f7465732d313235363130393739362e636f732e61702d6775616e677a686f752e6d7971636c6f75642e636f6d2f63643566626366662d336633352d343361362d386666612d3038326139336365306630652e706e67.png)](https://camo.githubusercontent.com/ee95c32da9c5a0d4d6b69514b4bf9290dea36b6e/68747470733a2f2f63732d6e6f7465732d313235363130393739362e636f732e61702d6775616e677a686f752e6d7971636c6f75642e636f6d2f63643566626366662d336633352d343361362d386666612d3038326139336365306630652e706e67)
-
-
-
-```
-> sadd set-key item
-(integer) 1
-> sadd set-key item2
-(integer) 1
-> sadd set-key item3
-(integer) 1
-> sadd set-key item
-(integer) 0
-
-> smembers set-key
-1) "item"
-2) "item2"
-3) "item3"
-
-> sismember set-key item4
-(integer) 0
-> sismember set-key item
-(integer) 1
-
-> srem set-key item2
-(integer) 1
-> srem set-key item2
-(integer) 0
-
-> smembers set-key
-1) "item"
-2) "item3"
-```
-
-## HASH
-
-[![img](img/68747470733a2f2f63732d6e6f7465732d313235363130393739362e636f732e61702d6775616e677a686f752e6d7971636c6f75642e636f6d2f37626432303261372d393364342d346633612d613837382d6166363861653235353339612e706e67.png)](https://camo.githubusercontent.com/2a3754a8770f890d0e53d8bb7ccf446f384c33ae/68747470733a2f2f63732d6e6f7465732d313235363130393739362e636f732e61702d6775616e677a686f752e6d7971636c6f75642e636f6d2f37626432303261372d393364342d346633612d613837382d6166363861653235353339612e706e67)
-
-
-
-```
-> hset hash-key sub-key1 value1
-(integer) 1
-> hset hash-key sub-key2 value2
-(integer) 1
-> hset hash-key sub-key1 value1
-(integer) 0
-
-> hgetall hash-key
-1) "sub-key1"
-2) "value1"
-3) "sub-key2"
-4) "value2"
-
-> hdel hash-key sub-key2
-(integer) 1
-> hdel hash-key sub-key2
-(integer) 0
-
-> hget hash-key sub-key1
-"value1"
-
-> hgetall hash-key
-1) "sub-key1"
-2) "value1"
-```
-
-## ZSET
-
-[![img](img/68747470733a2f2f63732d6e6f7465732d313235363130393739362e636f732e61702d6775616e677a686f752e6d7971636c6f75642e636f6d2f31323032623264362d393436392d343235312d626434372d6361363033346662363131362e706e67.png)](https://camo.githubusercontent.com/f547165de432ff22e18fd007b393b24540465abe/68747470733a2f2f63732d6e6f7465732d313235363130393739362e636f732e61702d6775616e677a686f752e6d7971636c6f75642e636f6d2f31323032623264362d393436392d343235312d626434372d6361363033346662363131362e706e67)
-
-
-
-```
-> zadd zset-key 728 member1
-(integer) 1
-> zadd zset-key 982 member0
-(integer) 1
-> zadd zset-key 982 member0
-(integer) 0
-
-> zrange zset-key 0 -1 withscores
-1) "member1"
-2) "728"
-3) "member0"
-4) "982"
-
-> zrangebyscore zset-key 0 800 withscores
-1) "member1"
-2) "728"
-
-> zrem zset-key member1
-(integer) 1
-> zrem zset-key member1
-(integer) 0
-
-> zrange zset-key 0 -1 withscores
-1) "member0"
-2) "982"
-```
 
 # 三、数据结构
 

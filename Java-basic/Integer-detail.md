@@ -1,4 +1,24 @@
 <!--ts-->
+   * [前言](#前言)
+   * [1. 类定义](#1-类定义)
+   * [2. 属性](#2-属性)
+      * [2.1 私有属性](#21-私有属性)
+      * [2.2 公共属性](#22-公共属性)
+   * [3. 方法](#3-方法)
+      * [3.1 构造方法](#31-构造方法)
+      * [3.1 Integer valueOf(int i)方法](#31-integer-valueofint-i方法)
+      * [3.2 String转成Integer（int）的方法](#32-string转成integerint的方法)
+      * [3.3 int转成String的方法](#33-int转成string的方法)
+      * [3.4 compareTo方法](#34-compareto方法)
+      * [3.5 实现Number的方法](#35-实现number的方法)
+      * [参考资料](#参考资料)
+   * [4. Interger缓存](#4-interger缓存)
+      * [4.1 Java中Integer的缓存实现](#41-java中integer的缓存实现)
+      * [4.2 IntegerCache Class](#42-integercache-class)
+      * [4.3 Java语言规范中的缓存行为](#43-java语言规范中的缓存行为)
+      * [4.4 其他缓存的对象](#44-其他缓存的对象)
+
+<!-- Added by: anapodoton, at: Tue Apr 14 16:20:10 CST 2020 -->
 
 <!--te-->
 

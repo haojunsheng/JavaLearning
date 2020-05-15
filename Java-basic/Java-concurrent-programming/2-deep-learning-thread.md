@@ -96,8 +96,6 @@
 
 　　而在Solaris平台中，由于操作系统的线程特性可以同时支持一对一（通过Bound Threads或Alternate Libthread实现）及多对多（通过LWP/Thread Based Synchronization实现）的线程模型，因此在Solaris版的JDK中也对应提供了两个平台专有的虚拟机参数：-XX：+UseLWPSynchronization（默认值）和-XX：+UseBoundThreads来明确指定虚拟机使用哪种线程模型。 　　 Java语言则提供了在不同硬件和操作系统平台下对线程操作的统一处理，每个已经执行start（）且还未结束的java.lang.Thread类的实例就代表了一个线程。我们注意到Thread类与大部分的Java API有显著的差别，它的所有关键方法都是声明为Native的。在Java API中，一个Native方法往往意味着这个方法没有使用或无法使用平台无关的手段来实现（当然也可能是为了执行效率而使用Native方法，不过，通常最高效率的手段也就是平台相关的手段）。
 
-(参考：深入理解Java虚拟机）
-
 # 3. 线程的状态
 
 线程是有状态的，并且这些状态之间也是可以互相流转的。Java中线程的状态分为6种：
@@ -598,7 +596,7 @@ public class ConnectionManager {
 
 还有很多文章在对比 ThreadLocal 与 synchronize 的异同。既然是作比较，那应该是认为这两者解决相同或类似的问题。
 
-上面的描述，问题在于，ThreadLocal 并不解决多线程 **共享** 变量的问题。既然变量不共享，那就更谈不上同步的问题。
+上面的描述，问题在于，ThreadLocal 并不解决多线程 **共享**变量的问题。既然变量不共享，那就更谈不上同步的问题。
 
 ### 7.1.2 合理的理解
 
@@ -897,7 +895,7 @@ private void set(ThreadLocal<?> key, Object value) {
 
 对于 Java Web 应用而言，Session 保存了很多信息。很多时候需要通过 Session 获取信息，有些时候又需要修改 Session 的信息。一方面，需要保证每个线程有自己单独的 Session 实例。另一方面，由于很多地方都需要操作 Session，存在多方法共享 Session 的需求。如果不使用 ThreadLocal，可以在每个线程内构建一个 Session实例，并将该实例在多个方法间传递，如下所示。
 
-```
+```java
 public class SessionHandler {
 
   @Data
@@ -942,7 +940,7 @@ public class SessionHandler {
 
 这里使用 ThreadLocal 重新实现该功能如下所示。
 
-```
+```java
 public class SessionHandler {
 
   public static ThreadLocal<Session> session = ThreadLocal.<Session>withInitial(() -> new Session());
@@ -977,8 +975,6 @@ public class SessionHandler {
   }
 }
 ```
-
-
 
 使用 ThreadLocal 改造后的代码，不再需要在各个方法间传递 Session 对象，并且也非常轻松的保证了每个线程拥有自己独立的实例。
 

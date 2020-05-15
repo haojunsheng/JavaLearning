@@ -643,7 +643,7 @@ public class switchDemoString {
 
 对代码进行反编译：
 
-```
+```java
 public class switchDemoString
 {
     public switchDemoString()

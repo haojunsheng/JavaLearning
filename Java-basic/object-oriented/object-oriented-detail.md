@@ -213,7 +213,7 @@ husband.age = 300;
 
 但是使用封装我们就可以避免这个问题，我们对age的访问入口做一些控制(setter)如：
 
-```
+```java
 public class Husband {
 
     /*

@@ -201,8 +201,6 @@ FileReader 类就是按照上面的工作方式读取文件的，FileReader 是�
    是就加上Buffered：BufferedInputStream, BufferedOuputStream, BufferedReader, BufferedWriter
 6. 是否需要格式化输出
 
-
-
 # 4. 磁盘 I/O 的工作机制
 
 在介绍 Java 读取和写入磁盘文件之前，先来看看应用程序访问文件有哪几种方式；
@@ -365,8 +363,6 @@ public class People implements Serializable {
 ```
 
 然后我们再运行我们刚才反序列化的代码，会发现，这个时候程序竟然报错了，说是serialVersionUID不一致：
-
-![img](https://upload-images.jianshu.io/upload_images/7896890-7679c131520a584f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 事实上，如果你经常看别人的代码的话，或许会有留意到诸如这样的代码：
 

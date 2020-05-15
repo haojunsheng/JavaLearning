@@ -6,7 +6,5 @@ Collections 是一个包装类。 它包含有各种有关集合操作的静态�
 
 日常开发中，不仅要了解Java中的Collection及其子类的用法，还要了解Collections用法。可以提升很多处理集合类的效率。
 
-
-
 # 2. Arrays
 

@@ -1,4 +1,5 @@
 <!--ts-->
+
    * [前言](#前言)
    * [1. 深度分析Java的ClassLoader机制（源码级别）](#1-深度分析java的classloader机制源码级别)
       * [1.1 源码分析](#11-源码分析)
@@ -55,7 +56,7 @@
 
 classLoader、类加载过程、双亲委派（破坏双亲委派）、模块化（jboss modules、osgi、jigsaw）
 
-# 1. 深度分析Java的ClassLoader机制（源码级别）
+# 1. 深度分析Java的ClassLoader机制
 
 [深度分析Java的ClassLoader机制（源码级别）](https://www.hollischuang.com/archives/199)
 
@@ -448,6 +449,7 @@ sun.misc.Launcher 使用了单例模式设计，保证一个JVM虚拟机内只�
 
 上面讨论的应用类加载器AppClassLoader的加载类的模式就是我们常说的双亲委派模型(parent-delegation model).
 对于某个特定的类加载器而言，应该为其指定一个父类加载器，当用其进行加载类的时候：
+
 1. 委托父类加载器帮忙加载；
 2. 父类加载器加载不了，则查询引导类加载器有没有加载过该类；
 3. 如果引导类加载器没有加载过该类，则当前的类加载器应该自己加载该类；

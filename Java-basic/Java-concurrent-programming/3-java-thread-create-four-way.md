@@ -63,7 +63,6 @@ public class MultiThreads {
 }
 
 class SubClassThread extends Thread {
-
     @Override
     public void run() {
         System.out.println(getName());
@@ -119,7 +118,7 @@ class RunnableThread implements Runnable {
 
 除此之外，两者之间几乎无差别。
 
-但是，这两种创建线程的方式，其实是有一个缺点的，那就是：在执行完任务之后无法获取执行结果。
+但是，这两种创建线程的方式，其实是有一个缺点的，那就是：**在执行完任务之后无法获取执行结果**。
 
 如果我们希望再主线程中得到子线程的执行结果的话，就需要用到Callable和FutureTask
 

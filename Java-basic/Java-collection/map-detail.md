@@ -373,7 +373,7 @@ static class Entry<K,V> implements Map.Entry<K,V> {
 
 ### 1.5.4 为什么链表要变成红黑树
 
-
+查询的时间少，从k变为lgk。
 
 ## 1.6 HashMap的存取实现
 

@@ -1,4 +1,5 @@
 <!--ts-->
+
    * [1. 池化技术](#1-池化技术)
    * [2. 线程池的简单使用](#2-线程池的简单使用)
       * [2.1 添加一个任务](#21-添加一个任务)
@@ -382,7 +383,7 @@ private boolean addWorker(Runnable firstTask, boolean core) {
 
 线程池提供了两个钩子（beforeExecute，afterExecute）给我们，我们继承线程池，在执行任务前后做一些事情。
 
-线程池原理关键技术：锁（lock,cas）、阻塞队列、hashSet（资源池）
+   线程池原理关键技术：锁（lock,cas）、阻塞队列、hashSet（资源池）
 
 ![img](img/15473586062087.jpg)￼
 
@@ -390,7 +391,7 @@ private boolean addWorker(Runnable firstTask, boolean core) {
 
 上面是原理，下面是如何使用。
 
-在前面的章节中，我们介绍过了Java中线程池的常见用法以及基本原理。
+在前面的章节中，我们介绍过了Java中线 程池的常见用法以及基本原理。
 
 在文中有这样一段描述：
 
