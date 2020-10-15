@@ -1,6 +1,15 @@
-在上一篇文章中，我们了解了[Java Web应用程序](http://www.hollischuang.com/archives/339)和Web应用程序中的核心概念，如Web服务器,Web客户端,HTML,HTTP和Web容器以及如何使用Servlet和Jsp创建web应用程序。同时分别使用servlet和jsp创建了可以在tomcat中运行的web应用程序。
+# tomcat结构
 
-这篇文章将主要介绍更多关于setvlet的细节，如servlet中的核心api、servlet3.0中的注解、servlet的生命周期。最后再创建一个简单的servlet应用程序实现登录功能。
+- bin:启动和关闭tomcat的bat文件
+- conf:配置文件
+  - server.xml 该文件用于配置server相关的信息，比如tomcat启动的端口号，配置主机 (Host)
+  - web.xml 文件配置与web应用
+- webapps:放置我们的web应用
+- work工作目录:该目录用于存放**jsp**被访问后生成对应的**server**文件和**.class**文件
+
+<img src="./img/image-20200605003350373.png" alt="image-20200605003350373" style="zoom:50%;" />
+
+WEB-INF是一个安全目录，无法通过url直接访问，必须通过我们的映射来访问。
 
 ## Servlet概述
 
@@ -342,6 +351,12 @@ public class LoginServlet extends HttpServlet {
 
 下面是页面展示，包括登录成功及失败两种情况。![login](img/login-page-html.png)![login-success](img/servlet-login-success.png)![login-fail](img/servlet-login-failure.png)
 
-Servlet的初级教程就介绍到这里了，下一篇文章会介绍session管理、Servlet过滤器和监听器。
+## 过滤器
 
-[wpdm_package id=’1214′]
+当需要限制用户访问某些资源时、在处理请求时提前处理某些资源、服务器响应的内容对其进行处理再返回、我们就是用过滤器来完成的。比如：过滤一些敏感的字符串【规定不能出现敏感字符串】、避免中文乱码【规定**Web**资源都使用**UTF-8**编码】、权限验证【规定只有带**Session**或**Cookie**的浏览器，才能访问 **web**资源】。
+
+**1**、可以在**filter**中根据条件决定是否调用**chain.doFilter(request, response)**方法，即是否让目 标资源执行
+
+ **2**、在让目标资源执行之前，可以对**request\response**作预处理，再让目标资源执行
+
+ **3**、在目标资源执行之后，可以捕获目标资源的执行结果，从而实现一些特殊的功能

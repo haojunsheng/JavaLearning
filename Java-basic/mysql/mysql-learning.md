@@ -39,6 +39,25 @@
 
 <!--te-->
 
+# 前言
+
+## mysql的演化
+
+IMS(Information Managment System，用在银行)  。
+
+- 优点：每秒10w个事务处理。
+- 缺点：层次数据库，每个节点只有一个parent，从上到下查找快，从下到上查找慢。
+
+<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/image-20200625180249194.png" alt="image-20200625180249194" style="zoom:50%;" />
+
+然后演化出网状数据库IDS，复杂，面向集合的查询太难。
+
+<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/image-20200625180426447.png" alt="image-20200625180426447" style="zoom:50%;" />
+
+再然后是关系模型，关系模型每次只会处理一条记录。
+
+
+
 # 1. mysql体系结构和存储引擎
 
 <img src="img/image-20200514190752867.png" alt="image-20200514190752867" style="zoom:33%;" />
@@ -798,3 +817,67 @@ ANSI/ISO SQL定义的标准隔离级别有四种，从高到底依次为：可�
 ## 7.3 事务的实现
 
 redo来实现事务的原子性和持久性，undo来保证一致性。
+
+
+
+# 8. mysql实践
+
+创建一个系统，user可以创建不同category的topic，其他的用户可以回复。
+
+![img](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/1.png)
+
+User表：
+
+```mysql
+CREATE TABLE users (
+user_id     INT(8) NOT NULL AUTO_INCREMENT,
+user_name   VARCHAR(30) NOT NULL,
+user_pass   VARCHAR(255) NOT NULL,
+user_email  VARCHAR(255) NOT NULL,
+user_date   DATETIME NOT NULL,
+user_level  INT(8) NOT NULL,
+UNIQUE INDEX user_name_unique (user_name),
+PRIMARY KEY (user_id)
+) TYPE=INNODB;
+```
+
+- user_name:我们定义了唯一索引：UNIQUE INDEX。
+
+categories表：
+
+```mysql
+CREATE TABLE categories (
+cat_id          INT(8) NOT NULL AUTO_INCREMENT,
+cat_name        VARCHAR(255) NOT NULL,
+cat_description     VARCHAR(255) NOT NULL,
+UNIQUE INDEX cat_name_unique (cat_name),
+PRIMARY KEY (cat_id)
+) TYPE=INNODB;
+```
+
+topics表：
+
+```mysql
+CREATE TABLE topics (
+topic_id        INT(8) NOT NULL AUTO_INCREMENT,
+topic_subject       VARCHAR(255) NOT NULL,
+topic_date      DATETIME NOT NULL,
+topic_cat       INT(8) NOT NULL,
+topic_by        INT(8) NOT NULL,
+PRIMARY KEY (topic_id)
+) TYPE=INNODB;
+```
+
+post表：
+
+```mysql
+CREATE TABLE posts (
+post_id 		INT(8) NOT NULL AUTO_INCREMENT,
+post_content		TEXT NOT NULL,
+post_date 		DATETIME NOT NULL,
+post_topic		INT(8) NOT NULL,
+post_by		INT(8) NOT NULL,
+PRIMARY KEY (post_id)
+) TYPE=INNODB;
+```
+

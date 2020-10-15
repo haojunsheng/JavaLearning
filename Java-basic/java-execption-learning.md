@@ -24,6 +24,18 @@
 
 # 前言
 
+# 面试问题
+
+1. 对比Exception和Error，另外，运行时异常与一般异常有什么区别?
+
+Exception和Error都是继承了Throwable类，在Java中只有Throwable类型的实例才可以被抛出(throw)或者捕获(catch)，它是异常处理机制的基本组成类型。 Exception和Error体现了Java平台设计者对不同异常情况的分类。Exception是程序正常运行中，可以预料的意外情况，可能并且应该被捕获，进行相应处理。
+
+Error是指在正常情况下，不大可能出现的情况，绝大部分的Error都会导致程序(比如JVM自身)处于非正常的、不可恢复状态。既然是非正常情况，所以不便于也不需要捕获，常 见的比如OutOfMemoryError之类，都是Error的子类。
+
+Exception又分为可检查(checked)异常和不检查(unchecked)异常，可检查异常在源代码里必须显式地进行捕获处理，这是编译期检查的一部分。前面我介绍的不可查 的Error，是Throwable不是Exception。
+
+不检查异常就是所谓的运行时异常，类似 NullPointerException、ArrayIndexOutOfBoundsException之类，通常是可以编码避免的逻辑错误，具体根据需要来判断是否需要捕 获，并不会在编译期强制要求。
+
 # java异常机制
 
 > Java的基本理念是“结构不佳的代码不能运行”！！！！！
@@ -58,7 +70,7 @@
 
 java为我们提供了非常完美的异常处理机制，使得我们可以更加专心于我们的程序，在使用异常之前我们需要了解它的体系结构：如下
 
-![1354439580_6933](https://ws3.sinaimg.cn/large/006tKfTcly1g0d4e9rzkpj30gk0j20t9.jpg)
+<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20200718001044.png" alt="image-20200718001044597" style="zoom:50%;" />
 
 从上面这幅图可以看出，Throwable是java语言中所有错误和异常的超类（万物即可抛）。它有两个子类：Error、Exception。
 
