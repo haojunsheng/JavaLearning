@@ -1,18 +1,10 @@
-# 数据库基本原理
+<!--ts-->
 
-数据库是怎么执行的：
-
-```sql
-# 0表示关闭，1表示开启
-select @@profiling;
-set profiling=1;
-```
-
-<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201004204126.png" alt="image-20201004203947601" style="zoom:33%;" />
-
-[sql数据](https://github.com/cystanford/sql_heros_data)
+<!--te-->
 
 # 数据库基本操作
+
+[sql数据](https://github.com/cystanford/sql_heros_data)
 
 ```mysql
 # 创建数据库
@@ -292,8 +284,6 @@ LIMIT 2 #顺序7
 
 
 
-# SQL中重要概念
-
 ## SQL函数
 
 算术函数：ABS取绝对值，MOD取余；ROUND四舍五入，如ROUND(37.25,1)=37.3；
@@ -405,7 +395,327 @@ mysql> SELECT name FROM heros_temp WHERE id = 1;
 ## 模拟幻读
 ```
 
-# 实战
+## 索引
+
+**索引分类**：
+
+功能逻辑上划分：
+
+1. 普通索引：没有任何约束，主要用于提高查询效率；
+2. 唯一索引：增加了数据唯一性的约束，在一张数据表里可以有多个唯一索引；
+3. 主键索引：在唯一索引的基础上增加了不为空的约束，也就是 NOT NULL+UNIQUE，一张表里最多只有一个主键索引；
+4. 全文索引：MySQL只支持英文；
+
+物理实现上划分：
+
+1. 聚集索引：数据和索引存放在一块；每个表只可以有一个；
+2. 非聚集索引（二级索引或者辅助索引）：数据和索引分开；
+
+
+
+**创建索引时机**：
+
+1. 字段的数值有唯一性的限制，比如用户名，可以直接创建唯一性索引，或者主键索引；
+2. 频繁作为 WHERE 查询条件的字段，尤其在数据表大的情况下；
+3. 需要经常 GROUP BY 和 ORDER BY 的列；
+4. UPDATE、DELETE 的 WHERE 条件列，一般也需要创建索引；
+5. DISTINCT 字段需要创建索引；
+
+
+
+**索引失效**，参考实验4
+
+1. 索引进行了表达式计算，则会失效；
+2. 如果对索引使用函数，也会造成失效；
+3. 在 WHERE 子句中，如果在 OR 前的条件列进行了索引，而在 OR 后的条件列没有进行索引，那么索引会失效;
+4. 当我们使用 LIKE 进行模糊查询的时候，前面不能是 %;
+5. 索引列尽量设置为 NOT NULL 约束;
+6. 我们在使用联合索引的时候要注意最左原则;
+
+
+
+优化：
+
+1. 如果数据重复度高，就不需要创建索引。通常在重复度超过 10% 的情况下，可以不创建这个字段的索引。
+2. 要注意索引列的位置对索引使用的影响。比如我们在 WHERE 子句中对索引字段进行了表达式的计算，会造成这个字段的索引失效。
+3. 联合索引对索引使用的影响。我们在创建联合索引的时候会对多个字段创建索引，这时索引的顺序就很重要了。比如我们对字段 x, y, z 创建了索引，那么顺序是 (x,y,z) 还是 (z,y,x)，在执行的时候就会存在差别。
+4. 多个索引对索引使用的影响。
+
+
+
+[所需数据](https://pan.baidu.com/s/1X47UAx6EWasYLLU91RYHKQ#list/path=%2Fsharelink4110802606-216507779167973%2F%E7%B4%A2%E5%BC%95%E7%9A%84%E6%95%B0%E6%8D%AE%E5%AE%9E%E9%AA%8C&parentPath=%2Fsharelink4110802606-216507779167973)：
+
+实验1：数据量小
+
+```mysql
+# 没有索引
+mysql> SELECT id, name, hp_max, mp_max FROM heros_without_index WHERE name = '刘禅'; 
++-------+--------+--------+--------+
+| id    | name   | hp_max | mp_max |
++-------+--------+--------+--------+
+| 10015 | 刘禅   |   8581 |   1694 |
++-------+--------+--------+--------+
+1 row in set (0.00 sec)
+# 对name字段建立索引
+mysql> SELECT id, name, hp_max, mp_max FROM heros_with_index WHERE name = '刘禅';   +-------+--------+--------+--------+
+| id    | name   | hp_max | mp_max |
++-------+--------+--------+--------+
+| 10015 | 刘禅   |   8581 |   1694 |
++-------+--------+--------+--------+
+1 row in set (0.00 sec)
+```
+
+实验2：对比分析聚集索引和非聚集索引：
+
+```mysql
+# user_id为主键
+mysql> SELECT user_id, user_name, user_gender FROM user_gender WHERE user_id = 900001;
++---------+----------------+-------------+
+| user_id | user_name      | user_gender |
++---------+----------------+-------------+
+|  900001 | student_890001 |           0 |
++---------+----------------+-------------+
+1 row in set (0.00 sec)
+# user_name未建立索引，可以看到没有索引，查询效率变慢
+mysql> SELECT user_id, user_name, user_gender FROM user_gender WHERE user_name = 'student_890001';
++---------+----------------+-------------+
+| user_id | user_name      | user_gender |
++---------+----------------+-------------+
+|  900001 | student_890001 |           0 |
++---------+----------------+-------------+
+1 row in set (0.23 sec)
+# 对user_name创建普通索引,可以看到查询的时间大大缩短
+mysql> CREATE INDEX user_name ON user_gender(user_name);
+Query OK, 0 rows affected (2.19 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> SELECT user_id, user_name, user_gender FROM user_gender WHERE user_name = 'student_890001';
++---------+----------------+-------------+
+| user_id | user_name      | user_gender |
++---------+----------------+-------------+
+|  900001 | student_890001 |           0 |
++---------+----------------+-------------+
+1 row in set (0.00 sec)
+```
+
+实验3：最左前缀匹配原则：
+
+```mysql
+# 删除之前的索引
+mysql> DROP INDEX user_name ON user_gender;
+Query OK, 0 rows affected (0.01 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+# 建立(user_id,user_name)联合索引
+mysql> CREATE INDEX user_name ON user_gender(user_id,user_name);
+Query OK, 0 rows affected (0.84 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+# 查询user_id,user_name
+mysql> SELECT user_id, user_name, user_gender FROM user_gender WHERE user_id = 900001 AND user_name = 'student_890001';
++---------+----------------+-------------+
+| user_id | user_name      | user_gender |
++---------+----------------+-------------+
+|  900001 | student_890001 |           0 |
++---------+----------------+-------------+
+1 row in set (0.01 sec)
+# 查询user_id
+mysql> SELECT user_id, user_name, user_gender FROM user_gender WHERE user_id = 900001;
++---------+----------------+-------------+
+| user_id | user_name      | user_gender |
++---------+----------------+-------------+
+|  900001 | student_890001 |           0 |
++---------+----------------+-------------+
+1 row in set (0.00 sec)
+
+# 查询user_name，索引失效
+mysql> SELECT user_id, user_name, user_gender FROM user_gender WHERE user_name = 'student_890001';
++---------+----------------+-------------+
+| user_id | user_name      | user_gender |
++---------+----------------+-------------+
+|  900001 | student_890001 |           0 |
++---------+----------------+-------------+
+1 row in set (0.23 sec)
+```
+
+实验4：索引失效
+
+```mysql
+# 创建普通索引
+mysql> CREATE INDEX player_id ON player(player_id);
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+# 显示执行计划，索引表达式进行了计算，从而会失效
+mysql> EXPLAIN SELECT player_id, team_id, player_name FROM player WHERE player_id+1 = 10001;
++----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
+| id | select_type | table  | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra       |
++----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
+|  1 | SIMPLE      | player | NULL       | ALL  | NULL          | NULL | NULL    | NULL |   37 |   100.00 | Using where |
++----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
+1 row in set, 1 warning (0.01 sec)
+# 避免索引失效
+mysql> EXPLAIN SELECT player_id, team_id, player_name FROM player WHERE player_id = 10000;
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+--------------------------------+
+| id | select_type | table | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra                          |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+--------------------------------+
+|  1 | SIMPLE      | NULL  | NULL       | NULL | NULL          | NULL | NULL    | NULL | NULL |     NULL | no matching row in const table |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+--------------------------------+
+1 row in set, 1 warning (0.00 sec)
+# 对索引使用函数，从而失效
+mysql> EXPLAIN SELECT player_id, team_id, player_name FROM player WHERE SUBSTRING(player_id, 3,4)='11';
++----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
+| id | select_type | table  | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra       |
++----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
+|  1 | SIMPLE      | player | NULL       | ALL  | NULL          | NULL | NULL    | NULL |   37 |   100.00 | Using where |
++----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
+1 row in set, 1 warning (0.01 sec)
+
+mysql> EXPLAIN SELECT player_id, team_id, player_name FROM player WHERE player_id LIKE '%11';
++----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
+| id | select_type | table  | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra       |
++----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
+|  1 | SIMPLE      | player | NULL       | ALL  | NULL          | NULL | NULL    | NULL |   37 |    11.11 | Using where |
++----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
+1 row in set, 1 warning (0.00 sec)
+
+# 在 WHERE 子句中，如果在 OR 前的条件列进行了索引，而在 OR 后的条件列没有进行索引，那么索引会失效。
+mysql> EXPLAIN SELECT player_id, team_id, player_name FROM player WHERE player_id = 10001 OR player_name = '韦恩-艾灵顿'; 
++----+-------------+--------+------------+------+-------------------+------+---------+------+------+----------+-------------+
+| id | select_type | table  | partitions | type | possible_keys     | key  | key_len | ref  | rows | filtered | Extra       |
++----+-------------+--------+------------+------+-------------------+------+---------+------+------+----------+-------------+
+|  1 | SIMPLE      | player | NULL       | ALL  | PRIMARY,player_id | NULL | NULL    | NULL |   37 |    12.43 | Using where |
++----+-------------+--------+------------+------+-------------------+------+---------+------+------+----------+-------------+
+1 row in set, 1 warning (0.00 sec)
+
+mysql> EXPLAIN SELECT player_id, team_id, player_name FROM player WHERE player_id = 10001 OR player_name = '韦恩-艾灵顿'; 
++----+-------------+--------+------------+-------------+---------------------+---------------------+---------+------+------+----------+-----------------------------------------------+
+| id | select_type | table  | partitions | type        | possible_keys       | key                 | key_len | ref  | rows | filtered | Extra                                         |
++----+-------------+--------+------------+-------------+---------------------+---------------------+---------+------+------+----------+-----------------------------------------------+
+|  1 | SIMPLE      | player | NULL       | index_merge | PRIMARY,player_name | PRIMARY,player_name | 4,767   | NULL |    2 |   100.00 | Using union(PRIMARY,player_name); Using where |
++----+-------------+--------+------------+-------------+---------------------+---------------------+---------+------+------+----------+-----------------------------------------------+
+1 row in set, 1 warning (0.00 sec)
+
+# 当我们使用 LIKE 进行模糊查询的时候，前面不能是 %
+mysql> EXPLAIN SELECT comment_id, user_id, comment_text FROM product_comment WHERE comment_text LIKE '%abc';
++----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+| id | select_type | table           | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra       |
++----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+|  1 | SIMPLE      | product_comment | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 996424 |    11.11 | Using where |
++----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+1 row in set, 1 warning (0.00 sec)
+```
+
+
+
+## 定位sql为什么执行慢
+
+<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201015153415.png" alt="img" style="zoom:33%;" />
+
+1. 慢查询定位
+
+```mysql
+mysql> show variables like '%slow_query_log';
++----------------+-------+
+| Variable_name  | Value |
++----------------+-------+
+| slow_query_log | OFF   |
++----------------+-------+
+1 row in set (0.03 sec)
+# 开启慢查询日志
+mysql> set global slow_query_log='ON';
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> show variables like '%slow_query%';
++---------------------+----------------------------------------------+
+| Variable_name       | Value                                        |
++---------------------+----------------------------------------------+
+| slow_query_log      | ON                                           |
+| slow_query_log_file | /usr/local/mysql/data/MacBook-Pro-2-slow.log |
++---------------------+----------------------------------------------+
+2 rows in set (0.01 sec)
+# 看慢查询的时间阈值设置
+mysql> show variables like '%long_query_time%';
++-----------------+-----------+
+| Variable_name   | Value     |
++-----------------+-----------+
+| long_query_time | 10.000000 |
++-----------------+-----------+
+1 row in set (0.00 sec)
+# 修改慢查询时间阈值
+set global long_query_time = 3;
+# 使用mysql自带的mysqldumpslow统计慢查询日志
+# mysqldumpslow: -s：采用 order 排序的方式，排序方式可以有以下几种。分别是 c（访问次数）、t（查询时间）、l（锁定时间）、r（返回记录）、ac（平均查询次数）、al（平均锁定时间）、ar（平均返回记录数）和 at（平均查询时间）。其中 at 为默认排序方式。-t：返回前 N 条数据 。
+sudo mysqldumpslow -s t -t 2 "/usr/local/mysql/data/MacBook-Pro-2-slow.log"
+Password:
+
+Reading mysql slow query log from /usr/local/mysql/data/MacBook-Pro-2-slow.log
+Count: 1  Time=0.00s (0s)  Lock=0.00s (0s)  Rows=0.0 (0), 0users@0hosts
+  
+Died at /usr/local/bin/mysqldumpslow line 162, <> chunk 1.
+```
+
+2. 使用 EXPLAIN 查看执行计划
+
+EXPLAIN 可以帮助我们了解数据表的读取顺序、SELECT 子句的类型、数据表的访问类型、可使用的索引、实际使用的索引、使用的索引长度、上一个表的连接匹配条件、被优化器查询的行的数量以及额外的信息（比如是否使用了外部排序，是否使用了临时表等）等。
+
+数据表的访问类型所对应的 type 列是我们比较关注的信息。type 可能有以下几种情况：
+
+<img src="https://static001.geekbang.org/resource/image/22/92/223e8c7b863bd15c83f25e3d93958692.png" alt="img" style="zoom:50%;" />
+
+```mysql
+mysql> EXPLAIN SELECT comment_id, product_id, comment_text, product_comment.user_id, user_name FROM product_comment JOIN user on product_comment.user_id = user.user_id;
++----+-------------+-----------------+------------+--------+---------------+---------+---------+------------------------------+--------+----------+-------+
+| id | select_type | table           | partitions | type   | possible_keys | key     | key_len | ref                          | rows   | filtered | Extra |
++----+-------------+-----------------+------------+--------+---------------+---------+---------+------------------------------+--------+----------+-------+
+|  1 | SIMPLE      | product_comment | NULL       | ALL    | NULL          | NULL    | NULL    | NULL                         | 996424 |   100.00 | NULL  |
+|  1 | SIMPLE      | user            | NULL       | eq_ref | PRIMARY       | PRIMARY | 4       | hero.product_comment.user_id |      1 |   100.00 | NULL  |
++----+-------------+-----------------+------------+--------+---------------+---------+---------+------------------------------+--------+----------+-------+
+2 rows in set, 1 warning (0.01 sec)
+# 对 product_comment 数据表进行查询，设计了联合索引composite_index (user_id, comment_text)，然后对数据表中的comment_id、comment_text、user_id这三个字段进行查询，最后用 EXPLAIN 看下执行计划
+# 访问方式采用了 index 的方式，key 列采用了联合索引，进行扫描。Extral 列为 Using index，告诉我们索引可以覆盖 SELECT 中的字段，也就不需要回表查询了。
+mysql> EXPLAIN SELECT comment_id, comment_text, user_id FROM product_comment;
++----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------+
+| id | select_type | table           | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra |
++----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------+
+|  1 | SIMPLE      | product_comment | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 996424 |   100.00 | NULL  |
++----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------+
+1 row in set, 1 warning (0.00 sec)
+# index_merge 说明查询同时使用了两个或以上的索引，最后取了交集或者并集。比如想要对comment_id=500000 或者user_id=500000的数据进行查询，数据表中 comment_id 为主键，user_id 是普通索引，我们可以查看下执行计划：
+# 看到这里同时使用到了两个索引，分别是主键和 user_id，采用的数据表访问类型是 index_merge，通过 union 的方式对两个索引检索的数据进行合并。
+mysql> EXPLAIN SELECT comment_id, product_id, comment_text, user_id FROM product_comment WHERE comment_id = 500000 OR user_id = 500000;
++----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+| id | select_type | table           | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra       |
++----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+|  1 | SIMPLE      | product_comment | NULL       | ALL  | PRIMARY       | NULL | NULL    | NULL | 996424 |    10.00 | Using where |
++----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------------+
+1 row in set, 1 warning (0.00 sec)
+```
+
+3. 使用SHOW PROFILE 查看 SQL 的具体执行成本
+
+SHOW PROFILE 相比 EXPLAIN 能看到更进一步的执行解析，包括 SQL 都做了什么、所花费的时间等。默认情况下，profiling 是关闭的，我们可以在会话级别开启这个功能。
+
+```mysql
+mysql> show variables like 'profiling';
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| profiling     | OFF   |
++---------------+-------+
+1 row in set (0.01 sec)
+
+mysql> set profiling = 'ON';
+Query OK, 0 rows affected, 1 warning (0.01 sec)
+# 
+mysql> show profiles;
+Empty set, 1 warning (0.01 sec)
+```
+
+
+
+范式：
+
+1. 列不可分，保证表中每个属性都保持原子性；
+2. 非主键字段依赖主键，针对于联合主键，非主属性完全依赖于联合主键，而非部分；
+3. 非主键字段不能相互依赖，非主属性只能直接依赖于主键；
 
 ## Python操作Mysql
 
@@ -562,6 +872,52 @@ print([row.to_dict() for row in rows])
 
 ```
 
-![img](https://static001.geekbang.org/resource/image/d6/42/d6f02460647f34fba692e8a61b80a042.png)
+<img src="https://static001.geekbang.org/resource/image/d6/42/d6f02460647f34fba692e8a61b80a042.png" alt="img" style="zoom:50%;" />
 
-![img](https://static001.geekbang.org/resource/image/45/dd/458d77c980f2ac7b9e8e34dd75eac8dd.png)
+<img src="https://static001.geekbang.org/resource/image/45/dd/458d77c980f2ac7b9e8e34dd75eac8dd.png" alt="img" style="zoom:50%;" />
+
+
+
+# Mysql实战45讲
+
+## 1. 基础架构
+
+<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201015174501.png" alt="image-20201015174501119" style="zoom:33%;" />
+
+连接器：负责和客户端建立连接。`mysql -h $ip -P $port -u root -p` 一个用户成功建立连接后，即使你用管理员账号对这个用户的权限做了修改， 也不会影响已经存在连接的权限。修改完成后，只有再新建的连接才会使用新的权限设置。
+
+```
+mysql> show processlist;
++----+-----------------+-----------------+------+---------+--------+------------------------+------------------+
+| Id | User            | Host            | db   | Command | Time   | State                  | Info             |
++----+-----------------+-----------------+------+---------+--------+------------------------+------------------+
+|  4 | event_scheduler | localhost       | NULL | Daemon  | 584021 | Waiting on empty queue | NULL             |
+| 10 | root            | localhost       | hero | Sleep   |  25416 |                        | NULL             |
+| 11 | root            | localhost:58178 | hero | Sleep   |   7285 |                        | NULL             |
+| 12 | root            | localhost:58197 | hero | Sleep   |  11005 |                        | NULL             |
+| 14 | root            | localhost       | hero | Sleep   |  26206 |                        | NULL             |
+| 15 | root            | localhost       | hero | Query   |      0 | starting               | show processlist |
++----+-----------------+-----------------+------+---------+--------+------------------------+------------------+
+6 rows in set (0.01 sec)
+```
+
+## 2. 日志系统
+
+日志模块：redo log(重做日志)和 binlog(归档日志)。前者是InnoDB 引擎特有的日志，后者是Server层的日志（归档日志）。
+
+WAL 的全称 是 Write-Ahead Logging，它的关键点就是先写日志，再写磁盘。
+
+<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201015183353.png" alt="image-20201015183326511" style="zoom:50%;" />
+
+# 4. 索引
+
+数据结构。
+
+
+
+
+
+
+
+
+
