@@ -8,8 +8,6 @@ Spring的核心。
 
 ![image-20201015234403116](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201015234506.png)
 
-
-
 ## 2. JDBC
 
 ### 2.1 单数据源
