@@ -62,19 +62,5 @@ DispatcherServlet 的任务是将请求发送给 Spring MVC 控制器 （control
 
 DispatcherServlet是Spring mvc的核心，
 
-# 6. Web视图渲染
-
-
-
-# 7. Spring mvc的高级技术
-
-
-
-# Spring集成
-
-# 21. Spring Boot
-
-
-
 
 

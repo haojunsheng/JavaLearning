@@ -1,6 +1,5 @@
 # Java Learning
 
-more than java.
+java基础。
 
-collection，concurrent programing，design pattern,jvm，and spring.
-
+spring，mysql，redis。
