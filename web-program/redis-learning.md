@@ -8,13 +8,24 @@ Redis is an open source (BSD licensed),**in-memory data structure store**, used 
 
 高并发:直接操作缓存能够承受的请求是远远大于直接访问数据库的。
 
+
+
+- **异常快** - Redis 非常快，每秒可执行大约 110000 次的设置(SET)操作，每秒大约可执行 81000 次的读取/获取(GET)操作。
+- **支持丰富的数据类型** - Redis 支持开发人员常用的大多数数据类型，例如列表，集合，排序集和散列等等。这使得 Redis 很容易被用来解决各种问题，因为我们知道哪些问题可以更好使用地哪些数据类型来处理解决。
+- **操作具有原子性** - 所有 Redis 操作都是原子操作，这确保如果两个客户端并发访问，Redis 服务器能接收更新的值。
+- **多实用工具** - Redis 是一个多实用工具，可用于多种用例，如：缓存，消息队列(Redis 本地支持发布/订阅)，应用程序中的任何短期数据，例如，web应用程序中的会话，网页命中计数等。
+
+本地测试redis性能：redis-benchmark -n 100000 -q
+
+![image-20201020112351999](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201020112352.png)
+
 ## 1.1  redis为什么快
 
 1、完全基于内存，绝大部分请求是纯粹的内存操作，非常快速。
 
-2、数据结构简单，对数据操作也简单，Redis 中的数据结构是专门进行设计的；
+2、**高效的数据结构，加上底层做了大量优化**：Redis 对于底层的数据结构和内存占用做了大量的优化，例如不同长度的字符串使用不同的结构体表示，HyperLogLog 的密集型存储结构等等..
 
-3、采用单线程，避免了不必要的上下文切换和竞争条件，也不存在多进程或者多线程导致的切换而消耗 CPU，不用去考虑各种锁的问题，不存在加锁释放锁操作，没有因为可能出现死锁而导致的性能消耗；
+3、采用单线程，避免了不必要的上下文切换和竞争条件，也不存在多进程或者多线程导致的切换而消耗 CPU，不用去考虑各种锁的问题，不存在加锁释放锁操作，没有因为可能出现死锁而导致的性能消耗；（因为 Redis 是基于内存的操作，**CPU 不是 Redis 的瓶颈**，Redis 的瓶颈最有可能是 **机器内存的大小** 或者 **网络带宽**。）
 
 4、使用多路 I/O 复用模型，非阻塞 IO；
 
@@ -47,21 +58,88 @@ struct sdshdr{
 1. sdshdr数据结构中用len属性记录了字符串的长度。那么**获取字符串的长度时，时间复杂度只需要O(1)**。
 2. SDS不会发生溢出的问题，如果修改SDS时，空间不足。先会扩展空间，再进行修改！(**内部实现了动态扩展机制**)。
 3. SDS可以**减少内存分配的次数**(空间预分配机制)。在扩展空间时，除了分配修改时所必要的空间，还会分配额外的空闲空间(free 属性)。
-4. SDS是**二进制安全的**，所有SDS API都会以处理二进制的方式来处理SDS存放在buf数组里的数据。
+4. SDS是**二进制安全的**，不以\0为结束符，而是直接看长度。
+
+```shell
+> SET key value
+OK
+> GET key
+"value"
+> EXISTS key
+(integer) 1
+> DEL key
+(integer) 1
+> GET key
+(nil)
+> SET key1 value1
+OK
+> SET key2 value2
+OK
+# 批量设置
+> MGET key1 key2 key3    # 返回一个列表
+1) "value1"
+2) "value2"
+3) (nil)
+> MSET key1 value1 key2 value2
+> MGET key1 key2
+1) "value1"
+2) "value2"
+# 设置过期时间
+> SET key value1
+> GET key
+"value1"
+> EXPIRE name 5    # 5s 后过期
+...                # 等待 5s
+> GET key
+(nil)
+# 等价于SET + EXPIRE 的 SETNX
+> SETNX key value1
+...                # 等待 5s 后获取
+> GET key
+(nil)
+
+> SETNX key value1  # 如果 key 不存在则 SET 成功
+(integer) 1
+> SETNX key value1  # 如果 key 存在则 SET 失败
+(integer) 0
+> GET key
+"value"             # 没有改变 
+# 计数，使用 INCR 命令进行 原子性 的自增操作，这意味着及时多个客户端对同一个 key 进行操作，也决不会导致竞争的情况：
+> SET counter 100
+> INCR count
+(interger) 101
+> INCRBY counter 50
+(integer) 151
+```
 
 ## 2.2 链表
 
-![img](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201018220103)
+![img](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201020113253.png)
 
 - 无环双向链表
 - 获取表头指针，表尾指针，链表节点长度的时间复杂度均为O(1)
 - 链表使用`void *`指针来保存节点值，可以保存各种不同类型的值
+
+```shell
+> rpush mylist A
+(integer) 1
+> rpush mylist B
+(integer) 2
+> lpush mylist first
+(integer) 3
+> lrange mylist 0 -1    # -1 表示倒数第一个元素, 这里表示从第一个元素到最后一个元素，即所有
+1) "first"
+2) "A"
+3) "B"
+```
 
 list分为两种：原本是ziplist编码的，如果保存的数据长度太大或者元素数量过多，会转换成linkedlist编码的。
 
 ziplist：字符串元素的长度都小于64个字节`&&`总数量少于512个
 
 linkedlist：字符串元素的长度大于64个字节`||`总数量大于512个
+
+
 
 ### 2.2.1 压缩列表(ziplist)
 
@@ -76,7 +154,7 @@ linkedlist：字符串元素的长度大于64个字节`||`总数量大于512个
 从代码实现和示例图上我们可以发现，**Redis中有两个哈希表**：
 
 - ht[0]：用于存放**真实**的`key-vlaue`数据
-- ht[1]：用于**扩容(rehash)**
+- ht[1]：用于**扩容(rehash)**，实现渐进式rehash
 
 Redis中哈希算法和哈希冲突跟Java实现的差不多，它俩**差异**就是：
 
@@ -89,6 +167,24 @@ Redis中哈希算法和哈希冲突跟Java实现的差不多，它俩**差异**�
 - 在rehash期间每次对字典进行增加、查询、删除和更新操作时，**除了执行指定命令外**；还会将ht[0]中rehashidx索引上的值**rehash到ht[1]**，操作完成后rehashidx+1。
 - 字典操作不断执行，最终在某个时间点，所有的键值对完成rehash，这时**将rehashidx设置为-1，表示rehash完成**
 - 在渐进式rehash过程中，字典会同时使用两个哈希表ht[0]和ht[1]，所有的更新、删除、查找操作也会在两个哈希表进行。例如要查找一个键的话，**服务器会优先查找ht[0]，如果不存在，再查找ht[1]**，诸如此类。此外当执行**新增操作**时，新的键值对**一律保存到ht[1]**，不再对ht[0]进行任何操作，以保证ht[0]的键值对数量只减不增，直至变为空表。
+
+```shell
+> HSET books java "think in java"    # 命令行的字符串如果包含空格则需要使用引号包裹
+(integer) 1
+> HSET books python "python cookbook"
+(integer) 1
+> HGETALL books    # key 和 value 间隔出现
+1) "java"
+2) "think in java"
+3) "python"
+4) "python cookbook"
+> HGET books java
+"think in java"
+> HSET books java "head first java"  
+(integer) 0        # 因为是更新操作，所以返回 0
+> HMSET books java "effetive  java" python "learning python"    # 批量操作
+OK
+```
 
 ## 2.4 set
 
@@ -116,6 +212,25 @@ hashtable编码的集合结构：
 整数集合(intset)保证了元素是**不会出现重复**的，并且是**有序**的(从小到大排序)。
 
 ![img](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201018221055.jpeg)
+
+```shell
+> SADD books java
+(integer) 1
+> SADD books java    # 重复
+(integer) 0
+> SADD books python golang
+(integer) 2
+> SMEMBERS books    # 注意顺序，set 是无序的 
+1) "java"
+2) "python"
+3) "golang"
+> SISMEMBER books java    # 查询某个 value 是否存在，相当于 contains
+(integer) 1
+> SCARD books    # 获取长度
+(integer) 3
+> SPOP books     # 弹出一个
+"java"
+```
 
 ## 2.5 sort set
 
@@ -163,6 +278,47 @@ typeof struct zskiplist {
 最后我们整个跳跃表的示例图如下：
 
 ![跳跃表示例图](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201018220959.jpeg)
+
+```shell
+> ZADD books 9.0 "think in java"
+> ZADD books 8.9 "java concurrency"
+> ZADD books 8.6 "java cookbook"
+
+> ZRANGE books 0 -1     # 按 score 排序列出，参数区间为排名范围
+1) "java cookbook"
+2) "java concurrency"
+3) "think in java"
+
+> ZREVRANGE books 0 -1  # 按 score 逆序列出，参数区间为排名范围
+1) "think in java"
+2) "java concurrency"
+3) "java cookbook"
+
+> ZCARD books           # 相当于 count()
+(integer) 3
+
+> ZSCORE books "java concurrency"   # 获取指定 value 的 score
+"8.9000000000000004"                # 内部 score 使用 double 类型进行存储，所以存在小数点精度问题
+
+> ZRANK books "java concurrency"    # 排名
+(integer) 1
+
+> ZRANGEBYSCORE books 0 8.91        # 根据分值区间遍历 zset
+1) "java cookbook"
+2) "java concurrency"
+
+> ZRANGEBYSCORE books -inf 8.91 withscores  # 根据分值区间 (-∞, 8.91] 遍历 zset，同时返回分值。inf 代表 infinite，无穷大的意思。
+1) "java cookbook"
+2) "8.5999999999999996"
+3) "java concurrency"
+4) "8.9000000000000004"
+
+> ZREM books "java concurrency"             # 删除 value
+(integer) 1
+> ZRANGE books 0 -1
+1) "java cookbook"
+2) "think in java"
+```
 
 # 3. 过期和淘汰
 
@@ -695,7 +851,9 @@ PSYNC命令具有**完整**重同步和**部分**重同步两种模式(其实就
 - 辅助实现min-slaves选项
 - 检测命令丢失
 
-# 7. 哨兵
+# 7. 集群
+
+
 
 如果从服务器挂了，没关系，我们一般会有多个从服务器，其他的请求可以交由没有挂的从服务器继续处理。如果主服务器挂了，怎么办？因为我们的写请求由主服务器处理，只有一台主服务器，那就无法处理写请求了？
 
@@ -718,6 +876,42 @@ Redis提供哨兵机制可以将**选举**一台从服务器变成主服务器
 ![旧的主服务器如果重连了，会变成从服务器](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201018231436)
 
 
+
+# 8. 缓存雪崩
+
+**如果我们的缓存挂掉了，这意味着我们的全部请求都跑去数据库了**。
+
+如果缓存数据**设置的过期时间是相同**的，并且Redis恰好将这部分数据全部删光了。这就会导致在这段时间内，这些缓存**同时失效**，全部请求到数据库中。
+
+
+
+解决办法：在缓存的时候给过期时间加上一个**随机值**，这样就会大幅度的**减少缓存在同一时间过期**。
+
+- 事发前：实现Redis的**高可用**(主从架构+Sentinel 或者Redis Cluster)，尽量避免Redis挂掉这种情况发生。
+- 事发中：万一Redis真的挂了，我们可以设置**本地缓存(ehcache)+限流(hystrix)**，尽量避免我们的数据库被干掉(起码能保证我们的服务还是能正常工作的)
+- 事发后：redis持久化，重启后自动从磁盘上加载数据，**快速恢复缓存数据**。
+
+# 9. 缓存穿透
+
+> 缓存穿透是指查询一个一定**不存在的数据**。由于缓存不命中，并且出于容错考虑，如果从**数据库查不到数据则不写入缓存**，这将导致这个不存在的数据**每次请求都要到数据库去查询**，失去了缓存的意义。
+
+- 由于请求的参数是不合法的(每次都请求不存在的参数)，于是我们可以使用布隆过滤器(BloomFilter)或者压缩filter**提前拦截**，不合法就不让这个请求到数据库层！
+
+- 当我们从数据库找不到的时候，我们也将这个**空对象设置到缓存里边去**。下次再请求的时候，就可以从缓存里边获取了。
+
+- - 这种情况我们一般会将空对象设置一个**较短的过期时间**。
+
+## 10 缓存与数据库双写一致问题
+
+读操作：
+
+- 如果我们的数据在缓存里边有，那么就直接取缓存的。
+- 如果缓存里没有我们想要的数据，我们会先去查询数据库，然后**将数据库查出来的数据写到缓存中**。
+- 最后将数据返回给请求
+
+因为可能存在更新操作，所以可能会造成数据不一致的问题，我们可以设置键的过期时间。
+
+![](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201020140417.png)
 
 # 参考
 

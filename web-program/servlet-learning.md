@@ -11,6 +11,10 @@
 
 WEB-INF是一个安全目录，无法通过url直接访问，必须通过我们的映射来访问。
 
+![image-20201021164721709](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201021164721.png)
+
+
+
 ## Servlet概述
 
 Server Applet。
@@ -353,10 +357,27 @@ public class LoginServlet extends HttpServlet {
 
 ## 过滤器
 
+**过滤器就是 Servlet 的高级特性之一，**就是一个具有**拦截/过滤**功能的一个东西，在生活中过滤器可以是香烟滤嘴，滤纸，净水器，空气净化器等，在 Web 中仅仅是一个**实现了 Filter 接口的 Java 类**而已。过滤器可以对**所有的请求或者响应做拦截操作**。
+
+![](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201021165554.png)
+
+![](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201021165848.png)
+
+**1.可以在请求资源之前设置请求的编码**
+**2.可以进行登录校验**
+**3.可以进行请求参数的内容的过滤**
+**4.数据压缩 / 数据加密 / 数据格式的转换**
+5.可以设置浏览器相关的数据
+
+
+
 当需要限制用户访问某些资源时、在处理请求时提前处理某些资源、服务器响应的内容对其进行处理再返回、我们就是用过滤器来完成的。比如：过滤一些敏感的字符串【规定不能出现敏感字符串】、避免中文乱码【规定**Web**资源都使用**UTF-8**编码】、权限验证【规定只有带**Session**或**Cookie**的浏览器，才能访问 **web**资源】。
 
-**1**、可以在**filter**中根据条件决定是否调用**chain.doFilter(request, response)**方法，即是否让目 标资源执行
+**1**、可以在**filter**中根据条件决定是否调用**chain.doFilter(request, response)**方法，即是否让目标资源执行
 
  **2**、在让目标资源执行之前，可以对**request\response**作预处理，再让目标资源执行
 
  **3**、在目标资源执行之后，可以捕获目标资源的执行结果，从而实现一些特殊的功能
+
+##  监听器
+

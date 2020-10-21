@@ -1,5 +1,6 @@
-# Java Learning
+# Java Developer
 
-java基础。
+java开发需要掌握的知识。
 
-spring，mysql，redis。
+java基础。spring，mysql，redis。
+
