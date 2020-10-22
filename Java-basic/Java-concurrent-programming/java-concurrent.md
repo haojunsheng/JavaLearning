@@ -1108,6 +1108,8 @@ Java 并发包里面 Queue 这类并发容器是最复杂的，你可以从以�
 
 ## 21 **原子类:无锁工具类的典范**
 
+> 所有原子类的方法都是针对一个共享变量的，如果你需要解决多个变量的原子性问题，建议还是使用互斥锁方案。
+
 对于简单的原子性问题，还有一种**无锁方案**。
 
 ```java
@@ -1164,6 +1166,131 @@ public class SimulatedCAS_21_2 {
 注意ABA问题。
 
 **Java** **如何实现原子化的** **count += 1**
+
+```java
+public final long getAndIncrement() {
+        return unsafe.getAndAddLong(this, valueOffset, 1L);
+    }
+```
+
+unsafe.getAndAddLong() 方法的源码如下，该方法首先会在内存中读取共享变量的值， 之后循环调用 compareAndSwapLong() 方法来尝试设置共享变量的值，直到成功为止。 compareAndSwapLong() 是一个 native 方法，只有当内存中共享变量的值等于 expected 时，才会将共享变量的值更新为 x，并且返回 true;否则返回 fasle。 compareAndSwapLong 的语义和 CAS 指令的语义的差别仅仅是返回值不同而已。
+
+```java
+public final long getAndAddLong(Object o, long offset, long delta) {
+        long v;
+        do {
+          // 读取内存中的值
+            v = getLongVolatile(o, offset);
+        } while(!this.compareAndSwapLong(o, offset, v, v + delta));
+
+        return v;
+    }
+// 原子性地将变量更新为 x
+// 条件是内存中的值等于 expected
+// 更新成功则返回 true
+public final native boolean compareAndSwapLong(Object var1, long var2, long var4, long var6);
+```
+
+![image-20201023000337009](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201023000558.png)
+
+原子类概览：
+
+<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201023003144.png" alt="image-20201023003144054" style="zoom:33%;" />
+
+1. **原子化的基本数据类型**
+
+![image-20201023003736939](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201023003737.png)
+
+2. **原子化的对象引用类型**
+
+## 22. **Executor**与线程池
+
+线程池的设计：**生产者** **-** **消费者模式**
+
+先来看一般意义上池化资源的设计方法：
+
+```java
+// 采用一般意义上池化资源的设计方法
+public class ThreadPool_22_1 {
+    // 获取空闲线程
+    void acquire() {
+    }
+    // 释放线程
+    void release(Thread t) {
+    }
+
+    public static void main(String[] args) {
+        // 期望的使用
+        ThreadPool_22_1 pool;
+        Thread T1 = pool.acquire();
+        // 传入 Runnable 对象
+        T1.execute(() -> {
+            // 具体业务逻辑
+        });
+    }
+}
+```
+
+目前业界线程池的设计，普遍采用的都是**生产者 - 消费者模式**。线程池的使用方是生产者，线程池本身是消费者。
+
+```java
+// 简化的线程池，仅用来说明工作原理
+public class MyThreadPool_22_2 {
+    // 利用阻塞队列实现生产者 - 消费者模式
+    BlockingQueue<Runnable> workQueue;
+    // 保存内部工作线程
+    List<WorkerThread> threads = new ArrayList<>();
+
+    // 构造方法
+    MyThreadPool_22_2(int poolSize, BlockingQueue<Runnable> workQueue) {
+        this.workQueue = workQueue;
+        // 创建工作线程
+        for (int idx = 0; idx < poolSize; idx++) {
+            WorkerThread work = new WorkerThread();
+            work.start();
+            threads.add(work);
+        }
+    }
+
+    // 提交任务
+    void execute(Runnable command) throws InterruptedException {
+        workQueue.put(command);
+    }
+
+    // 工作线程负责消费任务，并执行任务
+    class WorkerThread extends Thread {
+        @Override
+        public void run() { // 循环取任务并执行
+            while (true) {
+                Runnable task = null;
+                try {
+                    task = workQueue.take();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                task.run();
+            }
+
+        }
+    }
+
+    public static void main(String[] args) {
+        /** 下面是使用示例 **/
+        // 创建有界阻塞队列
+        BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>(2);
+// 创建线程池
+        MyThreadPool_22_2 pool = new MyThreadPool_22_2(10, workQueue);
+        // 提交任务
+        try {
+            pool.execute(() -> {
+                System.out.println("hello");
+            });
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
 
 
 
