@@ -53,7 +53,7 @@ public class MyThreadPool_22_2 {
         /** 下面是使用示例 **/
         // 创建有界阻塞队列
         BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>(2);
-// 创建线程池
+        // 创建线程池
         MyThreadPool_22_2 pool = new MyThreadPool_22_2(10, workQueue);
         // 提交任务
         try {

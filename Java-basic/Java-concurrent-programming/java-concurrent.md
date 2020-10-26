@@ -1278,7 +1278,7 @@ public class MyThreadPool_22_2 {
         /** 下面是使用示例 **/
         // 创建有界阻塞队列
         BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>(2);
-// 创建线程池
+				// 创建线程池
         MyThreadPool_22_2 pool = new MyThreadPool_22_2(10, workQueue);
         // 提交任务
         try {
@@ -1292,9 +1292,410 @@ public class MyThreadPool_22_2 {
 }
 ```
 
+![image-20201023104410641](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201023104410.png)
+
+![image-20201023104525311](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201023104525.png)
+
+ThreadPoolExecutor需要掌握。
+
+![image-20201023104731036](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201023104731.png)
+
+使用线程池，还要注意异常处理的问题，例如通过 ThreadPoolExecutor 对象的 execute() 方法提交任务时，如果任务在执行的过程中出现运行时异常，会导致执行任务的线程终止; 不过，最致命的是任务虽然异常了，但是你却获取不到任何通知。
+
+## 23. **Future**:如何用多线程实现最优的烧水泡茶程序
+
+Java 通过 ThreadPoolExecutor 提供的 3 个 submit() 方法和 1 个 FutureTask 工具类来 支持获得任务执行结果的需求。
+
+```java
+// 仅可以用来断言任务已经结束了，类似于 Thread.join()
+Future<T> submit(Runnable task);
+// 可以通过调用其 get() 方法来获取任务的执行结果 
+Future<T> submit(Callable<T> task);
+// 提交 Runnable 任务及结果引用 <T> 
+Future<T> submit(Runnable task, T result);
+```
+
+第三个的使用demo：假设这个方法返回的 Future 对象是 f，f.get() 的返回值就是传给 submit() 方法的参数 result。需 要你注意的是 Runnable 接口的实现类 Task 声明了一个有参构造函数 Task(Result r) ，创建 Task 对象的时候传入了 result 对象，这样就能在类 Task 的 run() 方法中对 result 进行各种操作了。result 相当于主线程和子线程之间的桥梁，通过它主子线程可 以共享数据。
+
+```
+public class FutureDemo_23_1 {
+    public static void main(String[] args) {
+        ExecutorService executor = Executors.newFixedThreadPool(1);
+        // 创建 Result 对象 r
+        Result r = new Result();
+        r.setAAA(a);
+        // 提交任务
+        Future<Result> future = executor.submit(new Task(r), r);
+        Result fr = future.get();
+        // 下面等式成立
+        fr == = r;
+        fr.getAAA() == a;
+        fr.getXXX() == x;
+    }
+}
+class Task implements Runnable {
+    Result r;
+
+    // 通过构造函数传入 result
+    Task(Result r) {
+        this.r = r;
+    }
+
+    void run() {
+        // 可以操作 result
+        a = r.getAAA();
+        r.setXXX(x);
+    }
+}
+```
+
+Future 接口：
+
+```java
+/**
+ * A {@code Future} represents the result of an asynchronous
+ * computation.  Methods are provided to check if the computation is
+ * complete, to wait for its completion, and to retrieve the result of
+ * the computation.  The result can only be retrieved using method
+ * {@code get} when the computation has completed, blocking if
+ * necessary until it is ready.  Cancellation is performed by the
+ * {@code cancel} method.  Additional methods are provided to
+ * determine if the task completed normally or was cancelled. Once a
+ * computation has completed, the computation cannot be cancelled.
+ * If you would like to use a {@code Future} for the sake
+ * of cancellability but not provide a usable result, you can
+ * declare types of the form {@code Future<?>} and
+ * return {@code null} as a result of the underlying task.
+ *
+ * <p>
+ * <b>Sample Usage</b> (Note that the following classes are all
+ * made-up.)
+ * <pre> {@code
+ * interface ArchiveSearcher { String search(String target); }
+ * class App {
+ *   ExecutorService executor = ...
+ *   ArchiveSearcher searcher = ...
+ *   void showSearch(final String target)
+ *       throws InterruptedException {
+ *     Future<String> future
+ *       = executor.submit(new Callable<String>() {
+ *         public String call() {
+ *             return searcher.search(target);
+ *         }});
+ *     displayOtherThings(); // do other things while searching
+ *     try {
+ *       displayText(future.get()); // use future
+ *     } catch (ExecutionException ex) { cleanup(); return; }
+ *   }
+ * }}</pre>
+ *
+ * The {@link FutureTask} class is an implementation of {@code Future} that
+ * implements {@code Runnable}, and so may be executed by an {@code Executor}.
+ * For example, the above construction with {@code submit} could be replaced by:
+ *  <pre> {@code
+ * FutureTask<String> future =
+ *   new FutureTask<String>(new Callable<String>() {
+ *     public String call() {
+ *       return searcher.search(target);
+ *   }});
+ * executor.execute(future);}</pre>
+ *
+ * <p>Memory consistency effects: Actions taken by the asynchronous computation
+ * <a href="package-summary.html#MemoryVisibility"> <i>happen-before</i></a>
+ * actions following the corresponding {@code Future.get()} in another thread.
+ *
+ * @see FutureTask
+ * @see Executor
+ * @since 1.5
+ * @author Doug Lea
+ * @param <V> The result type returned by this Future's {@code get} method
+ */
+public interface Future<V> {
+
+    /**
+     * Attempts to cancel execution of this task.  This attempt will
+     * fail if the task has already completed, has already been cancelled,
+     * or could not be cancelled for some other reason. If successful,
+     * and this task has not started when {@code cancel} is called,
+     * this task should never run.  If the task has already started,
+     * then the {@code mayInterruptIfRunning} parameter determines
+     * whether the thread executing this task should be interrupted in
+     * an attempt to stop the task.
+     *
+     * <p>After this method returns, subsequent calls to {@link #isDone} will
+     * always return {@code true}.  Subsequent calls to {@link #isCancelled}
+     * will always return {@code true} if this method returned {@code true}.
+     *
+     * @param mayInterruptIfRunning {@code true} if the thread executing this
+     * task should be interrupted; otherwise, in-progress tasks are allowed
+     * to complete
+     * @return {@code false} if the task could not be cancelled,
+     * typically because it has already completed normally;
+     * {@code true} otherwise
+     */
+    boolean cancel(boolean mayInterruptIfRunning);
+
+    /**
+     * Returns {@code true} if this task was cancelled before it completed
+     * normally.
+     *
+     * @return {@code true} if this task was cancelled before it completed
+     */
+    boolean isCancelled();
+
+    /**
+     * Returns {@code true} if this task completed.
+     *
+     * Completion may be due to normal termination, an exception, or
+     * cancellation -- in all of these cases, this method will return
+     * {@code true}.
+     *
+     * @return {@code true} if this task completed
+     */
+    boolean isDone();
+
+    /**
+     * Waits if necessary for the computation to complete, and then
+     * retrieves its result.
+     *
+     * @return the computed result
+     * @throws CancellationException if the computation was cancelled
+     * @throws ExecutionException if the computation threw an
+     * exception
+     * @throws InterruptedException if the current thread was interrupted
+     * while waiting
+     */
+    V get() throws InterruptedException, ExecutionException;
+
+    /**
+     * Waits if necessary for at most the given time for the computation
+     * to complete, and then retrieves its result, if available.
+     *
+     * @param timeout the maximum time to wait
+     * @param unit the time unit of the timeout argument
+     * @return the computed result
+     * @throws CancellationException if the computation was cancelled
+     * @throws ExecutionException if the computation threw an
+     * exception
+     * @throws InterruptedException if the current thread was interrupted
+     * while waiting
+     * @throws TimeoutException if the wait timed out
+     */
+    V get(long timeout, TimeUnit unit)
+        throws InterruptedException, ExecutionException, TimeoutException;
+}
+```
+
+那如何使用 FutureTask 呢?其实很简单，FutureTask 实现了 Runnable 和 Future 接 口，由于实现了 Runnable 接口，所以可以将 FutureTask 对象作为任务提交给 ThreadPoolExecutor 去执行，也可以直接被 Thread 执行;又因为实现了 Future 接口， 所以也能用来获得任务的执行结果。下面的示例代码是将 FutureTask 对象提交给 ThreadPoolExecutor 去执行。
+
+![image-20201023111003403](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201023111003.png)
+
+**实现最优的**烧水泡茶程序
+
+T1 在执行泡茶这道工序时需 要等待 T2 完成拿茶叶的工序。
+
+<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201023111945.png" alt="image-20201023111945490" style="zoom:33%;" />
+
+首先，我们创建了两个 FutureTask——ft1 和 ft2，ft1 完成洗水壶、烧开水、泡茶的任务，ft2 完成洗茶壶、洗茶 杯、拿茶叶的任务;这里需要注意的是 ft1 这个任务在执行泡茶任务前，需要等待 ft2 把茶 叶拿来，所以 ft1 内部需要引用 ft2，并在执行泡茶之前，调用 ft2 的 get() 方法实现等待。
+
+```java
+public class FutureDemo_23_2 {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        // 创建任务 T2 的 FutureTask
+        FutureTask<String> ft2 = new FutureTask<>(new T2Task());
+        // 创建任务 T1 的 FutureTask
+        FutureTask<String> ft1 = new FutureTask<>(new T1Task(ft2));
+        // 线程 T1 执行任务 ft1
+        Thread T1 = new Thread(ft1);
+        T1.start();
+        // 线程 T2 执行任务 ft2
+        Thread T2 = new Thread(ft2);
+        T2.start();
+        // 等待线程 T1 执行结果
+        System.out.println(ft1.get());
+    }
+}
+
+// T1Task 需要执行的任务:
+// 洗水壶、烧开水、泡茶
+class T1Task implements Callable<String> {
+
+    FutureTask<String> ft2;
+
+    // T1 任务需要 T2 任务的 FutureTask
+    T1Task(FutureTask<String> ft2) {
+        this.ft2 = ft2;
+    }
+
+    @Override
+    public String call() throws Exception {
+        System.out.println("T1: 洗水壶...");
+        TimeUnit.SECONDS.sleep(1);
+        System.out.println("T1: 烧开水...");
+        TimeUnit.SECONDS.sleep(15);
+        // 获取 T2 线程的茶叶
+        String tf = ft2.get();
+        System.out.println("T1: 拿到茶叶:" + tf);
+
+        System.out.println("T1: 泡茶...");
+        return " 上茶:" + tf;
+    }
+}
+
+// T2Task 需要执行的任务:
+// 洗茶壶、洗茶杯、拿茶叶
+class T2Task implements Callable<String> {
+    @Override
+    public String call() throws Exception {
+        System.out.println("T2: 洗茶壶...");
+        TimeUnit.SECONDS.sleep(1);
+
+        System.out.println("T2: 洗茶杯...");
+        TimeUnit.SECONDS.sleep(2);
+
+        System.out.println("T2: 拿茶叶...");
+        TimeUnit.SECONDS.sleep(1);
+        return " 龙井 ";
+    }
+}
+```
+
+<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201023113201.png" alt="image-20201023113201161" style="zoom:33%;" />
+
+
+
+总结：利用多线程可以快速将一些串行的任务并行化，从而提高性能;如果任务之间有依赖关系， 比如当前任务依赖前一个任务的执行结果，这种问题基本上都可以用 Future 来解决。在分 析这种问题的过程中，建议你用有向图描述一下任务之间的依赖关系，同时将线程的分工也 做好，类似于烧水泡茶最优分工方案那幅图。对照图来写代码，好处是更形象，且不易出错。
+
+## 24. **CompletableFuture**:异步编程没那么难
+
+TODO
+
+## 27 小结
+
 
 
 # 3. 并发设计模式 
+
+## 28 **Immutability**模式:如何利用不变性解决并发问题
+
+**不变性(Immutability)模 式**。所谓**不变性，简单来讲，就是对象一旦被创建之后，状态就不再发生变化**。换句话说， 就是变量一旦被赋值，就不允许修改了(没有写操作);没有修改操作，也就是保持了不变性。
+
+**快速实现具备不可变性的类**
+
+实现一个具备不可变性的类，还是挺简单的。**将一个类所有的属性都设置成 final 的，并且 只允许存在只读方法，那么这个类基本上就具备不可变性了**。更严格的做法是**这个类本身也 是 final 的**，也就是不允许继承。因为子类可以覆盖父类的方法，有可能改变不可变性，所 以推荐你在实际工作中，使用这种更严格的做法。
+
+<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201024002905.png" alt="image-20201024002905385" style="zoom:33%;" />
+
+通过分析 String 的实现，你可能已经发现了，如果具备不可变性的类，需要提供类似修改 的功能，具体该怎么操作呢?做法很简单，那就是**创建一个新的不可变对象**，这是与可变对 象的一个重要区别，可变对象往往是修改自己的属性。
+
+所有的修改操作都创建一个新的不可变对象，你可能会有这种担心:是不是创建的对象太多 了，有点太浪费内存呢?是的，这样做的确有些浪费，那如何解决呢?
+
+**利用享元模式避免创建重复对象**
+
+果你熟悉面向对象相关的设计模式，相信你一定能想到**享元模式(Flyweight Pattern)。利用享元模式可以减少创建对象的数量，从而减少内存占用。**Java 语言里面 Long、Integer、Short、Byte 等这些基本数据类型的包装类都用到了享元模式。
+
+享元模式本质上其实就是一个**对象池**，利用享元模式创建对象的逻辑也很简单:创建之前， 首先去对象池里看看是不是存在;如果已经存在，就利用对象池里的对象;如果不存在，就 会新创建一个对象，并且把这个新创建出来的对象放进对象池里。
+
+Long 这个类并没有照搬享元模式，Long 内部维护了一个静态的对象池，仅缓存了 [-128,127] 之间的数字，这个对象池在 JVM 启动的时候就创建好了，而且这个对象池一直 都不会变化，也就是说它是静态的。之所以采用这样的设计，是因为 Long 这个对象的状态共有 264 种，实在太多，不宜全部缓存，而 [-128,127] 之间的数字利用率最高。下面的示 例代码出自 Java 1.8，valueOf() 方法就用到了 LongCache 这个缓存。
+
+
+
+
+
+利用 Immutability 模式解决并发问题，也许你觉得有点陌生，其实你天天都在享受它的战 果。Java 语言里面的 String 和 Long、Integer、Double 等基础类型的包装类都具备不可 变性，这些对象的线程安全性都是靠不可变性来保证的。Immutability 模式是最简单的解 决并发问题的方法，建议当你试图解决一个并发问题时，可以首先尝试一下 Immutability 模式，看是否能够快速解决。
+
+具备不变性的对象，只有一种状态，这个状态由对象内部所有的不变属性共同决定。其实还 有一种更简单的不变性对象，那就是**无状态**。无状态对象内部没有属性，只有方法。除了无 状态的对象，你可能还听说过无状态的服务、无状态的协议等等。无状态有很多好处，最核 心的一点就是性能。在多线程领域，无状态对象没有线程安全问题，无需同步处理，自然性 能很好;在分布式领域，无状态意味着可以无限地水平扩展，所以分布式领域里面性能的瓶 颈一定不是出在无状态的服务节点上。
+
+
+
+## 29. **Copy-on-Write**模式:不是延时策略的COW
+
+所谓 Copy-on-Write，经常被缩写为 COW 或者 CoW，顾名思义就是**写时复制**。
+
+## 30. **线程本地存储模式:没有共享，就没有伤害ThreadLocal**
+
+通过局部变量可以做到避免共享,**Java 语言提供的线程本地存储(ThreadLocal)就能够做到**。
+
+**ThreadLocal** **的使用方法**
+
+下面这个静态类 ThreadId 会为每个线程分配一个唯一的线程 Id，如果**一个线程**前后两次 调用 ThreadId 的 get() 方法，两次 get() 方法的返回值是相同的。但如果是**两个线程**分别 调用 ThreadId 的 get() 方法，那么两个线程看到的 get() 方法的返回值是不同的。
+
+```java
+public class ThreadLocalTest_30_1 {
+    public static void main(String[] args) {
+        System.out.println(ThreadId.get());
+        System.out.println(ThreadId.get());
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println(ThreadId.get());
+            }
+        });
+        thread.start();
+    }
+
+    static class ThreadId {
+        static final AtomicLong nextId = new AtomicLong(0);
+        // 定义 ThreadLocal 变量
+        static final ThreadLocal<Long> tl = ThreadLocal.withInitial(
+                () -> nextId.getAndIncrement());
+
+        // 此方法会为每个线程分配一个唯一的 Id
+        static long get() {
+            return tl.get();
+        }
+    }
+}
+```
+
+![image-20201024004319249](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201024004319.png)
+
+SimpleDateFormat是非线程安全的。那么怎么变安全呢？
+
+```java
+public class SafeDateFormat_30_2 {
+    public static void main(String[] args) throws InterruptedException {
+        DateFormat df = SafeDateFormat.get();
+        final DateFormat[] df1 = new DateFormat[1];
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                df1[0] = SafeDateFormat.get();
+
+            }
+        });
+        thread.start();
+        thread.join();
+        System.out.println(df == df1[0]);
+    }
+
+    static class SafeDateFormat {
+        // 定义 ThreadLocal 变量
+        static final ThreadLocal<DateFormat> tl = ThreadLocal.withInitial(
+                () -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+
+        static DateFormat get() {
+            return tl.get();
+        }
+    }
+}
+```
+
+<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201024005102.png" alt="image-20201024005102059" style="zoom:33%;" />
+
+**ThreadLocal** **的工作原理**
+
+如果让我来实现 ThreadLocal 的 功能，你会怎么设计呢?ThreadLocal 的目标是让不同的线程有不同的变量 V，那最直接 的方法就是创建一个 Map，它的 Key 是线程，Value 是每个线程拥有的变量 V， ThreadLocal 内部持有这样的一个 Map 就可以了。你可以参考下面的示意图和示例代码来理解。
+
+![image-20201025134639747](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201025134640.png)
+
+那 Java 的 ThreadLocal 是这么实现的吗?这一次我们的设计思路和 Java 的实现差异很 大。Java 的实现里面也有一个 Map，叫做 ThreadLocalMap，不过持有 ThreadLocalMap 的不是 ThreadLocal，而是 Thread。Thread 这个类内部有一个私有属性 threadLocals，其类型就是 ThreadLocalMap，ThreadLocalMap 的 Key 是 ThreadLocal。
+
+<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201025134809.png" alt="image-20201025134809533" style="zoom:50%;" />
+
+
+
+
 
 
 
