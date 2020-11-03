@@ -1,0 +1,8 @@
+@startuml
+
+abstract EndPoint
+abstract AbstractEndpoint
+
+EndPoint <|-- AbstractEndpoint
+
+@enduml
