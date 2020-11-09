@@ -455,6 +455,124 @@ public class MyApplication {
 
 # 4. Spring Boot的功能
 
+## 4.1 SpringApplication
+
+```
+public static void main(String[] args) {
+    SpringApplication.run(MySpringConfiguration.class, args);
+}
+```
+
+一般SpringApplication作为启动的入口。
+
+### 4.1.1 启动失败
+
+如果启动失败，FailureAnalyzers将会向我们展示详细的错误信息。如：
+
+```
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Embedded servlet container failed to start. Port 8080 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8080 or configure this application to listen on another port.
+```
+
+我们可以通过debug来打开日志：
+
+```
+$ java -jar myproject-0.0.1-SNAPSHOT.jar --debug
+```
+
+### 4.1.2 懒加载
+
+启用延迟初始化可以减少应用程序启动所花费的时间。 懒加载的缺陷是无法在启动的阶段发现程序的错误。我们可以通过多种方式来配置懒加载：
+
+1. SpringApplication的方法
+
+2. SpringApplicationBuilder的lazyInitialization方法
+
+3. ```properties
+   spring.main.lazy-initialization=true
+   ```
+
+### 4.1.3 自定义Banner
+
+我们可以通过spring.banner.location属性来指定banner.txt。
+
+| Variable                                                     | Description                                                  |
+| :----------------------------------------------------------- | :----------------------------------------------------------- |
+| `${application.version}`                                     | The version number of your application, as declared in `MANIFEST.MF`. For example, `Implementation-Version: 1.0` is printed as `1.0`. |
+| `${application.formatted-version}`                           | The version number of your application, as declared in `MANIFEST.MF` and formatted for display (surrounded with brackets and prefixed with `v`). For example `(v1.0)`. |
+| `${spring-boot.version}`                                     | The Spring Boot version that you are using. For example `2.3.5.RELEASE`. |
+| `${spring-boot.formatted-version}`                           | The Spring Boot version that you are using, formatted for display (surrounded with brackets and prefixed with `v`). For example `(v2.3.5.RELEASE)`. |
+| `${Ansi.NAME}` (or `${AnsiColor.NAME}`, `${AnsiBackground.NAME}`, `${AnsiStyle.NAME}`) | Where `NAME` is the name of an ANSI escape code. See [`AnsiPropertySource`](https://github.com/spring-projects/spring-boot/tree/v2.3.5.RELEASE/spring-boot-project/spring-boot/src/main/java/org/springframework/boot/ansi/AnsiPropertySource.java) for details. |
+| `${application.title}`                                       | The title of your application, as declared in `MANIFEST.MF`. For example `Implementation-Title: MyApp` is printed as `MyApp`. |
+
+### 4.1.4 自定义SpringApplication
+
+我们可以通过替换SpringApplication。如关闭banner：
+
+```
+public static void main(String[] args) {
+    SpringApplication app = new SpringApplication(MySpringConfiguration.class);
+    app.setBannerMode(Banner.Mode.OFF);
+    app.run(args);
+}
+```
+
+### 4.1.5 Builder模式
+
+如：
+
+```java
+new SpringApplicationBuilder()
+        .sources(Parent.class)
+        .child(Application.class)
+        .bannerMode(Banner.Mode.OFF)
+        .run(args);
+```
+
+### 4.1.6 应用的状态
+
+应用状态检查。
+
+### 4.1.7 应用事件监听
+
+### 4.1.8 Web环境
+
+### **4.1.9 获取应用环境参数**
+
+```
+import org.springframework.boot.*;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.stereotype.*;
+
+@Component
+public class MyBean {
+
+    @Autowired
+    public MyBean(ApplicationArguments args) {
+        boolean debug = args.containsOption("debug");
+        List<String> files = args.getNonOptionArgs();
+        // if run with "--debug logfile.txt" debug=true, files=["logfile.txt"]
+    }
+}
+```
+
+### 4.1.10 Using the ApplicationRunner or CommandLineRunner
+
+### 4.1.11 应用程序退出
+
+## 4.2 外部配置
+
+
+
 
 
 
