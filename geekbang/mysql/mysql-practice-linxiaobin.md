@@ -2,891 +2,22 @@
 
 <!--te-->
 
-# 数据库基本操作
-
-[sql数据](https://github.com/cystanford/sql_heros_data)
-
-```mysql
-# 创建数据库
-create database [if not exists] db_name；
-# 修改数据库
-alter database db_name;
-# 删除数据库
-drop database [if exitsts] db_name;
-create table <表名>
-( 
- 列名1 数据类型[列级别约束条件][默认值],
- 列名2 数据类型[列级别约束条件][默认值],
- ...
- [表级别约束条件]
-);
-eg:
-CREATE TABLE `player`  (
-  `player_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '球员ID',
-  `team_id` int(11) NOT NULL COMMENT '球队ID',
-  `player_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '球员姓名',
-  `height` float(3, 2) NULL DEFAULT NULL COMMENT '球员身高',
-  PRIMARY KEY (`player_id`) USING BTREE,
-  UNIQUE INDEX `player_name`(`player_name`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
-# 修改表
-ALTER TABLE player ADD (age int(11));
-ALTER TABLE player RENAME COLUMN age to player_age;
-ALTER TABLE player MODIFY (player_age float(3,1));
-ALTER TABLE player DROP COLUMN player_age;
-# 查询，书写顺序SELECT ... FROM ... WHERE ... GROUP BY ... HAVING ... ORDER BY ...
-# 执行顺序，FROM > WHERE > GROUP BY > HAVING > SELECT的字段 > DISTINCT > ORDER BY > LIMIT
-# 取别名
-select name as n from heros;
-# DISTINCT去除重复行,需要放到所有列名的前面,
-SELECT DISTINCT attack_range FROM heros;
-+--------------+
-| attack_range |
-+--------------+
-| 近战         |
-| 远程         |
-+--------------+
-2 rows in set (0.01 sec)
-
-SELECT DISTINCT attack_range, name FROM heros;
-| 近战         | 花木兰       |
-| 近战         | 赵云         |
-| 近战         | 橘石京       |
-+--------------+--------------+
-69 rows in set (0.00 sec)
-
-# ORDER BY排序,ASC升序，DESC降序。显示英雄名称及最大生命值，按照最大生命值排序;
-mysql> SELECT name, hp_max FROM heros ORDER BY hp_max;
-+--------------+--------+
-| name         | hp_max |
-+--------------+--------+
-| 武则天       |   5037 |
-| 花木兰       |   5397 |
-| 姜子牙       |   5399 |
-| 大乔         |   5399 |
-| 王昭君       |   5429 |
-| 嬴政         |   5471 |
-| 李白         |   5483 |
-| 周瑜         |   5513 |
-| 干将莫邪     |   5583 |
-| 甄姬         |   5584 |
-
-# LIMIT约束
-mysql> SELECT name, hp_max FROM heros ORDER BY hp_max LIMIT 5;
-+-----------+--------+
-| name      | hp_max |
-+-----------+--------+
-| 武则天    |   5037 |
-| 花木兰    |   5397 |
-| 姜子牙    |   5399 |
-| 大乔      |   5399 |
-| 王昭君    |   5429 |
-+-----------+--------+
-5 rows in set (0.00 sec)
-
-# 数据过滤,主要是where子句
-## 比较运算符，=, <>/!= , <, >,!< ,BETWEEN,ISNULL(为空)
-### 筛选最大生命值大于 6000
-SELECT name, hp_max FROM heros WHERE hp_max > 6000;
-mysql> SELECT name, hp_max FROM heros WHERE hp_max > 6000;
-+--------------+--------+
-| name         | hp_max |
-+--------------+--------+
-| 夏侯惇       |   7350 |
-| 钟无艳       |   7000 |
-| 张飞         |   8341 |
-| 牛魔         |   8476 |
-| 吕布         |   7344 |
-| 亚瑟         |   8050 |
-| 芈月         |   6164 |
-41 rows in set (0.00 sec)
-## 逻辑运算符,AND,OR,IN,NOT
-### 注意：当 WHERE子句中同时出现AND和OR操作符的时候，优先执行AND
-### 筛选最大生命值大于 6000，最大法力大于 1700 的英雄，然后按照最大生命值和最大法力值之和从高到低进行排序。
-mysql> SELECT name, hp_max,mp_max FROM heros WHERE hp_max > 6000 AND mp_max>1700 ORDER BY (hp_max+mp_max) DESC;
-+--------------+--------+--------+
-| name         | hp_max | mp_max |
-+--------------+--------+--------+
-| 廉颇         |   9328 |   1708 |
-| 牛魔         |   8476 |   1926 |
-| 刘邦         |   8073 |   1940 |
-| 东皇太一     |   7669 |   1926 |
-| 典韦         |   7516 |   1774 |
-| 夏侯惇       |   7350 |   1746 |
-+--------------+--------+--------+
-23 rows in set (0.01 sec)
-## 通配符过滤，LIKE, _匹配一个字符，%匹配一个或者多个字符
-mysql> SELECT name FROM heros WHERE name LIKE '%太%';
-+--------------+
-| name         |
-+--------------+
-| 东皇太一     |
-| 太乙真人     |
-+--------------+
-2 rows in set (0.00 sec)
-# 聚集函数,COUNT总行数，MAX最大值，MIN最小值，SUM求和，AVG平均值
-# DISTINCT求不同的值
-# 分组，GROUP BY
-mysql> SELECT COUNT(*), role_main FROM heros GROUP BY role_main;
-+----------+-----------+
-| COUNT(*) | role_main |
-+----------+-----------+
-|       10 | 坦克      |
-|       18 | 战士      |
-|       19 | 法师      |
-|        6 | 辅助      |
-|       10 | 射手      |
-|        6 | 刺客      |
-+----------+-----------+
-6 rows in set (0.00 sec)
-# HAVING过滤分组，WHERE过滤行
-## 按照英雄的主要定位、次要定位进行分组，并且筛选分组中英雄数量大于5的组，最后按照分组中的英雄数量从高到低进行排序
-mysql> SELECT COUNT(*) as num, role_main, role_assist FROM heros GROUP BY role_main,role_assist HAVING num > 5 ORDER BY num DESC;
-+-----+-----------+-------------+
-| num | role_main | role_assist |
-+-----+-----------+-------------+
-|  12 | 法师      | NULL        |
-|   9 | 射手      | NULL        |
-|   8 | 战士      | NULL        |
-|   6 | 战士      | 坦克        |
-+-----+-----------+-------------+
-4 rows in set (0.01 sec)
-# 子查询
-## 关联子查询，非关联子查询
-### 非关联子查询，哪个球员的身高最高，最高身高是多少
-mysql> SELECT player_name, height FROM player WHERE height = (SELECT max(height) FROM player) ;
-+---------------+--------+
-| player_name   | height |
-+---------------+--------+
-| 索恩-马克     |   2.16 |
-+---------------+--------+
-1 row in set (0.00 sec)
-### 关联子查询,查找每个球队中大于平均身高的球员有哪些，并显示他们的球员姓名、身高以及所在球队ID。
-### 将 player 表复制成了表 a 和表 b，每次计算的时候，需要将表 a 中的 team_id 传入从句，作为已知值。因为每次表 a 中的 team_id 可能是不同的，所以是关联子查询。
-mysql> SELECT player_name, height, team_id FROM player AS a WHERE height > (SELECT avg(height) FROM player AS b WHERE a.team_id = b.team_id);
-+------------------------------------+--------+---------+
-| player_name                        | height | team_id |
-+------------------------------------+--------+---------+
-| 安德烈-德拉蒙德                    |   2.11 |    1001 |
-| 索恩-马克                          |   2.16 |    1001 |
-| 扎扎-帕楚里亚                      |   2.11 |    1001 |
-| 乔恩-洛伊尔                        |   2.08 |    1001 |
-| 布雷克-格里芬                      |   2.08 |    1001 |
-+------------------------------------+--------+---------+
-18 rows in set (0.01 sec)
-## EXISTS子查询，用来判断条件是否满足
-### 看出场过的球员都有哪些，并且显示他们的姓名、球员ID和球队ID
-mysql> SELECT player_id, team_id, player_name FROM player WHERE EXISTS (SELECT player_id FROM player_score WHERE player.player_id = player_score.player_id);
-+-----------+---------+---------------------------+
-| player_id | team_id | player_name               |
-+-----------+---------+---------------------------+
-|     10001 |    1001 | 韦恩-艾灵顿               |
-|     10002 |    1001 | 雷吉-杰克逊               |
-|     10003 |    1001 | 安德烈-德拉蒙德           |
-+-----------+---------+---------------------------+
-19 rows in set (0.00 sec)
-## IN子查询
-### 出场过的球员都有哪些
-mysql> SELECT player_id, team_id, player_name FROM player WHERE player_id IN (SELECT player_id FROM player_score WHERE player.player_id = player_score.player_id);
-+-----------+---------+---------------------------+
-| player_id | team_id | player_name               |
-+-----------+---------+---------------------------+
-|     10001 |    1001 | 韦恩-艾灵顿               |
-|     10002 |    1001 | 雷吉-杰克逊               |
-|     10003 |    1001 | 安德烈-德拉蒙德           |                  |
-+-----------+---------+---------------------------+
-19 rows in set (0.00 sec)
-### IN vs EXISTS,IN是外表和内表进行hash连接，是先执行子查询，EXISTS是对外表进行循环，然后在内表进行查询。因此如果外表数据量大，则用IN，如果外表数据量小，也用EXISTS。IN有一个缺陷是不能判断NULL，因此如果字段存在NULL值，则会出现返回，因为最好使用NOT EXISTS。
-### SELECT * FROM A WHERE cc IN (SELECT cc FROM B)
-### SELECT * FROM A WHERE EXIST (SELECT cc FROM B WHERE B.cc=A.cc)
-
-# 连接
-## 笛卡尔积,交叉连接，英文是 CROSS JOIN
-mysql> SELECT * FROM player, team;
-+-----------+---------+------------------------------------+--------+---------+-----------------------+
-| player_id | team_id | player_name                        | height | team_id | team_name             |
-+-----------+---------+------------------------------------+--------+---------+-----------------------+
-|     10001 |    1001 | 韦恩-艾灵顿                        |   1.93 |    1001 | 底特律活塞            |
-|     10001 |    1001 | 韦恩-艾灵顿                        |   1.93 |    1002 | 印第安纳步行者        |
-|     10001 |    1001 | 韦恩-艾灵顿                        |   1.93 |    1003 | 亚特兰大老鹰          |
-|     10002 |    1001 | 雷吉-杰克逊                        |   1.91 |    1001 | 底特律活塞            |
-+-----------+---------+------------------------------------+--------+---------+-----------------------+
-111 rows in set (0.01 sec)
-## 等值连接,用两张表中都存在的列进行连接
-mysql> SELECT player_id, player.team_id, player_name, height, team_name FROM player, team WHERE player.team_id = team.team_id;
-+-----------+---------+------------------------------------+--------+-----------------------+
-| player_id | team_id | player_name                        | height | team_name             |
-+-----------+---------+------------------------------------+--------+-----------------------+
-|     10001 |    1001 | 韦恩-艾灵顿                        |   1.93 | 底特律活塞            |
-|     10002 |    1001 | 雷吉-杰克逊                        |   1.91 | 底特律活塞            |
-|     10003 |    1001 | 安德烈-德拉蒙德                    |   2.11 | 底特律活塞            |
-+-----------+---------+------------------------------------+--------+-----------------------+
-37 rows in set (0.01 sec)
-## 非等值连接
-## 左外连接
-mysql> SELECT * FROM player LEFT JOIN team on player.team_id = team.team_id;
-+-----------+---------+------------------------------------+--------+---------+-----------------------+
-| player_id | team_id | player_name                        | height | team_id | team_name             |
-+-----------+---------+------------------------------------+--------+---------+-----------------------+
-|     10001 |    1001 | 韦恩-艾灵顿                        |   1.93 |    1001 | 底特律活塞            |
-|     10002 |    1001 | 雷吉-杰克逊                        |   1.91 |    1001 | 底特律活塞            |
-|     10003 |    1001 | 安德烈-德拉蒙德                    |   2.11 |    1001 | 底特律活塞            |
-|     10004 |    1001 | 索恩-马克                          |   2.16 |    1001 | 底特律活塞            |
-+-----------+---------+------------------------------------+--------+---------+-----------------------+
-37 rows in set (0.00 sec)
-## 右外连接
-mysql> SELECT * FROM player RIGHT JOIN team on player.team_id = team.team_id;
-+-----------+---------+------------------------------------+--------+---------+-----------------------+
-| player_id | team_id | player_name                        | height | team_id | team_name             |
-+-----------+---------+------------------------------------+--------+---------+-----------------------+
-|     10001 |    1001 | 韦恩-艾灵顿                        |   1.93 |    1001 | 底特律活塞            |
-|     10002 |    1001 | 雷吉-杰克逊                        |   1.91 |    1001 | 底特律活塞            |
-|     10003 |    1001 | 安德烈-德拉蒙德                    |   2.11 |    1001 | 底特律活塞            |
-|      NULL |    NULL | NULL                               |   NULL |    1003 | 亚特兰大老鹰          |
-+-----------+---------+------------------------------------+--------+---------+-----------------------+
-38 rows in set (0.00 sec)
-```
-
-常见约束：
-
-1. 主键约束；作用是唯一标识一条记录，不能重复，不能为空， 即 UNIQUE+NOT NULL。一个数据表的主键只能有一个。 主键可以是一个字段，也可以由多个字段复合组成；
-2. 外键约束：外键确保了表与表之间引用的完整性。一个表中的外键对应 另一张表的主键。外键可以是重复的，也可以为空；
-3. 唯一性约束：唯一性约束表明了字段在表中的数值是唯一的；
-4. NOT NULL 约束。对字段定义了 NOT NULL，即表明该字 段不应为空，必须有取值；
-5. DEFAULT，表明了字段的默认值。如果在插入数据的时 候，这个字段没有取值，就设置为默认值；
-6. CHECK 约束，用来检查特定字段取值范围的有效性；
-
-
-
-SELECT 语句的执行顺序
-
-```mysql
-# 书写顺序
-SELECT ... FROM ... WHERE ... GROUP BY ... HAVING ... ORDER BY ...
-# 执行顺序
-FROM子句组装数据(包括通过ON进行连接) > WHERE子句进行条件筛选 > GROUP BY分组 > 使用聚集函数进行计算 > HAVING筛选分组 > 计算所有的表达式 > SELECT的字段 > DISTINCT > ORDER BY排序 > LIMIT筛选
-
-SELECT DISTINCT player_id, player_name, count(*) as num #顺序5
-FROM player JOIN team ON player.team_id = team.team_id #顺序1
-WHERE height > 1.80 #顺序2
-GROUP BY player.team_id #顺序3
-HAVING num > 2 #顺序4
-ORDER BY num DESC #顺序6
-LIMIT 2 #顺序7
-注意，count(*)是在HAVING之前计算的
-```
-
-如果是多表查询，则：
-
-1. 首先先通过 CROSS JOIN 求笛卡尔积，相当于得到虚拟 表 vt(virtual table)1-1;
-2. 通过 ON 进行筛选，在虚拟表 vt1-1 的基础上进行筛 选，得到虚拟表 vt1-2；
-3. 添加外部行。如果我们使用的是左连接、右链接或者全连 接，就会涉及到外部行，也就是在虚拟表 vt1-2 的基础上 增加外部行，得到虚拟表 vt1-3。
-
-
-
-## SQL函数
-
-算术函数：ABS取绝对值，MOD取余；ROUND四舍五入，如ROUND(37.25,1)=37.3；
-
-字符串函数：CONCAT字符串拼接，LENGTH长度（一个汉字长度为3），CHAR_LENGTH长度（汉字也算一个长度），LOWER转小写，UPPER转大写，REPLACE替换，SUBSTRING截取；
-
-日期函数：CURRENT_DATE当前日期，如2019-04-03；CURRENT_TIME当前时间，如21:26:34；CURRENT_TIMESTAMP，如2019-04-03 21:26:34；EXTRACT(YEAR FROM '2019-04-03')，运行结果为 2019；DATE('2019-04-01 12:00:05')，运行结果为 2019-04-01；
-
-转换函数：CAST数据类型转换。
-
-## 事务
-
-```mysql
-# 查看支持引擎
-mysql> SHOW ENGINES;
-+--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
-| Engine             | Support | Comment                                                        | Transactions | XA   | Savepoints |
-+--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
-| ARCHIVE            | YES     | Archive storage engine                                         | NO           | NO   | NO         |
-| BLACKHOLE          | YES     | /dev/null storage engine (anything you write to it disappears) | NO           | NO   | NO         |
-| MRG_MYISAM         | YES     | Collection of identical MyISAM tables                          | NO           | NO   | NO         |
-| FEDERATED          | NO      | Federated MySQL storage engine                                 | NULL         | NULL | NULL       |
-| MyISAM             | YES     | MyISAM storage engine                                          | NO           | NO   | NO         |
-| PERFORMANCE_SCHEMA | YES     | Performance Schema                                             | NO           | NO   | NO         |
-| InnoDB             | DEFAULT | Supports transactions, row-level locking, and foreign keys     | YES          | YES  | YES        |
-| MEMORY             | YES     | Hash based, stored in memory, useful for temporary tables      | NO           | NO   | NO         |
-| CSV                | YES     | CSV storage engine                                             | NO           | NO   | NO         |
-+--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
-9 rows in set (0.00 sec)
-# mysql的事务默认隐式的提交
-# START TRANSACTION 或者 BEGIN，作用是显式开启一个事务。
-# COMMIT：提交事务。当提交事务后，对数据库的修改是永久性的。
-# ROLLBACK 或者 ROLLBACK TO [SAVEPOINT]，意为回滚事务。意思是撤销正在进行的所有没有提交的修改，或者将事务回滚到某个保存点。
-# SAVEPOINT：在事务中创建保存点，方便后续针对保存点进行回滚。一个事务中可以存在多个保存点。
-# RELEASE SAVEPOINT：删除某个保存点。
-# SET TRANSACTION，设置事务的隔离级别。
-# set autocommit =0; //关闭自动提交
-# set autocommit =1; //开启自动提交
-
-# 事务的隔离级别
-## 查看默认隔离级别
-mysql> SHOW VARIABLES LIKE 'transaction_isolation';
-+-----------------------+-----------------+
-| Variable_name         | Value           |
-+-----------------------+-----------------+
-| transaction_isolation | REPEATABLE-READ |
-+-----------------------+-----------------+
-1 row in set (0.03 sec)
-## 修改默认级别为读未提交
-mysql> SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
-Query OK, 0 rows affected (0.00 sec)
-## 关闭默认提交
-mysql> SET autocommit = 0;
-Query OK, 0 rows affected (0.00 sec)
-
-## 准备数据
-mysql> select * from heros_temp;
-+----+--------+
-| id | name   |
-+----+--------+
-|  1 | 张飞   |
-|  2 | 关羽   |
-|  3 | 刘备   |
-+----+--------+
-3 rows in set (0.00 sec)
-## 模拟脏读
-### A用户
-mysql> BEGIN;
-Query OK, 0 rows affected (0.00 sec)
-
-mysql> INSERT INTO heros_temp values(4, '吕布');
-Query OK, 1 row affected (0.00 sec)
-### B用户，读到了A还没提交的数据
-mysql> SELECT * FROM heros_temp;
-+----+--------+
-| id | name   |
-+----+--------+
-|  1 | 张飞   |
-|  2 | 关羽   |
-|  3 | 刘备   |
-|  4 | 吕布   |
-+----+--------+
-4 rows in set (0.01 sec)
-mysql> BEGIN;
-Query OK, 0 rows affected (0.01 sec)
-## 模拟不可重复读
-### A用户
-mysql> SELECT name FROM heros_temp WHERE id = 1;
-+--------+
-| name   |
-+--------+
-| 张飞   |
-+--------+
-1 row in set (0.00 sec)
-### B用户
-mysql> BEGIN;
-Query OK, 0 rows affected (0.00 sec)
-mysql> UPDATE heros_temp SET name = '张翼德' WHERE id = 1;
-Query OK, 1 row affected (0.00 sec)
-Rows matched: 1  Changed: 1  Warnings: 0
-
-mysql> SELECT name FROM heros_temp WHERE id = 1;
-+-----------+
-| name      |
-+-----------+
-| 张翼德    |
-+-----------+
-1 row in set (0.00 sec)
-## 模拟幻读
-```
-
-## 索引
-
-**索引分类**：
-
-功能逻辑上划分：
-
-1. 普通索引：没有任何约束，主要用于提高查询效率；
-2. 唯一索引：增加了数据唯一性的约束，在一张数据表里可以有多个唯一索引；
-3. 主键索引：在唯一索引的基础上增加了不为空的约束，也就是 NOT NULL+UNIQUE，一张表里最多只有一个主键索引；
-4. 全文索引：MySQL只支持英文；
-
-物理实现上划分：
-
-1. 聚集索引：数据和索引存放在一块；每个表只可以有一个；
-2. 非聚集索引（二级索引或者辅助索引）：数据和索引分开；
-
-
-
-**创建索引时机**：
-
-1. 字段的数值有唯一性的限制，比如用户名，可以直接创建唯一性索引，或者主键索引；
-2. 频繁作为 WHERE 查询条件的字段，尤其在数据表大的情况下；
-3. 需要经常 GROUP BY 和 ORDER BY 的列；
-4. UPDATE、DELETE 的 WHERE 条件列，一般也需要创建索引；
-5. DISTINCT 字段需要创建索引；
-
-
-
-**索引失效**，参考实验4
-
-1. 索引进行了表达式计算，则会失效；
-2. 如果对索引使用函数，也会造成失效；
-3. 在 WHERE 子句中，如果在 OR 前的条件列进行了索引，而在 OR 后的条件列没有进行索引，那么索引会失效;
-4. 当我们使用 LIKE 进行模糊查询的时候，前面不能是 %;
-5. 索引列尽量设置为 NOT NULL 约束;
-6. 我们在使用联合索引的时候要注意最左原则;
-
-
-
-优化：
-
-1. 如果数据重复度高，就不需要创建索引。通常在重复度超过 10% 的情况下，可以不创建这个字段的索引。
-2. 要注意索引列的位置对索引使用的影响。比如我们在 WHERE 子句中对索引字段进行了表达式的计算，会造成这个字段的索引失效。
-3. 联合索引对索引使用的影响。我们在创建联合索引的时候会对多个字段创建索引，这时索引的顺序就很重要了。比如我们对字段 x, y, z 创建了索引，那么顺序是 (x,y,z) 还是 (z,y,x)，在执行的时候就会存在差别。
-4. 多个索引对索引使用的影响。
-
-
-
-[所需数据](https://pan.baidu.com/s/1X47UAx6EWasYLLU91RYHKQ#list/path=%2Fsharelink4110802606-216507779167973%2F%E7%B4%A2%E5%BC%95%E7%9A%84%E6%95%B0%E6%8D%AE%E5%AE%9E%E9%AA%8C&parentPath=%2Fsharelink4110802606-216507779167973)：
-
-实验1：数据量小
-
-```mysql
-# 没有索引
-mysql> SELECT id, name, hp_max, mp_max FROM heros_without_index WHERE name = '刘禅'; 
-+-------+--------+--------+--------+
-| id    | name   | hp_max | mp_max |
-+-------+--------+--------+--------+
-| 10015 | 刘禅   |   8581 |   1694 |
-+-------+--------+--------+--------+
-1 row in set (0.00 sec)
-# 对name字段建立索引
-mysql> SELECT id, name, hp_max, mp_max FROM heros_with_index WHERE name = '刘禅';   +-------+--------+--------+--------+
-| id    | name   | hp_max | mp_max |
-+-------+--------+--------+--------+
-| 10015 | 刘禅   |   8581 |   1694 |
-+-------+--------+--------+--------+
-1 row in set (0.00 sec)
-```
-
-实验2：对比分析聚集索引和非聚集索引：
-
-```mysql
-# user_id为主键
-mysql> SELECT user_id, user_name, user_gender FROM user_gender WHERE user_id = 900001;
-+---------+----------------+-------------+
-| user_id | user_name      | user_gender |
-+---------+----------------+-------------+
-|  900001 | student_890001 |           0 |
-+---------+----------------+-------------+
-1 row in set (0.00 sec)
-# user_name未建立索引，可以看到没有索引，查询效率变慢
-mysql> SELECT user_id, user_name, user_gender FROM user_gender WHERE user_name = 'student_890001';
-+---------+----------------+-------------+
-| user_id | user_name      | user_gender |
-+---------+----------------+-------------+
-|  900001 | student_890001 |           0 |
-+---------+----------------+-------------+
-1 row in set (0.23 sec)
-# 对user_name创建普通索引,可以看到查询的时间大大缩短
-mysql> CREATE INDEX user_name ON user_gender(user_name);
-Query OK, 0 rows affected (2.19 sec)
-Records: 0  Duplicates: 0  Warnings: 0
-
-mysql> SELECT user_id, user_name, user_gender FROM user_gender WHERE user_name = 'student_890001';
-+---------+----------------+-------------+
-| user_id | user_name      | user_gender |
-+---------+----------------+-------------+
-|  900001 | student_890001 |           0 |
-+---------+----------------+-------------+
-1 row in set (0.00 sec)
-```
-
-实验3：最左前缀匹配原则：
-
-```mysql
-# 删除之前的索引
-mysql> DROP INDEX user_name ON user_gender;
-Query OK, 0 rows affected (0.01 sec)
-Records: 0  Duplicates: 0  Warnings: 0
-# 建立(user_id,user_name)联合索引
-mysql> CREATE INDEX user_name ON user_gender(user_id,user_name);
-Query OK, 0 rows affected (0.84 sec)
-Records: 0  Duplicates: 0  Warnings: 0
-# 查询user_id,user_name
-mysql> SELECT user_id, user_name, user_gender FROM user_gender WHERE user_id = 900001 AND user_name = 'student_890001';
-+---------+----------------+-------------+
-| user_id | user_name      | user_gender |
-+---------+----------------+-------------+
-|  900001 | student_890001 |           0 |
-+---------+----------------+-------------+
-1 row in set (0.01 sec)
-# 查询user_id
-mysql> SELECT user_id, user_name, user_gender FROM user_gender WHERE user_id = 900001;
-+---------+----------------+-------------+
-| user_id | user_name      | user_gender |
-+---------+----------------+-------------+
-|  900001 | student_890001 |           0 |
-+---------+----------------+-------------+
-1 row in set (0.00 sec)
-
-# 查询user_name，索引失效
-mysql> SELECT user_id, user_name, user_gender FROM user_gender WHERE user_name = 'student_890001';
-+---------+----------------+-------------+
-| user_id | user_name      | user_gender |
-+---------+----------------+-------------+
-|  900001 | student_890001 |           0 |
-+---------+----------------+-------------+
-1 row in set (0.23 sec)
-```
-
-实验4：索引失效
-
-```mysql
-# 创建普通索引
-mysql> CREATE INDEX player_id ON player(player_id);
-Query OK, 0 rows affected (0.04 sec)
-Records: 0  Duplicates: 0  Warnings: 0
-# 显示执行计划，索引表达式进行了计算，从而会失效
-mysql> EXPLAIN SELECT player_id, team_id, player_name FROM player WHERE player_id+1 = 10001;
-+----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
-| id | select_type | table  | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra       |
-+----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
-|  1 | SIMPLE      | player | NULL       | ALL  | NULL          | NULL | NULL    | NULL |   37 |   100.00 | Using where |
-+----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
-1 row in set, 1 warning (0.01 sec)
-# 避免索引失效
-mysql> EXPLAIN SELECT player_id, team_id, player_name FROM player WHERE player_id = 10000;
-+----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+--------------------------------+
-| id | select_type | table | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra                          |
-+----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+--------------------------------+
-|  1 | SIMPLE      | NULL  | NULL       | NULL | NULL          | NULL | NULL    | NULL | NULL |     NULL | no matching row in const table |
-+----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+--------------------------------+
-1 row in set, 1 warning (0.00 sec)
-# 对索引使用函数，从而失效
-mysql> EXPLAIN SELECT player_id, team_id, player_name FROM player WHERE SUBSTRING(player_id, 3,4)='11';
-+----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
-| id | select_type | table  | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra       |
-+----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
-|  1 | SIMPLE      | player | NULL       | ALL  | NULL          | NULL | NULL    | NULL |   37 |   100.00 | Using where |
-+----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
-1 row in set, 1 warning (0.01 sec)
-
-mysql> EXPLAIN SELECT player_id, team_id, player_name FROM player WHERE player_id LIKE '%11';
-+----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
-| id | select_type | table  | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra       |
-+----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
-|  1 | SIMPLE      | player | NULL       | ALL  | NULL          | NULL | NULL    | NULL |   37 |    11.11 | Using where |
-+----+-------------+--------+------------+------+---------------+------+---------+------+------+----------+-------------+
-1 row in set, 1 warning (0.00 sec)
-
-# 在 WHERE 子句中，如果在 OR 前的条件列进行了索引，而在 OR 后的条件列没有进行索引，那么索引会失效。
-mysql> EXPLAIN SELECT player_id, team_id, player_name FROM player WHERE player_id = 10001 OR player_name = '韦恩-艾灵顿'; 
-+----+-------------+--------+------------+------+-------------------+------+---------+------+------+----------+-------------+
-| id | select_type | table  | partitions | type | possible_keys     | key  | key_len | ref  | rows | filtered | Extra       |
-+----+-------------+--------+------------+------+-------------------+------+---------+------+------+----------+-------------+
-|  1 | SIMPLE      | player | NULL       | ALL  | PRIMARY,player_id | NULL | NULL    | NULL |   37 |    12.43 | Using where |
-+----+-------------+--------+------------+------+-------------------+------+---------+------+------+----------+-------------+
-1 row in set, 1 warning (0.00 sec)
-
-mysql> EXPLAIN SELECT player_id, team_id, player_name FROM player WHERE player_id = 10001 OR player_name = '韦恩-艾灵顿'; 
-+----+-------------+--------+------------+-------------+---------------------+---------------------+---------+------+------+----------+-----------------------------------------------+
-| id | select_type | table  | partitions | type        | possible_keys       | key                 | key_len | ref  | rows | filtered | Extra                                         |
-+----+-------------+--------+------------+-------------+---------------------+---------------------+---------+------+------+----------+-----------------------------------------------+
-|  1 | SIMPLE      | player | NULL       | index_merge | PRIMARY,player_name | PRIMARY,player_name | 4,767   | NULL |    2 |   100.00 | Using union(PRIMARY,player_name); Using where |
-+----+-------------+--------+------------+-------------+---------------------+---------------------+---------+------+------+----------+-----------------------------------------------+
-1 row in set, 1 warning (0.00 sec)
-
-# 当我们使用 LIKE 进行模糊查询的时候，前面不能是 %
-mysql> EXPLAIN SELECT comment_id, user_id, comment_text FROM product_comment WHERE comment_text LIKE '%abc';
-+----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------------+
-| id | select_type | table           | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra       |
-+----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------------+
-|  1 | SIMPLE      | product_comment | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 996424 |    11.11 | Using where |
-+----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------------+
-1 row in set, 1 warning (0.00 sec)
-```
-
-
-
-## 定位sql为什么执行慢
-
-<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201015153415.png" alt="img" style="zoom:33%;" />
-
-1. 慢查询定位
-
-```mysql
-mysql> show variables like '%slow_query_log';
-+----------------+-------+
-| Variable_name  | Value |
-+----------------+-------+
-| slow_query_log | OFF   |
-+----------------+-------+
-1 row in set (0.03 sec)
-# 开启慢查询日志
-mysql> set global slow_query_log='ON';
-Query OK, 0 rows affected (0.03 sec)
-
-mysql> show variables like '%slow_query%';
-+---------------------+----------------------------------------------+
-| Variable_name       | Value                                        |
-+---------------------+----------------------------------------------+
-| slow_query_log      | ON                                           |
-| slow_query_log_file | /usr/local/mysql/data/MacBook-Pro-2-slow.log |
-+---------------------+----------------------------------------------+
-2 rows in set (0.01 sec)
-# 看慢查询的时间阈值设置
-mysql> show variables like '%long_query_time%';
-+-----------------+-----------+
-| Variable_name   | Value     |
-+-----------------+-----------+
-| long_query_time | 10.000000 |
-+-----------------+-----------+
-1 row in set (0.00 sec)
-# 修改慢查询时间阈值
-set global long_query_time = 3;
-# 使用mysql自带的mysqldumpslow统计慢查询日志
-# mysqldumpslow: -s：采用 order 排序的方式，排序方式可以有以下几种。分别是 c（访问次数）、t（查询时间）、l（锁定时间）、r（返回记录）、ac（平均查询次数）、al（平均锁定时间）、ar（平均返回记录数）和 at（平均查询时间）。其中 at 为默认排序方式。-t：返回前 N 条数据 。
-sudo mysqldumpslow -s t -t 2 "/usr/local/mysql/data/MacBook-Pro-2-slow.log"
-Password:
-
-Reading mysql slow query log from /usr/local/mysql/data/MacBook-Pro-2-slow.log
-Count: 1  Time=0.00s (0s)  Lock=0.00s (0s)  Rows=0.0 (0), 0users@0hosts
-  
-Died at /usr/local/bin/mysqldumpslow line 162, <> chunk 1.
-```
-
-2. 使用 EXPLAIN 查看执行计划
-
-EXPLAIN 可以帮助我们了解数据表的读取顺序、SELECT 子句的类型、数据表的访问类型、可使用的索引、实际使用的索引、使用的索引长度、上一个表的连接匹配条件、被优化器查询的行的数量以及额外的信息（比如是否使用了外部排序，是否使用了临时表等）等。
-
-数据表的访问类型所对应的 type 列是我们比较关注的信息。type 可能有以下几种情况：
-
-<img src="https://static001.geekbang.org/resource/image/22/92/223e8c7b863bd15c83f25e3d93958692.png" alt="img" style="zoom:50%;" />
-
-```mysql
-mysql> EXPLAIN SELECT comment_id, product_id, comment_text, product_comment.user_id, user_name FROM product_comment JOIN user on product_comment.user_id = user.user_id;
-+----+-------------+-----------------+------------+--------+---------------+---------+---------+------------------------------+--------+----------+-------+
-| id | select_type | table           | partitions | type   | possible_keys | key     | key_len | ref                          | rows   | filtered | Extra |
-+----+-------------+-----------------+------------+--------+---------------+---------+---------+------------------------------+--------+----------+-------+
-|  1 | SIMPLE      | product_comment | NULL       | ALL    | NULL          | NULL    | NULL    | NULL                         | 996424 |   100.00 | NULL  |
-|  1 | SIMPLE      | user            | NULL       | eq_ref | PRIMARY       | PRIMARY | 4       | hero.product_comment.user_id |      1 |   100.00 | NULL  |
-+----+-------------+-----------------+------------+--------+---------------+---------+---------+------------------------------+--------+----------+-------+
-2 rows in set, 1 warning (0.01 sec)
-# 对 product_comment 数据表进行查询，设计了联合索引composite_index (user_id, comment_text)，然后对数据表中的comment_id、comment_text、user_id这三个字段进行查询，最后用 EXPLAIN 看下执行计划
-# 访问方式采用了 index 的方式，key 列采用了联合索引，进行扫描。Extral 列为 Using index，告诉我们索引可以覆盖 SELECT 中的字段，也就不需要回表查询了。
-mysql> EXPLAIN SELECT comment_id, comment_text, user_id FROM product_comment;
-+----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------+
-| id | select_type | table           | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra |
-+----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------+
-|  1 | SIMPLE      | product_comment | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 996424 |   100.00 | NULL  |
-+----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------+
-1 row in set, 1 warning (0.00 sec)
-# index_merge 说明查询同时使用了两个或以上的索引，最后取了交集或者并集。比如想要对comment_id=500000 或者user_id=500000的数据进行查询，数据表中 comment_id 为主键，user_id 是普通索引，我们可以查看下执行计划：
-# 看到这里同时使用到了两个索引，分别是主键和 user_id，采用的数据表访问类型是 index_merge，通过 union 的方式对两个索引检索的数据进行合并。
-mysql> EXPLAIN SELECT comment_id, product_id, comment_text, user_id FROM product_comment WHERE comment_id = 500000 OR user_id = 500000;
-+----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------------+
-| id | select_type | table           | partitions | type | possible_keys | key  | key_len | ref  | rows   | filtered | Extra       |
-+----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------------+
-|  1 | SIMPLE      | product_comment | NULL       | ALL  | PRIMARY       | NULL | NULL    | NULL | 996424 |    10.00 | Using where |
-+----+-------------+-----------------+------------+------+---------------+------+---------+------+--------+----------+-------------+
-1 row in set, 1 warning (0.00 sec)
-```
-
-3. 使用SHOW PROFILE 查看 SQL 的具体执行成本
-
-SHOW PROFILE 相比 EXPLAIN 能看到更进一步的执行解析，包括 SQL 都做了什么、所花费的时间等。默认情况下，profiling 是关闭的，我们可以在会话级别开启这个功能。
-
-```mysql
-mysql> show variables like 'profiling';
-+---------------+-------+
-| Variable_name | Value |
-+---------------+-------+
-| profiling     | OFF   |
-+---------------+-------+
-1 row in set (0.01 sec)
-
-mysql> set profiling = 'ON';
-Query OK, 0 rows affected, 1 warning (0.01 sec)
-# 
-mysql> show profiles;
-Empty set, 1 warning (0.01 sec)
-```
-
-
-
-范式：
-
-1. 列不可分，保证表中每个属性都保持原子性；
-2. 非主键字段依赖主键，针对于联合主键，非主属性完全依赖于联合主键，而非部分；
-3. 非主键字段不能相互依赖，非主属性只能直接依赖于主键；
-
-## Python操作Mysql
-
-![img](https://static001.geekbang.org/resource/image/5d/7f/5d8113fc1637d1fe951e985b22e0287f.png)
-
-```python
-# -*- coding: UTF-8 -*-
-import mysql.connector
-# 打开数据库连接
-db = mysql.connector.connect(
-       host="localhost",
-       user="root",
-       passwd="XXX", # 写上你的数据库密码
-       database='wucai', 
-       auth_plugin='mysql_native_password'
-)
-# 获取操作游标 
-cursor = db.cursor()
-# 执行SQL语句
-cursor.execute("SELECT VERSION()")
-# 获取一条数据
-data = cursor.fetchone()
-print("MySQL版本: %s " % data)
-# 关闭游标&数据库连接
-cursor.close()
-db.close()
-```
-
-Connection 就是对数据库的当前连接进行管理，我们可以通过它来进行以下操作：
-
-通过指定 host、user、passwd 和 port 等参数来创建数据库连接，这些参数分别对应着数据库 IP 地址、用户名、密码和端口号；
-
-使用 db.close() 关闭数据库连接；使用 db.cursor() 创建游标，操作数据库中的数据；
-
-使用 db.begin() 开启事务；
-
-使用 db.commit() 和 db.rollback()，对事务进行提交以及回滚。
-
-当我们通过cursor = db.cursor()创建游标后，就可以通过面向过程的编程方式对数据库中的数据进行操作：
-
-使用cursor.execute(query_sql)，执行数据库查询；
-
-使用cursor.fetchone()，读取数据集中的一条数据；
-
-使用cursor.fetchall()，取出数据集中的所有行，返回一个元组 tuples 类型；
-
-使用cursor.fetchmany(n)，取出数据集中的多条数据，同样返回一个元组 tuples；
-
-使用cursor.rowcount，返回查询结果集中的行数。如果没有查询到数据或者还没有查询，则结果为 -1，否则会返回查询得到的数据行数；
-
-使用cursor.close()，关闭游标。
-
-```Python
-# 增加数据
-## 插入新球员，不论插入的数值为整数类型，还是浮点类型，都需要统一用（%s）进行占位。
-sql = "INSERT INTO player (team_id, player_name, height) VALUES (%s, %s, %s)"
-val = (1003, "约翰-科林斯", 2.08)
-cursor.execute(sql, val)
-db.commit()
-print(cursor.rowcount, "记录插入成功。")
-
-# 查询
-## 查询身高大于等于2.08的球员
-sql = 'SELECT player_id, player_name, height FROM player WHERE height>=2.08'
-cursor.execute(sql)
-data = cursor.fetchall()
-for each_player in data:
-  print(each_player)
-
-# 修改
-## 修改球员约翰-科林斯
-sql = 'UPDATE player SET height = %s WHERE player_name = %s'
-val = (2.09, "约翰-科林斯")
-cursor.execute(sql, val)
-db.commit()
-print(cursor.rowcount, "记录被修改。")
-
-# 删除
-## 删除约翰·科林斯这个球员的数据
-sql = 'DELETE FROM player WHERE player_name = %s'
-val = ("约翰-科林斯")
-cursor.execute(sql, val)
-db.commit()
-print(cursor.rowcount, "记录删除成功。")
-
-# 关闭连接
-cursor.close()
-db.close()
-
-# 异常捕获
-import traceback
-try:
-  sql = "INSERT INTO player (team_id, player_name, height) VALUES (%s, %s, %s)"
-  val = (1003, "约翰-科林斯", 2.08)
-  cursor.execute(sql, val)
-  db.commit()
-  print(cursor.rowcount, "记录插入成功。")
-except Exception as e:
-  # 打印异常信息
-  traceback.print_exc()
-  # 回滚  
-  db.rollback()
-finally:
-  # 关闭数据库连接
-  db.close()
-```
-
-### Python ORM框架SQLAlchemy
-
-```python
-# pip install sqlalchemy
-# 初始化数据库连接
-from sqlalchemy import create_engine
-# 初始化数据库连接，修改为你的数据库用户名和密码
-engine = create_engine('mysql+mysqlconnector://root:password@localhost:3306/wucai')
-
-# 创建模型
-
-# 定义Player对象:
-class Player(Base):
-    # 表的名字:
-    __tablename__ = 'player'
- 
-    # 表的结构:
-    player_id = Column(Integer, primary_key=True, autoincrement=True)
-    team_id = Column(Integer)
-    player_name = Column(String(255))
-    height = Column(Float(3,2))
-
-# 增加数据
-# 创建DBSession类型:
-DBSession = sessionmaker(bind=engine)
-# 创建session对象:
-session = DBSession()
-# 创建Player对象:
-new_player = Player(team_id = 1003, player_name = "约翰-科林斯", height = 2.08)
-# 添加到session:
-session.add(new_player)
-# 提交即保存到数据库:
-session.commit()
-# 关闭session:
-session.close()
-
-# 查询数据
-#增加to_dict()方法到Base类中
-def to_dict(self):
-    return {c.name: getattr(self, c.name, None)
-            for c in self.__table__.columns}
-#将对象可以转化为dict类型
-Base.to_dict = to_dict
-# 查询身高>=2.08的球员有哪些
-rows = session.query(Player).filter(Player.height >= 2.08).all()
-print([row.to_dict() for row in rows])
-
-```
-
-<img src="https://static001.geekbang.org/resource/image/d6/42/d6f02460647f34fba692e8a61b80a042.png" alt="img" style="zoom:50%;" />
-
-<img src="https://static001.geekbang.org/resource/image/45/dd/458d77c980f2ac7b9e8e34dd75eac8dd.png" alt="img" style="zoom:50%;" />
-
-
-
 # Mysql实战45讲
+
+# 1. 基础篇
 
 ## 1. 基础架构
 
 <img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201015174501.png" alt="image-20201015174501119" style="zoom:33%;" />
 
-连接器：负责和客户端建立连接。`mysql -h $ip -P $port -u root -p` 一个用户成功建立连接后，即使你用管理员账号对这个用户的权限做了修改， 也不会影响已经存在连接的权限。修改完成后，只有再新建的连接才会使用新的权限设置。
+MySQL 可以分为 Server 层和存储引擎层两部分：
 
-```
+- Server 层包括连接器、查询缓存、分析器、优化器、执行器等，涵盖 MySQL 的大多数核 心服务功能，以及所有的内置函数(如日期、时间、数学和加密函数等)，所有跨存储引擎 的功能都在这一层实现，比如存储过程、触发器、视图等。
+- 存储引擎层负责数据的存储和提取。其架构模式是插件式的，支持 InnoDB、MyISAM、 Memory 等多个存储引擎。现在最常用的存储引擎是 InnoDB，它从 MySQL 5.5.5 版本开始成为了默认存储引擎。
+
+**连接器**：负责和客户端建立连接。`mysql -h $ip -P $port -u root -p` 一个用户成功建立连接后，即使你用管理员账号对这个用户的权限做了修改， 也不会影响已经存在连接的权限。修改完成后，只有再新建的连接才会使用新的权限设置。
+
+```mysql
 mysql> show processlist;
 +----+-----------------+-----------------+------+---------+--------+------------------------+------------------+
 | Id | User            | Host            | db   | Command | Time   | State                  | Info             |
@@ -901,17 +32,544 @@ mysql> show processlist;
 6 rows in set (0.01 sec)
 ```
 
+sleep表示空闲链接，wait_timeout 控制客户端和服务端的连接时间，默认值是 8 小时。
+
+如果连接断开后，客户端在请求，则会出现错误：Lost connection to MySQL server during query。
+
+由于建立连接比较耗时，所以尽量使用长连接，但是长连接会导致OOM，所以：
+
+1. 定期断开长连接；
+2. Mysql5.7+版本，执行mysql_reset_connection 来重新初始化连接资源。这个过程不需要重连和重新做权限验证，但是会将连接恢复到刚刚创建完时的状态。
+
+**查询缓存**：
+
+缓存的使用弊大于利，因为只要更新表的一个记录，所有缓存都会被清空。8.0之后缓存这个模块就没了。
+
+**分析器**：
+
+词法分析，语法解析。
+
+**优化器**：
+
+优化器是在表里面有多个索引的时候，决定使用哪个索引;或者在一个语句有多表关联 (join)的时候，决定各个表的连接顺序。如：
+
+```
+select * from t1 join t2 using(ID) where t1.c=10 and t2.d=20;
+```
+
+既可以先从表 t1 里面取出 c=10 的记录的 ID 值，再根据 ID 值关联到表 t2，再判断 t2 里面 d 的值是否等于 20。也可以先从表 t2 里面取出 d=20 的记录的 ID 值，再根据 ID 值关联到 t1，再判断 t1 里 面 c 的值是否等于 10。优化器会决定使用哪个方案。
+
+**执行器**：
+
+验证权限。有个字段叫 rows_examined ，表示在执行过程中扫描了多少行，用在慢查询中。
+
 ## 2. 日志系统
 
-日志模块：redo log(重做日志)和 binlog(归档日志)。前者是InnoDB 引擎特有的日志，后者是Server层的日志（归档日志）。
+前面我们系统了解了一个查询语句的执行流程，并介绍了执行过程中涉及的处理模块。相信 你还记得，一条查询语句的执行过程一般是经过连接器、分析器、优化器、执行器等功能模 块，最后到达存储引擎。
 
-WAL 的全称 是 Write-Ahead Logging，它的关键点就是先写日志，再写磁盘。
+|          | redo log                   | Binlog                                        |
+| -------- | -------------------------- | --------------------------------------------- |
+| 中文名字 | 重做日志                   | 归档日志                                      |
+| 所属引擎 | Innodb特有                 | Server层，都可以用                            |
+| 修改逻辑 | 物理日志，记录做了什么改动 | 逻辑日志，记录sql语句或者记录更新前后行的内容 |
+| 写特点   | 循环写，空间会耗尽         | 追加写，不会覆盖                              |
 
-<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201015183353.png" alt="image-20201015183326511" style="zoom:50%;" />
+- redo log
 
-# 4. 索引
+如果每一次的更新操作都需要写进磁盘，然后磁盘也 要找到对应的那条记录，然后再更新，整个过程 IO 成本、查找成本都很高。所以引入了WAL， 全称是Write-Ahead Logging，它的关键点就是先写日志，再写磁盘。InnoDB 的 redo log 是固定大小的，比如可以配置为一组 4 个文件，每个文件 的大小是 1GB。
 
-数据结构。
+<img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201110105326.png" alt="image-20201110105325284" style="zoom:33%;" />
+
+write pos 是当前记录的位置，一边写一边后移，写到第 3 号文件末尾后就回到 0 号文件 开头。checkpoint 是当前要擦除的位置，也是往后推移并且循环的，擦除记录前要把记录 更新到数据文件。
+
+有了 redo log，InnoDB 就可以保证即使数据库发生异常重启，之前提交的记录都不会丢 失，这个能力称为**crash-safe**。
+
+- binlog
+
+
+
+下面我们来看更新语句的执行流程：
+
+update T set c=c+1 where ID=2;
+
+<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201015183353.png" alt="image-20201015183326511" style="zoom: 33%;" />
+
+1. 执行器先找引擎取 ID=2 这一行。ID 是主键，引擎直接用树搜索找到这一行。如果 ID=2 这一行所在的数据页本来就在内存中，就直接返回给执行器;否则，需要先从磁盘 读入内存，然后再返回。
+2. 执行器拿到引擎给的行数据，把这个值加 1，比如原来是N，现在就是N+1，得到新的一行数据，再调用引擎接口写入这行新数据。
+3. 引擎将这行新数据更新到内存中，同时将这个更新操作记录到 redo log 里面，此时 redo log 处于 prepare 状态。然后告知执行器执行完成了，随时可以提交事务。
+4. 执行器生成这个操作的 binlog，并把 binlog 写入磁盘。
+5. 执行器调用引擎的提交事务接口，引擎把刚刚写入的 redo log 改成提交(commit)状态，更新完成。
+
+为什么需要两阶段提交呢？反证法来证明。假设当前 ID=2 的行，字段 c 的值是 0。
+
+1. **先写 redo log 后写 binlog**。假设在 redo log 写完，binlog 还没有写完的时候， MySQL 进程异常重启。由于我们前面说过的，redo log 写完之后，系统即使崩溃，仍然能够把数据恢复回来，所以恢复后这一行 c 的值是 1。但是由于 binlog 没写完就 crash 了，这时候 binlog 里面就没有记录这个语句。因此， 之后备份日志的时候，存起来的 binlog 里面就没有这条语句。 然后你会发现，如果需要用这个 binlog 来恢复临时库的话，由于这个语句的 binlog 丢失，这个临时库就会少了这一次更新，恢复出来的这一行 c 的值就是 0，与原库的值不 同。
+2. **先写 binlog 后写 redo log**。如果在 binlog 写完之后 crash，由于 redo log 还没写， 崩溃恢复以后这个事务无效，所以这一行 c 的值是 0。但是 binlog 里面已经记录了“把 c 从 0 改成 1”这个日志。所以，在之后用 binlog 来恢复的时候就多了一个事务出来， 恢复出来的这一行 c 的值就是 1，与原库的值不同。
+
+小结：redo log 用于保证 crash-safe 能力。innodb_flush_log_at_trx_commit 这个参数设置成 1 的时候，表示每次事务的 redo log 都直接持久化到磁盘。这个参数我建议你设置成 1， 这样可以保证 MySQL 异常重启之后数据不丢失。
+
+sync_binlog 这个参数设置成 1 的时候，表示每次事务的 binlog 都持久化到磁盘。这个参 数我也建议你设置成 1，这样可以保证 MySQL 异常重启之后 binlog 不丢失。
+
+## 3. 事务隔离
+
+隔离性：ACID(Atomicity、Consistency、Isolation、Durability，即原子性、一致性、隔离性、持久性)。
+
+存在的问题：脏读(dirty read)、不可重复读 (non-repeatable read)、幻读(phantom read)。
+
+隔离级别：
+
+读未提交(read uncommitted)：一个事务还没提交时，它做的变更就能被别的事务看到。
+
+读已提交(read committed)：一个事务还没提交时，它做的变更就能被别的事务看到。
+
+可重复读(repeatable read)：一个事务执行过程中看到的数据，总是跟这个事务在启动时看到的数据是 一致的。当然在可重复读隔离级别下，未提交变更对其他事务也是不可见的。
+
+串行化 (serializable )：对于同一行记录，“写”会加“写锁”，“读”会加“读锁”。当出 现读写锁冲突的时候，后访问的事务必须等前一个事务执行完成，才能继续执行。
+
+举例：
+
+<img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201110145308.png" alt="image-20201110145307995" style="zoom:50%;" />
+
+| 隔离级别 | V1   | V2   | V3   |
+| -------- | ---- | ---- | ---- |
+| 读未提交 | 2    | 2    | 2    |
+| 读已提交 | 1    | 2    | 2    |
+| 可重复读 | 1    | 1    | 2    |
+| 串行化   | 1    | 1    | 2    |
+
+**可重复读的使用场景**：
+
+个人银行账户表。一个表存了每个月月底的余额，一个表存了账单明细。 这时候你要做数据校对，也就是判断上个月的余额和当前余额的差额，是否与本月的账单明细一致。你一定希望在校对过程中，即使有用户发生了一笔新的交易，也不影响你的校对结果。这个时候就可以使用可重复读。
+
+**事务隔离的实现**：
+
+以可重复读为例：
+
+假设一个值从 1 被按顺序改成了 2、3、4，在回滚日志里面就会有类似下面的记录。
+
+<img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201110154109.png" alt="image-20201110154109192" style="zoom:50%;" />
+
+当前值是 4，但是在查询这条记录的时候，不同时刻启动的事务会有不同的 read-view。如 图中看到的，在视图 A、B、C 里面，这一个记录的值分别是 1、2、4，同一条记录在系统 中可以存在多个版本，就是数据库的多版本并发控制(MVCC)。对于 read-view A，要 得到 1，就必须将当前值依次执行图中所有的回滚操作得到。
+
+回滚日志总不能一直保留吧，什么时候删除呢?答案是，在不需要的时候才删 除。也就是说，系统会判断，当没有事务再需要用到这些回滚日志时，回滚日志会被删除。什么时候才不需要了呢?就是当系统里没有比这个回滚日志更早的 read-view 的时候。
+
+**为什么不能使用长事务呢？**
+
+长事务意味着系统里面会存在很老的事务视图。由于这些事务随时可能访问数据库里面的任何数据，所以这个事务提交之前，数据库里面它可能用到的回滚记录都必须保留，这就会导致大量占用存储空间。
+
+**事务的启动方式**：
+
+1. 显示启动。begin 或 start transaction。配套的提交语句是 commit，回滚语句是rollback。
+2. set autocommit=0，这个命令会将这个线程的自动提交关掉。意味着如果你只执行一 个 select 语句，这个事务就启动了，而且并不会自动提交。这个事务持续存在直到你主动执行 commit 或 rollback 语句，或者断开连接。
+
+## 4. 索引（上）
+
+数据结构：
+
+- 哈希表：以键 - 值(key-value)存储数据的结构。用在等值查询；
+- 有序数组：等值查询和范围查询中；用在静态的数据中；
+- 二叉查找树：树的高度太高；一颗100w节点的平衡二叉树，树高20，那么一次查询需要访问20个数据块，从机械硬盘读取一个数据块需要10ms，那么我们需要200ms的时间。
+- N叉树：Innodb的N为1200左右，当树的高度为4的时候，可以存储17个记录。
+
+InnoDB的索引模型：
+
+数据结构为B+树。
+
+<img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201110162805.png" alt="image-20201110162804600" style="zoom:33%;" />
+
+- 聚集索引（主键索引）：叶子节点存的是整行数据；
+- 二级索引（非主键索引）：叶子节点内容是主键的值；
+
+**基于主键索引和普通索引的查询有什么区 别?**
+
+如果语句是 select * from T where ID=500，即主键查询方式，则只需要搜索 ID 这棵 B+ 树;
+
+如果语句是 select * from T where k=5，即普通索引查询方式，则需要先搜索 k 索引 树，得到 ID 的值为 500，再到 ID 索引树搜索一次。这个过程称为**回表**。
+
+**索引的维护**：
+
+存在页分裂和页合并的情况。
+
+**主键长度越小，普通索引的叶子节点就越小，普通索引占用的空间也就越小。**
+
+所以我们一般用id做为主键，那么什么时候用业务字段做主键呢？
+
+只有一个索引且该索引必须是唯一索引。由于没有其他索引，所以也就不用考虑其他索引的叶子节点大小的问题。直接将这个索引设置为 主键，可以避免每次查询需要搜索两棵树。
+
+
+
+**课后问题：**
+
+给一个 InnoDB 表 T，如果你要重建索引 k，你 的两个 SQL 语句可以这么写:
+
+```
+alter table T drop index k; 
+alter table T add index(k);
+```
+
+如果你要重建主键索引，也可以这么写:
+
+```
+alter table T drop primary key;
+alter table T add primary key(id);
+```
+
+那么这么做是合适的吗？
+
+答：重建索引 k 的做法是合理的，可以达到省空间的目的。但是，重建主键的过程不合理。不 论是删除主键还是创建主键，都会将整个表重建。所以连着执行这两个语句的话，第一个语句就白做了。这两个语句，你可以用这个语句代替 : alter table T engine=InnoDB。
+
+**为什么要重建索引**？
+
+索引可能因为删除，或者页分裂等原因，导致数据页有空洞，重建索引的过程会创建一个新的索引，把数据按顺序插 入，这样页面的利用率最高，也就是索引更紧凑、更省空间。
+
+## 5. 索引（下）
+
+问题：select * from T where k between 3 and 5，需要执行几 次树的搜索操作，会扫描多少行?
+
+<img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201110165633.png" alt="image-20201110165633643" style="zoom:33%;" />
+
+<img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201110165647.png" alt="image-20201110165647291" style="zoom:33%;" />
+
+现在，我们一起来看看这条 SQL 查询语句的执行流程:
+
+1. 在 k 索引树上找到 k=3 的记录，取得 ID = 300; 
+2. 再到 ID 索引树查到 ID=300 对应的 R3;
+3. 在 k 索引树取下一个值 k=5，取得 ID=500;
+4. 再回到 ID 索引树查到 ID=500 对应的 R4;
+
+5. 在 k 索引树取下一个值 k=6，不满足条件，循环结束。
+
+**回到主键索引树搜索的过程，我们称为回表**。可以看到，这个查询过程读了 k 索引树的 3 条记录(步骤 1、3 和 5)，回表了两次(步骤 2 和 4)。
+
+我们如何才可以避免回表呢？
+
+**覆盖索引**：**可以减少树的搜索次数，显著提升查询性能**
+
+在上面的场景中，如果我们只需要查询ID的值，而不需要一整行的数据，那么我们就不需要在回表了。因为在这个查询里面，索引 k 已经“覆盖了”我们的查询需求，我们称为覆盖索引。
+
+具体的场景，如果我们需要根据身份证好查询姓名信息，那么也有必要建立联合索引。这样构成一个覆盖索引，就不需要回表了。
+
+<img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201110170709.png" alt="image-20201110170709400" style="zoom:50%;" />
+
+**最左前缀原则**：
+
+场景：我们不可能为每种查询都去建立一个索引。
+
+既可以是N个字段，也可以是字符串的前M个字符。
+
+那么我们应该如何安排联合索引的字段顺序呢？
+
+答案是索引的复用能力。**第一原则是，如果通过调整顺序，可以少维护一个索引，那么这个顺序往往就是需要优先考虑采用的。**
+
+另外，如果我们既有联合查询，又有独自查询，那么我们必须维护两个索引，如(a,b),(b)，那么我们考量的原则是空间占用。如name和age两个字段，那么我们的索引是(name,age)和(age)。
+
+**索引下推**：
+
+不符合最左前缀的部分，会怎么样呢?
+
+以市民表的联合索引(name, age)为例。如果现在有一个需求:检索出表中“名 字第一个字是张，而且年龄是 10 岁的所有男孩”。那么，SQL 语句是这么写的:
+
+```
+select * from tuser where name like '张 %' and age=10 and ismale=1;
+```
+
+这个语句在搜索索引树的时候，只能用 “张”，找到第 一个满足条件的记录 ID3。接下来，会判断其他的字段，进行回表。但是在Mysql 5.6之后，会进行索引下推（index condition pushdown），可以在索引遍历过程中，对索引中包含的字段先做判断，直接过滤掉不满足条件的记录，减少回表次数。
+
+<img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201110171930.png" alt="image-20201110171929780" style="zoom:33%;" />
+
+<img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201110172014.png" alt="image-20201110172014419" style="zoom:33%;" />
+
+**课后问题**：
+
+有一个表是这样的：
+
+<img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201110172825.png" alt="image-20201110172825200" style="zoom: 50%;" />
+
+由于历史原因，这个表需要 a、b 做联合主键。既然主键包含了 a、b 这两个字段，那意味着单独在字段 c 上创建一个索引，就已经包含了三个字段了呀，为什么要创建“ca”“cb”这两个索引?
+
+有人说，是因为在业务中存在着这样的语句：
+
+```
+select * from geek where c=N order by a limit 1; 
+select * from geek where c=N order by b limit 1;
+```
+
+那么，这个解释对吗？我们来看：
+
+表记录
+ –a--|–b--|–c--|–d--
+ 123 d
+ 132 d
+ 143 d
+ 213 d
+ 222 d
+ 234 d
+
+主键 a，b 的聚簇索引组织顺序相当于 order by a,b ，也就是先按 a 排序，再按 b 排序， c 无序。
+
+索引 ca 的组织是先按 c 排序，再按 a 排序，同时记录主键
+
+–c--|–a--|–主键部分b-- (注意，这里不是 ab，而是只有 b) 
+
+21 3
+22 2
+
+31 2 
+
+31 4 
+
+32 1
+
+42 3
+
+这个跟索引 c 的数据是一模一样的。
+
+索引 cb 的组织是先按 c 排序，在按 b 排序，同时记录主键 
+
+–c--|–b--|–主键部分a-- (同上)
+ 22 2
+ 23 1
+
+31 2
+
+ 32 1 
+
+34 1 
+
+43 2
+
+所以，结论是 ca 可以去掉，cb 需要保留。
+
+## 6 全局锁和表锁
+
+数据库锁设计的初衷是处理并发问题。**根据加锁的范围，MySQL 里面的锁大致可以分成全局锁、表级锁和行锁三类**。
+
+- 全局锁
+
+全局锁就是对整个数据库实例加锁。MySQL 提供了一个加全局读锁的方法，命令是 Flush tables with read lock (FTWRL)。然后数据更新语句(数据的增删改)、数 据定义语句(包括建表、修改表结构等)和更新类事务的提交语句都会被阻塞。
+
+**全局锁的典型使用场景是，做全库逻辑备份。**也就是把整库每个表都 select 出来存成文本。
+
+备份为什么要加锁？来看个具体的场景：
+
+假设你现在要维护“极客时间”的购买系统，关注的是用户账户余额表和用户课程表。现在发起一个逻辑备份。假设备份期间，有一个用户，他购买了一门课程，业务逻辑里就要扣掉他的余额，然后往已购课程里面加上一门课。如果时间顺序上是先备份账户余额表 (u_account)，然后用户购买，然后备份用户课程表 (u_course)，会怎么样呢?你可以看一下这个图:
+
+<img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201110181548.png" alt="image-20201110181547565" style="zoom:50%;" />
+
+可以看到，这个备份结果里，用户 A 的数据状态是“账户余额没扣，但是用户课程表里面 已经多了一门课”。如果后面用这个备份来恢复数据的话，用户A就发现，自己赚了。也就是说，不加锁的话，备份系统备份的得到的库不是一个逻辑时间点，这个视图是逻辑不一致的。
+
+我们可以在可重复读隔离级别下开启一个事务，这样能够拿到一致性视图。官方自带的逻辑备份工具是 mysqldump。当 mysqldump 使用参数–single-transaction 的时候，导数据之前就会启动一个事务，来确保拿到一致性视图。而由于 MVCC 的支持， 这个过程中数据是可以正常更新的。
+
+那么为什么有了 mysqldump，我们还要FTWRL。原因是MyISAM不支持。
+
+- 表级锁
+
+MySQL里面表级别的锁有两种:一种是表锁，一种是元数据锁(meta data lock， MDL)。**表锁的语法是 lock tables ... read/write。**与 FTWRL 类似，可以用 unlock tables 主动 释放锁，也可以在客户端断开的时候自动释放。需要注意，lock tables 语法除了会限制别 的线程的读写外，也限定了本线程接下来的操作对象。
+
+举个例子, 如果在某个线程 A 中执行 lock tables t1 read, t2 write; 这个语句，则其他线程 写 t1、读写 t2 的语句都会被阻塞。同时，线程 A 在执行 unlock tables 之前，也只能执 行读 t1、读写 t2 的操作。连写 t1 都不允许，自然也不能访问其他表。
+
+**另一类表级的锁是 MDL(metadata lock)。**MDL 不需要显式使用，在访问一个表的时候 会被自动加上。MDL 的作用是，保证读写的正确性。你可以想象一下，如果一个查询正在 遍历一个表中的数据，而执行期间另一个线程对这个表结构做变更，删了一列，那么查询线 程拿到的结果跟表结构对不上，肯定是不行的。因此，在 MySQL 5.5 版本中引入了 MDL，当对一个表做增删改查操作的时候，加 MDL 读锁;当要对表做结构变更操作的时候，加 MDL 写锁。
+
+读锁之间不互斥，因此你可以有多个线程同时对一张表增删改查。
+
+读写锁之间、写锁之间是互斥的，用来保证变更表结构操作的安全性。因此，如果有两个 线程要同时给一个表加字段，其中一个要等另一个执行完才能开始执行。
+
+虽然 MDL 锁是系统默认会加的，但却是你不能忽略的一个机制。比如下面这个例子，我经 常看到有人掉到这个坑里:给一个小表加个字段，导致整个库挂了。
+
+你肯定知道，给一个表加字段，或者修改字段，或者加索引，需要扫描全表的数据。在对大 表操作的时候，你肯定会特别小心，以免对线上服务造成影响。而实际上，即使是小表，操 作不慎也会出问题。我们来看一下下面的操作序列，假设表 t 是一个小表。
+
+![image-20201110182511955](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201110182512.png)
+
+我们可以看到 session A 先启动，这时候会对表 t 加一个 MDL 读锁。由于 session B 需要 的也是 MDL 读锁，因此可以正常执行。
+
+之后 session C 会被 blocked，是因为 session A 的 MDL 读锁还没有释放，而 session C 需要 MDL 写锁，因此只能被阻塞。
+
+如果只有 session C 自己被阻塞还没什么关系，但是之后所有要在表 t 上新申请 MDL 读锁 的请求也会被 session C 阻塞。前面我们说了，所有对表的增删改查操作都需要先申请 MDL 读锁，就都被锁住，等于这个表现在完全不可读写了。
+
+如果某个表上的查询语句频繁，而且客户端有重试机制，也就是说超时后会再起一个新 session 再请求的话，这个库的线程很快就会爆满。
+
+你现在应该知道了，事务中的 MDL 锁，在语句执行开始时申请，但是语句结束后并不会马 上释放，而会等到整个事务提交后再释放。
+
+基于上面的分析，我们来讨论一个问题，**如何安全地给小表加字段?**
+
+首先我们要解决长事务，事务不提交，就会一直占着 MDL 锁。在 MySQL 的 information_schema 库的 innodb_trx 表中，你可以查到当前执行中的事务。如果你要做 DDL 变更的表刚好有长事务在执行，要考虑先暂停 DDL，或者 kill 掉这个长事务。
+
+但考虑一下这个场景。如果你要变更的表是一个热点表，虽然数据量不大，但是上面的请求 很频繁，而你不得不加个字段，你该怎么做呢?
+
+这时候 kill 可能未必管用，因为新的请求马上就来了。比较理想的机制是，在 alter table 语句里面设定等待时间，如果在这个指定的等待时间里面能够拿到 MDL 写锁最好，拿不到 也不要阻塞后面的业务语句，先放弃。之后开发人员或者 DBA 再通过重试命令重复这个过 程。
+
+## 7. 行锁
+
+**从两阶段锁说起**
+
+<img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201110183218.png" alt="image-20201110183218288" style="zoom:50%;" />
+
+实际上事务 B 的 update 语句会被阻塞，直到事务 A 执行 commit 之后，事务 B 才能继续执行。**在 InnoDB 事务中，行锁是在需要的时候才加上的，但并不是不需要了就立刻 释放，而是要等到事务结束时才释放。这个就是两阶段锁协议。**
+
+结论：如果你的事务中需要锁多个行， 要把最可能造成锁冲突、最可能影响并发度的锁尽量往后放。
+
+具体场景：
+
+实现一个电影票在线交易业务，顾客 A 要在影院 B 购买电影票。我们简化一 点，这个业务需要涉及到以下操作:
+
+1. 从顾客 A 账户余额中扣除电影票价;
+2. 给影院 B 的账户余额增加这张电影票价; 
+3. 记录一条交易日志。
+
+也就是说，要完成这个交易，我们需要 update 两条记录，并 insert 一条记录。当然，为了保证交易的原子性，我们要把这三个操作放在一个事务中。那么，你会怎样安排这三个语句在事务中的顺序呢?
+
+试想如果同时有另外一个顾客 C 要在影院 B 买票，那么这两个事务冲突的部分就是语句 2 了。因为它们要更新同一个影院账户的余额，需要修改同一行数据。根据两阶段锁协议，不论你怎样安排语句顺序，所有的操作需要的行锁都是在事务提交的时候才释放的。所以，如果你把语句 2 安排在最后，比如按照 3、1、2 这样的顺序，那么影 院账户余额这一行的锁时间就最少。这就最大程度地减少了事务之间的锁等待，提升了并发度。
+
+好了，现在由于你的正确设计，影院余额这一行的行锁在一个事务中不会停留很长时间。但是，这并没有完全解决你的困扰。
+
+如果这个影院做活动，可以低价预售一年内所有的电影票，而且这个活动只做一天。于是在 活动时间开始的时候，你的 MySQL 就挂了。你登上服务器一看，CPU 消耗接近 100%， 但整个数据库每秒就执行不到 100 个事务。这是什么原因呢?
+
+这里，我就要说到死锁和死锁检测了。
+
+**死锁和死锁检测**
+
+当并发系统中不同线程出现循环资源依赖，涉及的线程都在等待别的线程释放资源时，就会 导致这几个线程都进入无限等待的状态，称为死锁。这里我用数据库中的行锁举个例子。
+
+<img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201110184234.png" alt="image-20201110184233890" style="zoom:50%;" />
+
+这时候，事务 A 在等待事务 B 释放 id=2 的行锁，而事务 B 在等待事务 A 释放 id=1 的行 锁。 事务 A 和事务 B 在互相等待对方的资源释放，就是进入了死锁状态。当出现死锁以 后，有两种策略:
+
+1. 直接进入等待，直到超时。这个超时时间可以通过参数 innodb_lock_wait_timeout 来设置。
+2. 发起死锁检测，发现死锁后，主动回滚死锁链条中的某一个事务，让其他事务得以继续执行。将参数 innodb_deadlock_detect 设置为 on，表示开启这个逻辑。
+
+在 InnoDB 中，innodb_lock_wait_timeout 的默认值是 50s，意味着如果采用第一个策略，当出现死锁以后，第一个被锁住的线程要过 50s 才会超时退出，然后其他线程才有可 能继续执行。对于在线服务来说，这个等待时间往往是无法接受的。但是，我们又不可能直接把这个时间设置成一个很小的值，比如 1s。这样当出现死锁的时候，确实很快就可以解开，但如果不是死锁，而是简单的锁等待呢?所以，超时时间设置太短的话，会出现很多误伤。
+
+所以，正常情况下我们还是要采用第二种策略，即:主动死锁检测，而且 innodb_deadlock_detect 的默认值本身就是 on。主动死锁检测在发生死锁的时候，是能 够快速发现并进行处理的，但是它也是有额外负担的。你可以想象一下这个过程:每当一个事务被锁的时候，就要看看它所依赖的线程有没有被别 人锁住，如此循环，最后判断是否出现了循环等待，也就是死锁。
+
+你可以想象一下这个过程:每当一个事务被锁的时候，就要看看它所依赖的线程有没有被别 人锁住，如此循环，最后判断是否出现了循环等待，也就是死锁。
+
+那如果是我们上面说到的所有事务都要更新同一行的场景呢?
+
+每个新来的被堵住的线程，都要判断会不会由于自己的加入导致了死锁，这是一个时间复杂 度是 O(n) 的操作。假设有 1000 个并发线程要同时更新同一行，那么死锁检测操作就是 100 万这个量级的。虽然最终检测的结果是没有死锁，但是这期间要消耗大量的 CPU 资 源。因此，你就会看到 CPU 利用率很高，但是每秒却执行不了几个事务。
+
+根据上面的分析，我们来讨论一下，怎么解决由这种热点行更新导致的性能问题呢?问题的 症结在于，死锁检测要耗费大量的 CPU 资源。
+
+**一种头痛医头的方法，就是如果你能确保这个业务一定不会出现死锁，可以临时把死锁检测 关掉。**但是这种操作本身带有一定的风险，因为业务设计的时候一般不会把死锁当做一个严 重错误，毕竟出现死锁了，就回滚，然后通过业务重试一般就没问题了，这是业务无损的。 而关掉死锁检测意味着可能会出现大量的超时，这是业务有损的。**另一个思路是控制并发度。**根据上面的分析，你会发现如果并发能够控制住，比如同一行同 时最多只有 10 个线程在更新，那么死锁检测的成本很低，就不会出现这个问题。一个直接 的想法就是，在客户端做并发控制。但是，你会很快发现这个方法不太可行，因为客户端很 多。我见过一个应用，有 600 个客户端，这样即使每个客户端控制到只有 5 个并发线程， 汇总到数据库服务端以后，峰值并发数也可能要达到 3000。
+
+因此，这个并发控制要做在数据库服务端。如果你有中间件，可以考虑在中间件实现;如果 你的团队有能修改 MySQL 源码的人，也可以做在 MySQL 里面。基本思路就是，对于相 同行的更新，在进入引擎之前排队。这样在 InnoDB 内部就不会有大量的死锁检测工作
+ 了。
+
+**问题**：
+
+如果你要删除一个表里面的前 10000 行数据，有以下三种方法可以做到:
+
+第一种，直接执行 delete from T limit 10000; 
+
+第二种，在一个连接中循环执行 20 次 delete from T limit 500; 
+
+第三种，在 20 个连接中同时执行 delete from T limit 500。
+
+答案是第二种。第一种方式(即:直接执行 delete from T limit 10000)里面，单个语句占用时间长，锁的时间也比较长;而且大事务还会导致主从延迟。第三种方式(即:在 20 个连接中同时执行 delete from T limit 500)，会人为造成锁冲突。
+
+## 8. **事务到底是隔离的还是不隔离的**
+
+![image-20201110205113911](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201110205114.png)
+
+<img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201110205135.png" alt="image-20201110205134996" style="zoom:33%;" />
+
+我们接着来看下事务的启动时机。
+
+begin/start transaction 命令并不是一个事务的起点，在执行到它们之后的第一个操作 InnoDB 表的语句，事务才真正启动。如果你想要马上启动一个事务，可以使用 start transaction with consistent snapshot 这个命令。
+
+在这个例子中，事务C没有显式地使用begin/commit，表示这个 update 语句本身就是 一个事务，语句完成的时候会自动提交。事务 B 在更新了行之后查询 ; 事务 A 在一个只读事务中查询，并且时间顺序上是在事务 B 的查询之后。
+
+那么事务A查到的k是1，事务B查到的k是3。
+
+在 MySQL 里，有两个“视图”的概念:
+
+一个是 view。它是一个用查询语句定义的虚拟表，在调用的时候执行查询语句并生成结 果。创建视图的语法是 create view ... ，而它的查询方法与表一样。
+
+另一个是 InnoDB 在实现 MVCC 时用到的一致性读视图，即 consistent read view，用 于支持 RC(Read Committed，读提交)和 RR(Repeatable Read，可重复读)隔离级别的实现。
+
+
+
+**"快照"在MVCC里是如何工作的？**
+
+在可重复读隔离级别下，事务在启动的时候就“拍了个快照”。注意，这个快照是基于整库的。这时，你会说这看上去不太现实啊。如果一个库有 100G，那么我启动一个事务，MySQL 就要拷贝 100G 的数据出来，这个过程得多慢啊。可是，我平时的事务执行起来很快啊。
+
+实际上，我们并不需要拷贝出这 100G 的数据。我们先来看看这个快照是怎么实现的。InnoDB 里面每个事务有一个唯一的事务 ID，叫作 transaction id。它是在事务开始的时候向 InnoDB 的事务系统申请的，是按申请顺序严格递增的。而每行数据也都是有多个版本的。每次事务更新数据的时候，都会生成一个新的数据版本， 并且把 transaction id 赋值给这个数据版本的事务 ID，记为 row trx_id。同时，旧的数据 版本要保留，并且在新的数据版本中，能够有信息可以直接拿到它。也就是说，数据表中的一行记录，其实可能有多个版本 (row)，每个版本有自己的row trx_id。
+
+如图所示，就是一个记录被多个事务连续更新后的状态。
+
+<img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201110210100.png" alt="image-20201110210100061" style="zoom:50%;" />
+
+图中虚线框里是同一行数据的 4 个版本，当前最新版本是 V4，k 的值是 22，它是被 transaction id 为 25 的事务更新的，因此它的 row trx_id 也是 25。
+
+你可能会问，前面的文章不是说，语句更新会生成 undo log(回滚日志)吗?那么，**undo log 在哪呢?**
+
+实际上，图  中的三个虚线箭头，就是 undo log;而 V1、V2、V3 并不是物理上真实存 在的，而是每次需要的时候根据当前版本和 undo log 计算出来的。比如，需要 V2 的时 候，就是通过 V4 依次执行 U3、U2 算出来。
+
+明白了多版本和 row trx_id 的概念后，我们再来想一下，InnoDB 是怎么定义那 个“100G”的快照的。
+
+按照可重复读的定义，一个事务启动的时候，能够看到所有已经提交的事务结果。但是之 后，这个事务执行期间，其他事务的更新对它不可见。
+
+因此，一个事务只需要在启动的时候声明说，“以我启动的时刻为准，如果一个数据版本是 在我启动之前生成的，就认;如果是我启动以后才生成的，我就不认，我必须要找到它的上 一个版本”。当然，如果“上一个版本”也不可见，那就得继续往前找。还有，如果是这个事务自己更新 的数据，它自己还是要认的。
+
+在实现上， InnoDB 为每个事务构造了一个数组，用来保存这个事务启动瞬间，当前正 在“活跃”的所有事务 ID。“活跃”指的就是，启动了但还没提交。
+
+数组里面事务 ID 的最小值记为低水位，当前系统里面已经创建过的事务 ID 的最大值加 1 记为高水位。
+
+这个视图数组和高水位，就组成了当前事务的一致性视图(read-view)。
+
+而数据版本的可见性规则，就是基于数据的 row trx_id 和这个一致性视图的对比结果得到 的。
+
+这个视图数组把所有的 row trx_id 分成了几种不同的情况。![image-20201110212521423](../../../../../Library/Application Support/typora-user-images/image-20201110212521423.png)
+
+这样，对于当前事务的启动瞬间来说，一个数据版本的 row trx_id，有以下几种可能:
+
+1. 如果落在绿色部分，表示这个版本是已提交的事务或者是当前事务自己生成的，这个数 据是可见的;
+
+2. 如果落在红色部分，表示这个版本是由将来启动的事务生成的，是肯定不可见的;
+
+3. 如果落在黄色部分，那就包括两种情况
+
+   a. 若 row trx_id 在数组中，表示这个版本是由还没提交的事务生成的，不可见; 
+
+   b. 若 row trx_id 不在数组中，表示这个版本是已经提交了的事务生成的，可见。
+
+比如，对于图中的数据来说，如果有一个事务，它的低水位是 18，那么当它访问这一行 数据时，就会从 V4 通过 U3 计算出 V3，所以在它看来，这一行的值是 11。
+
+你看，有了这个声明后，系统里面随后发生的更新，是不是就跟这个事务看到的内容无关了 呢?因为之后的更新，生成的版本一定属于上面的 2 或者 3(a) 的情况，而对它来说，这些 新的数据版本是不存在的，所以这个事务的快照，就是“静态”的了。
+
+所以你现在知道了，**InnoDB 利用了“所有数据都有多个版本”的这个特性，实现了“秒 级创建快照”的能力。**
+
+TODO。这里太难了。
+
+# 2. 实践篇
+
+## 9. **普通索引和唯一索引**
+
+场景：假设你在维护一个市民系统，每个人都有一个唯一的身份证号，而且业务代码已经保证了不会写入两个重复的身份证号。如果市民系统需要按照身份证号查姓名，就会执行类似这样的 SQL 语句:select name from CUser where id_card = 'xxxxxxxyyyyyyzzzzz';
+
+因为id_card比较大，所以不适合建立主键。所以我们需要对id_card建立索引，那么我们是选择建立唯一索引还是普通索引呢？
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
