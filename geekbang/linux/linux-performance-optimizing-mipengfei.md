@@ -606,26 +606,30 @@ ab（apache bench）是一个常用的 HTTP 服务性能测试工具，这里用
 1. 在第一个终端执行下面的命令来运行 Nginx 和 PHP 应用：
 
 ```
-$ docker run --name nginx -p 10000:80 -itd feisky/nginx
-$ docker run --name phpfpm -itd --network container:nginx feisky/php-fpm
+docker run --name nginx -p 10000:80 -itd feisky/nginx:cpu
+620f35e80b4cd11ce1115c83bd6f3df97b5452adf62e2966c434a86cb30482a2
+docker run --name phpfpm -itd --network container:nginx feisky/php-fpm:cpu
+f5e4f07db23510d0e6d68d2cbf993e93925456696e69cef49450927859efd620
 ```
 
 2. 在第二个终端使用 curl 访问 http://[VM1 的 IP]:10000，确认 Nginx 已正常启动。你应该可以看到 It works! 的响应。
 
-3. 测试一下这个 Nginx 服务的性能。在第二个终端运行下面的 ab 命令
+![image-20201115112105680](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201115112215.png)
+
+2. 测试一下这个 Nginx 服务的性能。在第二个终端运行下面的 ab 命令
 
 ```
 # 并发10个请求测试Nginx性能，总共测试100个请求
-$ ab -c 10 -n 100 http://192.168.0.10:10000/
+$ ab -c 10 -n 100 http://47.105.220.31:10000/
 This is ApacheBench, Version 2.3 <$Revision: 1706008 $>
 Copyright 1996 Adam Twiss, Zeus Technology Ltd, 
 ...
-Requests per second:    11.63 [#/sec] (mean)
-Time per request:       859.942 [ms] (mean)
+Requests per second:    13.12 [#/sec] (mean)
+Time per request:       762.394 [ms] (mean)
 ...
 ```
 
-从 ab 的输出结果我们可以看到，Nginx 能承受的每秒平均请求数只有 11.63。你一定在吐槽，这也太差了吧。那到底是哪里出了问题呢？我们用 top 和 pidstat 再来观察下。这次，我们在第二个终端，将测试的请求总数增加到 10000。这样当你在第一个终端使用性能分析工具时， Nginx 的压力还是继续。
+从 ab 的输出结果我们可以看到，Nginx 能承受的每秒平均请求数只有13.12。你一定在吐槽，这也太差了吧。那到底是哪里出了问题呢？我们用 top 和 pidstat 再来观察下。这次，我们在第二个终端，将测试的请求总数增加到 10000。这样当你在第一个终端使用性能分析工具时， Nginx 的压力还是继续。
 
 继续在第二个终端，运行 ab 命令：
 
@@ -633,19 +637,269 @@ Time per request:       859.942 [ms] (mean)
 $ ab -c 10 -n 10000 http://192.168.0.10:10000/
 ```
 
+接着，回到第一个终端运行 top 命令，并按下数字 1 ，切换到每个 CPU 的使用率：
+
+```
+$ top
+...
+%Cpu0  : 98.7 us,  1.3 sy,  0.0 ni,  0.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+%Cpu1  : 99.3 us,  0.7 sy,  0.0 ni,  0.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+...
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND
+21514 daemon    20   0  336696  16384   8712 R  41.9  0.2   0:06.00 php-fpm
+21513 daemon    20   0  336696  13244   5572 R  40.2  0.2   0:06.08 php-fpm
+21515 daemon    20   0  336696  16384   8712 R  40.2  0.2   0:05.67 php-fpm
+21512 daemon    20   0  336696  13244   5572 R  39.9  0.2   0:05.87 php-fpm
+21516 daemon    20   0  336696  16384   8712 R  35.9  0.2   0:05.61 php-fpm
+```
+
+这里可以看到，系统中有几个 php-fpm 进程的 CPU 使用率加起来接近 200%；而每个 CPU 的用户使用率（us）也已经超过了 98%，接近饱和。这样，我们就可以确认，正是用户空间的 php-fpm 进程，导致 CPU 使用率骤升。那再往下走，怎么知道是 php-fpm 的哪个函数导致了 CPU 使用率升高呢？我们来用 perf 分析一下。在第一个终端运行下面的 perf 命令：
+
+```
+$ perf top -g -p 22595
+```
+
+按方向键切换到 php-fpm，再按下回车键展开 php-fpm 的调用关系，你会发现，调用关系最终到了 sqrt 和 add_function。看来，我们需要从这两个函数入手了。
+
+![img](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201115114531.png)
+
+我们拷贝出 [Nginx 应用的源码](https://github.com/feiskyer/linux-perf-examples/blob/master/nginx-high-cpu/app/index.php)，看看是不是调用了这两个函数：
+
+```
+# 从容器phpfpm中将PHP源码拷贝出来
+$ docker cp phpfpm:/app .
+
+# 使用grep查找函数调用
+$ grep sqrt -r app/ #找到了sqrt调用
+app/index.php:  $x += sqrt($x);
+$ grep add_function -r app/ #没找到add_function调用，这其实是PHP内置函数
+```
+
+OK，原来只有 sqrt 函数在 app/index.php 文件中调用了。那最后一步，我们就该看看这个文件的源码了：
+
+```
+$ cat app/index.php
+<?php
+// test only.
+$x = 0.0001;
+for ($i = 0; $i <= 1000000; $i++) {
+  $x += sqrt($x);
+}
+
+echo "It works!"
+```
+
+```
+# 停止原来的应用
+$ docker rm -f nginx phpfpm
+# 运行优化后的应用
+$ docker run --name nginx -p 10000:80 -itd feisky/nginx:cpu-fix
+$ docker run --name phpfpm -itd --network container:nginx feisky/php-fpm:cpu-fix
+```
+
+接着，到第二个终端来验证一下修复后的效果。首先 Ctrl+C 停止之前的 ab 命令后，再运行下面的命令：
+
+```
+$ ab -c 10 -n 10000 http://10.240.0.5:10000/
+...
+Complete requests:      10000
+Failed requests:        0
+Total transferred:      1720000 bytes
+HTML transferred:       90000 bytes
+Requests per second:    2237.04 [#/sec] (mean)
+Time per request:       4.470 [ms] (mean)
+Time per request:       0.447 [ms] (mean, across all concurrent requests)
+Transfer rate:          375.75 [Kbytes/sec] received
+...
+```
+
+从这里你可以发现，现在每秒的平均请求数，已经从原来的 11 变成了 2237。
+
+**小结**：
+
+CPU 使用率是最直观和最常用的系统性能指标，更是我们在排查性能问题时，通常会关注的第一个指标。所以我们更要熟悉它的含义，尤其要弄清楚用户（%user）、Nice（%nice）、系统（%system） 、等待 I/O（%iowait） 、中断（%irq）以及软中断（%softirq）这几种不同 CPU 的使用率。比如说：
+
+- 用户 CPU 和 Nice CPU 高，说明用户态进程占用了较多的 CPU，所以应该着重排查进程的性能问题。
+- 系统 CPU 高，说明内核态占用了较多的 CPU，所以应该着重排查内核线程或者系统调用的性能问题。
+- I/O 等待 CPU 高，说明等待 I/O 的时间比较长，所以应该着重排查系统存储是不是出现了 I/O 问题。
+- 软中断和硬中断高，说明软中断或硬中断的处理程序占用了较多的 CPU，所以应该着重排查内核中的中断服务程序。
+
+碰到 CPU 使用率升高的问题，你可以借助 top、pidstat 等工具，确认引发 CPU 性能问题的来源；再使用 perf 等工具，排查出引起性能问题的具体函数。
+
+## 6. 系统的 CPU 使用率很高，但为啥却找不到高 CPU 的应用？
+
+我们知道，系统的 CPU 使用率，不仅包括进程用户态和内核态的运行，还包括中断处理、等待 I/O 以及内核线程等。所以，当你发现系统的 CPU 使用率很高的时候，不一定能找到相对应的高 CPU 使用率的进程。
+
+1. 首先，我们在第一个终端，执行下面的命令运行 Nginx 和 PHP 应用：
+
+```
+$ docker run --name nginx -p 10000:80 -itd feisky/nginx:sp
+$ docker run --name phpfpm -itd --network container:nginx feisky/php-fpm:sp
+```
+
+2. 测试
+
+```
+curl http://47.105.220.31:10000/
+```
+
+3. 测试一下这个 Nginx 服务的性能
+
+```shell
+➜  JavaDeveloper git:(master) ✗ ab -c 100 -n 1000 http://47.105.220.31:10000/
+This is ApacheBench, Version 2.3 <$Revision: 1879490 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 47.105.220.31 (be patient)
+Completed 100 requests
+Completed 200 requests
+Completed 300 requests
+Completed 400 requests
+Completed 500 requests
+Completed 600 requests
+Completed 700 requests
+Completed 800 requests
+Completed 900 requests
+Completed 1000 requests
+Finished 1000 requests
+
+
+Server Software:        nginx/1.19.4
+Server Hostname:        47.105.220.31
+Server Port:            10000
+
+Document Path:          /
+Document Length:        9 bytes
+
+Concurrency Level:      100
+Time taken for tests:   75.448 seconds
+Complete requests:      1000
+Failed requests:        0
+Total transferred:      172000 bytes
+HTML transferred:       9000 bytes
+Requests per second:    13.25 [#/sec] (mean)
+Time per request:       7544.816 [ms] (mean)
+Time per request:       75.448 [ms] (mean, across all concurrent requests)
+Transfer rate:          2.23 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:       14   15   2.9     15      84
+Processing:    94 7158 1289.9   7510    7783
+Waiting:       90 7158 1289.9   7510    7783
+Total:        109 7174 1288.4   7525    7797
+
+Percentage of the requests served within a certain time (ms)
+  50%   7525
+  66%   7559
+  75%   7589
+  80%   7608
+  90%   7652
+  95%   7679
+  98%   7712
+  99%   7733
+ 100%   7797 (longest request)
+```
+
+从 ab 的输出结果我们可以看到，Nginx 能承受的每秒平均请求数，只有 13 多一点，是不是感觉它的性能有点差呀。
+
+3. 继续测试
+
+```
+ab -c 5 -t 600 http://47.105.220.31:10000/
+```
+
+然后观察CPU：
 
 
 
 
 
+## 11. 如何迅速分析出系统CPU的瓶颈在哪里？
 
-![img](https://static001.geekbang.org/resource/image/90/3d/90c30b4f555218f77241bfe2ac27723d.png)
+如何在真实的业务场景中，选择合适的指标和性能工具呢？
+
+- CPU性能指标
+
+1. CPU使用率
+
+CPU 使用率描述了非空闲时间占总 CPU 时间的百分比，根据 CPU 上运行任务的不同，又被分为用户 CPU、系统 CPU、等待 I/O CPU、软中断和硬中断等。
+
+- 用户 CPU 使用率，包括用户态 CPU 使用率（user）和低优先级用户态 CPU 使用率（nice），表示 CPU 在用户态运行的时间百分比。用户 CPU 使用率高，通常说明有应用程序比较繁忙。
+- 系统 CPU 使用率，表示 CPU 在内核态运行的时间百分比（不包括中断）。系统 CPU 使用率高，说明内核比较繁忙。
+- 等待 I/O 的 CPU 使用率，通常也称为 iowait，表示等待 I/O 的时间百分比。iowait 高，通常说明系统与硬件设备的 I/O 交互时间比较长。
+- 软中断和硬中断的 CPU 使用率，分别表示内核调用软中断处理程序、硬中断处理程序的时间百分比。它们的使用率高，通常说明系统发生了大量的中断。
+- 除了上面这些，还有在虚拟化环境中会用到的窃取 CPU 使用率（steal）和客户 CPU 使用率（guest），分别表示被其他虚拟机占用的 CPU 时间百分比，和运行客户虚拟机的 CPU 时间百分比。
+
+2. 平均负载
+
+它反应了系统的整体负载情况，主要包括三个数值，分别指过去 1 分钟、过去 5 分钟和过去 15 分钟的平均负载。理想情况下，平均负载等于逻辑 CPU 个数，这表示每个 CPU 都恰好被充分利用。如果平均负载大于逻辑 CPU 个数，就表示负载比较重了。
+
+3. 进程上下文切换
+
+无法获取资源而导致的自愿上下文切换；被系统强制调度导致的非自愿上下文切换。
+
+上下文切换，本身是保证 Linux 正常运行的一项核心功能。但过多的上下文切换，会将原本运行进程的 CPU 时间，消耗在寄存器、内核栈以及虚拟内存等数据的保存和恢复上，缩短进程真正运行的时间，成为性能瓶颈。
+
+4. CPU 缓存的命中率
+
+由于 CPU 发展的速度远快于内存的发展，CPU 的处理速度就比内存的访问速度快得多。这样，CPU 在访问内存的时候，免不了要等待内存的响应。为了协调这两者巨大的性能差距，CPU 缓存（通常是多级缓存）就出现了。
+
+<img src="https://static001.geekbang.org/resource/image/1e/07/1e66612e0022cd6c17847f3ab6989007.png" alt="img" style="zoom: 33%;" />
+
+- 性能工具
+
+首先，平均负载的案例。我们先用 uptime， 查看了系统的平均负载；而在平均负载升高后，又用 mpstat 和 pidstat ，分别观察了每个 CPU 和每个进程 CPU 的使用情况，进而找出了导致平均负载升高的进程，也就是我们的压测工具 stress。
+
+第二个，上下文切换的案例。我们先用 vmstat ，查看了系统的上下文切换次数和中断次数；然后通过 pidstat ，观察了进程的自愿上下文切换和非自愿上下文切换情况；最后通过 pidstat ，观察了线程的上下文切换情况，找出了上下文切换次数增多的根源，也就是我们的基准测试工具 sysbench。
+
+第三个，进程 CPU 使用率升高的案例。我们先用 top ，查看了系统和进程的 CPU 使用情况，发现 CPU 使用率升高的进程是 php-fpm；再用 perf top ，观察 php-fpm 的调用链，最终找出 CPU 升高的根源，也就是库函数 sqrt() 。
+
+第四个，系统的 CPU 使用率升高的案例。我们先用 top 观察到了系统 CPU 升高，但通过 top 和 pidstat ，却找不出高 CPU 使用率的进程。于是，我们重新审视 top 的输出，又从 CPU 使用率不高但处于 Running 状态的进程入手，找出了可疑之处，最终通过 perf record 和 perf report ，发现原来是短时进程在捣鬼。另外，对于短时进程，我还介绍了一个专门的工具 execsnoop，它可以实时监控进程调用的外部命令。
+
+第五个，不可中断进程和僵尸进程的案例。我们先用 top 观察到了 iowait 升高的问题，并发现了大量的不可中断进程和僵尸进程；接着我们用 dstat 发现是这是由磁盘读导致的，于是又通过 pidstat 找出了相关的进程。但我们用 strace 查看进程系统调用却失败了，最终还是用 perf 分析进程调用链，才发现根源在于磁盘直接 I/O 。
+
+最后一个，软中断的案例。我们通过 top 观察到，系统的软中断 CPU 使用率升高；接着查看 /proc/softirqs， 找到了几种变化速率较快的软中断；然后通过 sar 命令，发现是网络小包的问题，最后再用 tcpdump ，找出网络帧的类型和来源，确定是一个 SYN FLOOD 攻击导致的。
+
+**总结**：
+
+1. 从 CPU 的性能指标出发。也就是说，当你要查看某个性能指标时，要清楚知道哪些工具可以做到。
+
+根据不同的性能指标，对提供指标的性能工具进行分类和理解。这样，在实际排查性能问题时，你就可以清楚知道，什么工具可以提供你想要的指标，而不是毫无根据地挨个尝试，撞运气。
+
+其实，我在前面的案例中已经多次用到了这个思路。比如用 top 发现了软中断 CPU 使用率高后，下一步自然就想知道具体的软中断类型。那在哪里可以观察各类软中断的运行情况呢？当然是 proc 文件系统中的 /proc/softirqs 这个文件。
+
+紧接着，比如说，我们找到的软中断类型是网络接收，那就要继续往网络接收方向思考。系统的网络接收情况是什么样的？什么工具可以查到网络接收情况呢？在我们案例中，用的正是 dstat。
+
+虽然你不需要把所有工具背下来，但如果能理解每个指标对应的工具的特性，一定更高效、更灵活地使用。这里，我把提供 CPU 性能指标的工具做成了一个表格，方便你梳理关系和理解记忆，当然，你也可以当成一个“指标工具”指南来使用。
+
+![img](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201115152054.png)
+
+2. 从工具出发
+
+![img](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201115152142.png)
 
 
 
+![img](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201115152241.png)
 
+通过这张图你可以发现，这三个命令，几乎包含了所有重要的 CPU 性能指标，比如：
 
+- 从 top 的输出可以得到各种 CPU 使用率以及僵尸进程和平均负载等信息。
+- 从 vmstat 的输出可以得到上下文切换次数、中断次数、运行状态和不可中断状态的进程数。
+- 从 pidstat 的输出可以得到进程的用户 CPU 使用率、系统 CPU 使用率、以及自愿上下文切换和非自愿上下文切换情况。
 
+另外，这三个工具输出的很多指标是相互关联的，所以，我也用虚线表示了它们的关联关系，举几个例子你可能会更容易理解。
 
+第一个例子，pidstat 输出的进程用户 CPU 使用率升高，会导致 top 输出的用户 CPU 使用率升高。所以，当发现 top 输出的用户 CPU 使用率有问题时，可以跟 pidstat 的输出做对比，观察是否是某个进程导致的问题。
 
+而找出导致性能问题的进程后，就要用进程分析工具来分析进程的行为，比如使用 strace 分析系统调用情况，以及使用 perf 分析调用链中各级函数的执行情况。
+
+第二个例子，top 输出的平均负载升高，可以跟 vmstat 输出的运行状态和不可中断状态的进程数做对比，观察是哪种进程导致的负载升高。
+
+- 如果是不可中断进程数增多了，那么就需要做 I/O 的分析，也就是用 dstat 或 sar 等工具，进一步分析 I/O 的情况。
+- 如果是运行状态进程数增多了，那就需要回到 top 和 pidstat，找出这些处于运行状态的到底是什么进程，然后再用进程分析工具，做进一步分析。
+
+最后一个例子，当发现 top 输出的软中断 CPU 使用率升高时，可以查看 /proc/softirqs 文件中各种类型软中断的变化情况，确定到底是哪种软中断出的问题。比如，发现是网络接收中断导致的问题，那就可以继续用网络分析工具 sar 和 tcpdump 来分析。
 

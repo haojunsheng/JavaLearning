@@ -1,0 +1,7 @@
+FROM bitnami/php-fpm
+
+LABEL maintainer="feiskyer@gmail.com"
+
+RUN apt-get update && apt-get install -y stress && apt-get clean
+
+ADD app/ /app
