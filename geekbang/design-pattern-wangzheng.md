@@ -204,6 +204,97 @@ public class Ostrich implements Tweetable, EggLayable {//鸵鸟
 
 尽管我们鼓励多用组合少用继承，但组合也并不是完美的，继承也并非一无是处。在实际的项目开发中，我们还是要根据具体的情况，来选择该用继承还是组合。如果类之间的继承结构稳定，层次比较浅，关系不复杂，我们就可以大胆地使用继承。反之，我们就尽量使用组合来替代继承。除此之外，还有一些设计模式、特殊的应用场景，会固定使用继承或者组合。
 
+## 11. 实战一（上）：业务开发常用的基于贫血模型的MVC架构违背OOP吗？
+
+领域驱动设计（Domain Driven Design，简称 DDD）：贫血模型和充血模型。
+
+1. 先来看下贫血模型的MVC架构：
+
+```java
+////////// Controller+VO(View Object) //////////
+public class UserController {
+  private UserService userService; //通过构造函数或者IOC框架注入
+  
+  public UserVo getUserById(Long userId) {
+    UserBo userBo = userService.getUserById(userId);
+    UserVo userVo = [...convert userBo to userVo...];
+    return userVo;
+  }
+}
+
+public class UserVo {//省略其他属性、get/set/construct方法
+  private Long id;
+  private String name;
+  private String cellphone;
+}
+
+////////// Service+BO(Business Object) //////////
+public class UserService {
+  private UserRepository userRepository; //通过构造函数或者IOC框架注入
+  
+  public UserBo getUserById(Long userId) {
+    UserEntity userEntity = userRepository.getUserById(userId);
+    UserBo userBo = [...convert userEntity to userBo...];
+    return userBo;
+  }
+}
+
+public class UserBo {//省略其他属性、get/set/construct方法
+  private Long id;
+  private String name;
+  private String cellphone;
+}
+
+////////// Repository+Entity //////////
+public class UserRepository {
+  public UserEntity getUserById(Long userId) { //... }
+}
+
+public class UserEntity {//省略其他属性、get/set/construct方法
+  private Long id;
+  private String name;
+  private String cellphone;
+}
+```
+
+其中，UserEntity 和 UserRepository 组成了数据访问层，UserBo 和 UserService 组成了业务逻辑层，UserVo 和 UserController 在这里属于接口层。UserBo 是一个纯粹的数据结构，只包含数据，不包含任何业务逻辑。业务逻辑集中在 UserService 中。我们通过 UserService 来操作 UserBo。换句话说，Service 层的数据和业务逻辑，被分割为 BO 和 Service 两个类中。像 UserBo 这样，只包含数据，不包含业务逻辑的类，就叫作贫血模型（Anemic Domain Model）。同理，UserEntity、UserVo 都是基于贫血模型设计的。这种贫血模型将数据与操作分离，破坏了面向对象的封装特性，是一种典型的面向过程的编程风格。
+
+2. 什么是基于充血模型的 DDD 开发模式？
+
+**什么是充血模型**？在贫血模型中，数据和业务逻辑被分割到不同的类中。充血模型（Rich Domain Model）正好相反，数据和对应的业务逻辑被封装到同一个类中。因此，这种充血模型满足面向对象的封装特性，是典型的面向对象编程风格。
+
+**什么是领域驱动设计**？领域驱动设计，即 DDD，主要是用来指导如何解耦业务系统，划分业务模块，定义业务领域模型及其交互。实际上，基于充血模型的 DDD 开发模式实现的代码，也是按照 MVC 三层架构分层的。Controller 层还是负责暴露接口，Repository 层还是负责数据存取，Service 层负责核心业务逻辑。它跟基于贫血模型的传统开发模式的区别主要在 Service 层。
+
+在基于贫血模型的传统开发模式中，Service 层包含 Service 类和 BO 类两部分，BO 是贫血模型，只包含数据，不包含具体的业务逻辑。业务逻辑集中在 Service 类中。在基于充血模型的 DDD 开发模式中，Service 层包含 Service 类和 Domain 类两部分。Domain 就相当于贫血模型中的 BO。不过，Domain 与 BO 的区别在于它是基于充血模型开发的，既包含数据，也包含业务逻辑。而 Service 类变得非常单薄。总结一下的话就是，基于贫血模型的传统的开发模式，重 Service 轻 BO；基于充血模型的 DDD 开发模式，轻 Service 重 Domain。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
