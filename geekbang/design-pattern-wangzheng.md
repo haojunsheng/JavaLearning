@@ -339,9 +339,1307 @@ public class UserEntity {//省略其他属性、get/set/construct方法
 
 <img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201119232852.jpg" alt="img" style="zoom:33%;" />
 
+   那么交易流水应该怎么设计呢？
+
+<img src="https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201119233415.jpg" alt="img" style="zoom: 33%;" />
+
+从图中我们可以发现，交易流水的数据格式包含两个钱包账号，一个是入账钱包账号，一个是出账钱包账号。为什么要有两个账号信息呢？这主要是为了兼容支付这种涉及两个账户的交易类型。不过，对于充值、提现这两种交易类型来说，我们只需要记录一个钱包账户信息就够了，所以，这样的交易流水数据格式的设计稍微有点浪费存储空间。
+
+实际上，我们还有另外一种交易流水数据格式的设计思路，可以解决这个问题。我们把“支付”这个交易类型，拆为两个子类型：支付和被支付。支付单纯表示出账，余额扣减，被支付单纯表示入账，余额增加。这样我们在设计交易流水数据格式的时候，只需要记录一个账户信息即可。我画了一张两种交易流水数据格式的对比图，你可以对比着看一下。
+
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201121233717.jpg)
+
+那么哪个好一点呢？
+
+答案是第一种设计思路更好些。因为交易流水有两个功能：一个是业务功能，比如，提供用户查询交易流水信息；另一个是非业务功能，保证数据的一致性。这里主要是指支付操作数据的一致性。支付实际上就是一个转账的操作，在一个账户上加上一定的金额，在另一个账户上减去相应的金额。我们需要保证加金额和减金额这两个操作，要么都成功，要么都失败。如果一个成功，一个失败，就会导致数据的不一致，一个账户明明减掉了钱，另一个账户却没有收到钱。
+
+对于支付这样的类似转账的操作，我们在操作两个钱包账户余额之前，先记录交易流水，并且标记为“待执行”，当两个钱包的加减金额都完成之后，我们再回过头来，将交易流水标记为“成功”。在给两个钱包加减金额的过程中，如果有任意一个操作失败，我们就将交易记录的状态标记为“失败”。我们通过后台补漏 Job，拉取状态为“失败”或者长时间处于“待执行”状态的交易记录，重新执行或者人工介入处理。
+
+如果选择第二种交易流水的设计思路，使用两条交易流水来记录支付操作，那记录两条交易流水本身又存在数据的一致性问题，有可能入账的交易流水记录成功，出账的交易流水信息记录失败。所以，权衡利弊，我们选择第一种稍微有些冗余的数据格式设计思路。
+
+现在，我们再思考这样一个问题：充值、提现、支付这些业务交易类型，是否应该让虚拟钱包系统感知？换句话说，我们是否应该在虚拟钱包系统的交易流水中记录这三种类型？答案是否定的。虚拟钱包系统不应该感知具体的业务交易类型。我们前面讲到，虚拟钱包支持的操作，仅仅是余额的加加减减操作，不涉及复杂业务概念，职责单一、功能通用。如果耦合太多业务概念到里面，势必影响系统的通用性，而且还会导致系统越做越复杂。因此，我们不希望将充值、支付、提现这样的业务概念添加到虚拟钱包系统中。
+
+但是，如果我们不在虚拟钱包系统的交易流水中记录交易类型，那在用户查询交易流水的时候，如何显示每条交易流水的交易类型呢？
+
+从系统设计的角度，我们不应该在虚拟钱包系统的交易流水中记录交易类型。从产品需求的角度来说，我们又必须记录交易流水的交易类型。听起来比较矛盾，这个问题该如何解决呢？我们可以通过记录两条交易流水信息的方式来解决。我们前面讲到，整个钱包系统分为两个子系统，上层钱包系统的实现，依赖底层虚拟钱包系统和三方支付系统。对于钱包系统来说，它可以感知充值、支付、提现等业务概念，所以，我们在钱包系统这一层额外再记录一条包含交易类型的交易流水信息，而在底层的虚拟钱包系统中记录不包含交易类型的交易流水信息。
+
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201121234905.jpg)
+
+我们通过查询上层钱包系统的交易流水信息，去满足用户查询交易流水的功能需求，而虚拟钱包中的交易流水就只是用来解决数据一致性问题。实际上，它的作用还有很多，比如用来对账等。
+
+1. 基于贫血模型的传统开发模式
+
+这是一个典型的 Web 后端项目的三层结构。其中，Controller 和 VO 负责暴露接口，具体的代码实现如下所示。注意，Controller 中，接口实现比较简单，主要就是调用 Service 的方法，所以，我省略了具体的代码实现。
+
+```
+public class VirtualWalletController {
+  // 通过构造函数或者IOC框架注入
+  private VirtualWalletService virtualWalletService;
+  
+  public BigDecimal getBalance(Long walletId) { ... } //查询余额
+  public void debit(Long walletId, BigDecimal amount) { ... } //出账
+  public void credit(Long walletId, BigDecimal amount) { ... } //入账
+  public void transfer(Long fromWalletId, Long toWalletId, BigDecimal amount) { ...} //转账
+}
+```
+
+Service 和 BO 负责核心业务逻辑，Repository 和 Entity 负责数据存取。Repository 这一层的代码实现比较简单，不是我们讲解的重点，所以我也省略掉了。Service 层的代码如下所示。注意，这里我省略了一些不重要的校验代码，比如，对 amount 是否小于 0、钱包是否存在的校验等等。
+
+```java
+public class VirtualWalletBo {//省略getter/setter/constructor方法
+  private Long id;
+  private Long createTime;
+  private BigDecimal balance;
+}
+
+public class VirtualWalletService {
+  // 通过构造函数或者IOC框架注入
+  private VirtualWalletRepository walletRepo;
+  private VirtualWalletTransactionRepository transactionRepo;
+  
+  public VirtualWalletBo getVirtualWallet(Long walletId) {
+    VirtualWalletEntity walletEntity = walletRepo.getWalletEntity(walletId);
+    VirtualWalletBo walletBo = convert(walletEntity);
+    return walletBo;
+  }
+  
+  public BigDecimal getBalance(Long walletId) {
+    return walletRepo.getBalance(walletId);
+  }
+  
+  public void debit(Long walletId, BigDecimal amount) {
+    VirtualWalletEntity walletEntity = walletRepo.getWalletEntity(walletId);
+    BigDecimal balance = walletEntity.getBalance();
+    if (balance.compareTo(amount) < 0) {
+      throw new NoSufficientBalanceException(...);
+    }
+    walletRepo.updateBalance(walletId, balance.subtract(amount));
+  }
+  
+  public void credit(Long walletId, BigDecimal amount) {
+    VirtualWalletEntity walletEntity = walletRepo.getWalletEntity(walletId);
+    BigDecimal balance = walletEntity.getBalance();
+    walletRepo.updateBalance(walletId, balance.add(amount));
+  }
+  
+  public void transfer(Long fromWalletId, Long toWalletId, BigDecimal amount) {
+    VirtualWalletTransactionEntity transactionEntity = new VirtualWalletTransactionEntity();
+    transactionEntity.setAmount(amount);
+    transactionEntity.setCreateTime(System.currentTimeMillis());
+    transactionEntity.setFromWalletId(fromWalletId);
+    transactionEntity.setToWalletId(toWalletId);
+    transactionEntity.setStatus(Status.TO_BE_EXECUTED);
+    Long transactionId = transactionRepo.saveTransaction(transactionEntity);
+    try {
+      debit(fromWalletId, amount);
+      credit(toWalletId, amount);
+    } catch (InsufficientBalanceException e) {
+      transactionRepo.updateStatus(transactionId, Status.CLOSED);
+      ...rethrow exception e...
+    } catch (Exception e) {
+      transactionRepo.updateStatus(transactionId, Status.FAILED);
+      ...rethrow exception e...
+    }
+    transactionRepo.updateStatus(transactionId, Status.EXECUTED);
+  }
+}
+```
+
+2. 基于充血模型的 DDD 开发模式
+
+在这种开发模式下，我们把虚拟钱包 VirtualWallet 类设计成一个充血的 Domain 领域模型，并且将原来在 Service 类中的部分业务逻辑移动到 VirtualWallet 类中，让 Service 类的实现依赖 VirtualWallet 类。具体的代码实现如下所示：
+
+```java
+public class VirtualWallet { // Domain领域模型(充血模型)
+  private Long id;
+  private Long createTime = System.currentTimeMillis();;
+  private BigDecimal balance = BigDecimal.ZERO;
+  
+  public VirtualWallet(Long preAllocatedId) {
+    this.id = preAllocatedId;
+  }
+  
+  public BigDecimal balance() {
+    return this.balance;
+  }
+  
+  public void debit(BigDecimal amount) {
+    if (this.balance.compareTo(amount) < 0) {
+      throw new InsufficientBalanceException(...);
+    }
+    this.balance.subtract(amount);
+  }
+  
+  public void credit(BigDecimal amount) {
+    if (amount.compareTo(BigDecimal.ZERO) < 0) {
+      throw new InvalidAmountException(...);
+    }
+    this.balance.add(amount);
+  }
+}
+
+public class VirtualWalletService {
+  // 通过构造函数或者IOC框架注入
+  private VirtualWalletRepository walletRepo;
+  private VirtualWalletTransactionRepository transactionRepo;
+  
+  public VirtualWallet getVirtualWallet(Long walletId) {
+    VirtualWalletEntity walletEntity = walletRepo.getWalletEntity(walletId);
+    VirtualWallet wallet = convert(walletEntity);
+    return wallet;
+  }
+  
+  public BigDecimal getBalance(Long walletId) {
+    return walletRepo.getBalance(walletId);
+  }
+  
+  public void debit(Long walletId, BigDecimal amount) {
+    VirtualWalletEntity walletEntity = walletRepo.getWalletEntity(walletId);
+    VirtualWallet wallet = convert(walletEntity);
+    wallet.debit(amount);
+    walletRepo.updateBalance(walletId, wallet.balance());
+  }
+  
+  public void credit(Long walletId, BigDecimal amount) {
+    VirtualWalletEntity walletEntity = walletRepo.getWalletEntity(walletId);
+    VirtualWallet wallet = convert(walletEntity);
+    wallet.credit(amount);
+    walletRepo.updateBalance(walletId, wallet.balance());
+  }
+  
+  public void transfer(Long fromWalletId, Long toWalletId, BigDecimal amount) {
+    //...跟基于贫血模型的传统开发模式的代码一样...
+  }
+}
+```
+
+如果虚拟钱包需要支持更多的功能。
+
+```java
+public class VirtualWallet {
+  private Long id;
+  private Long createTime = System.currentTimeMillis();;
+  private BigDecimal balance = BigDecimal.ZERO;
+  private boolean isAllowedOverdraft = true;
+  private BigDecimal overdraftAmount = BigDecimal.ZERO;
+  private BigDecimal frozenAmount = BigDecimal.ZERO;
+  
+  public VirtualWallet(Long preAllocatedId) {
+    this.id = preAllocatedId;
+  }
+  
+  public void freeze(BigDecimal amount) { ... }
+  public void unfreeze(BigDecimal amount) { ...}
+  public void increaseOverdraftAmount(BigDecimal amount) { ... }
+  public void decreaseOverdraftAmount(BigDecimal amount) { ... }
+  public void closeOverdraft() { ... }
+  public void openOverdraft() { ... }
+  
+  public BigDecimal balance() {
+    return this.balance;
+  }
+  
+  public BigDecimal getAvailableBalance() {
+    BigDecimal totalAvaliableBalance = this.balance.subtract(this.frozenAmount);
+    if (isAllowedOverdraft) {
+      totalAvaliableBalance += this.overdraftAmount;
+    }
+    return totalAvaliableBalance;
+  }
+  
+  public void debit(BigDecimal amount) {
+    BigDecimal totalAvaliableBalance = getAvailableBalance();
+    if (totoalAvaliableBalance.compareTo(amount) < 0) {
+      throw new InsufficientBalanceException(...);
+    }
+    this.balance.subtract(amount);
+  }
+  
+  public void credit(BigDecimal amount) {
+    if (amount.compareTo(BigDecimal.ZERO) < 0) {
+      throw new InvalidAmountException(...);
+    }
+    this.balance.add(amount);
+  }
+}
+```
+
+领域模型 VirtualWallet 类添加了简单的冻结和透支逻辑之后，功能看起来就丰富了很多，代码也没那么单薄了。如果功能继续演进，我们可以增加更加细化的冻结策略、透支策略、支持钱包账号（VirtualWallet id 字段）自动生成的逻辑（不是通过构造函数经外部传入 ID，而是通过分布式 ID 生成算法来自动生成 ID）等等。VirtualWallet 类的业务逻辑会变得越来越复杂，也就很值得设计成充血模型了。
 
 
-   <img src="https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201119233415.jpg" alt="img" style="zoom: 33%;" />
+
+TODO
+
+## 13 | 实战二（上）：如何对接口鉴权这样一个功能开发做面向对象分析？
+
+
+
+##  14 | 实战二（下）：如何利用面向对象设计和编程开发接口鉴权功能？
+
+1. 划分职责进而识别出有哪些类
+
+- 调用方进行接口请求的时候，将 URL、AppID、密码、时间戳拼接在一起，通过加密算法生成 token，并且将 token、AppID、时间戳拼接在 URL 中，一并发送到微服务端。
+- 微服务端在接收到调用方的接口请求之后，从请求中拆解出 token、AppID、时间戳。
+- 微服务端首先检查传递过来的时间戳跟当前时间，是否在 token 失效时间窗口内。如果已经超过失效时间，那就算接口调用鉴权失败，拒绝接口调用请求。
+- 如果 token 验证没有过期失效，微服务端再从自己的存储中，取出 AppID 对应的密码，通过同样的 token 生成算法，生成另外一个 token，与调用方传递过来的 token 进行匹配。如果一致，则鉴权成功，允许接口调用；否则就拒绝接口调用。
+
+
+
+逐句拆解上述需求描述之后，得到的功能点列表：
+
+- 把 URL、AppID、密码、时间戳拼接为一个字符串；
+- 对字符串通过加密算法加密生成 token；
+- 将 token、AppID、时间戳拼接到 URL 中，形成新的 URL；
+- 解析 URL，得到 token、AppID、时间戳等信息；
+- 从存储中取出 AppID 和对应的密码；
+- 根据时间戳判断 token 是否过期失效；验证两个 token 是否匹配；
+
+从上面的功能列表中，我们发现，1、2、6、7 都是跟 token 有关，负责 token 的生成、验证；3、4 都是在处理 URL，负责 URL 的拼接、解析；5 是操作 AppID 和密码，负责从存储中读取 AppID 和密码。所以，我们可以粗略地得到三个核心的类：AuthToken、Url、CredentialStorage。AuthToken 负责实现 1、2、6、7 这四个操作；Url 负责 3、4 两个操作；CredentialStorage 负责 5 这个操作。
+
+2. 定义类及其属性和方法
+
+**AuthToken 类相关的功能点有四个**：
+
+- 把 URL、AppID、密码、时间戳拼接为一个字符串；
+- 对字符串通过加密算法加密生成 token；
+- 根据时间戳判断 token 是否过期失效；
+- 验证两个 token 是否匹配。
+
+对于方法的识别，很多面向对象相关的书籍，一般都是这么讲的，识别出需求描述中的动词，作为候选的方法，再进一步过滤筛选。类比一下方法的识别，我们可以把功能点中涉及的名词，作为候选属性，然后同样进行过滤筛选。
+
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201122114500.jpg)从上面的类图中，我们可以发现这样三个小细节。
+
+- 第一个细节：并不是所有出现的名词都被定义为类的属性，比如 URL、AppID、密码、时间戳这几个名词，我们把它作为了方法的参数。
+- 第二个细节：我们还需要挖掘一些没有出现在功能点描述中属性，比如 createTime，expireTimeInterval，它们用在 isExpired() 函数中，用来判定 token 是否过期。
+- 第三个细节：我们还给 AuthToken 类添加了一个功能点描述中没有提到的方法 getToken()。
+
+第一个细节告诉我们，从业务模型上来说，不应该属于这个类的属性和方法，不应该被放到这个类里。比如 URL、AppID 这些信息，从业务模型上来说，不应该属于 AuthToken，所以我们不应该放到这个类中。第二、第三个细节告诉我们，在设计类具有哪些属性和方法的时候，不能单纯地依赖当下的需求，还要分析这个类从业务模型上来讲，理应具有哪些属性和方法。这样可以一方面保证类定义的完整性，另一方面不仅为当下的需求还为未来的需求做些准备。
+
+
+
+**Url 类相关的功能点有两个：**
+
+- 将 token、AppID、时间戳拼接到 URL 中，形成新的 URL；
+- 解析 URL，得到 token、AppID、时间戳等信息。
+
+虽然需求描述中，我们都是以 URL 来代指接口请求，但是，接口请求并不一定是以 URL 的形式来表达，还有可能是 Dubbo、RPC 等其他形式。为了让这个类更加通用，命名更加贴切，我们接下来把它命名为 ApiRequest。下面是我根据功能点描述设计的 ApiRequest 类。
+
+<img src="https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201122123535.jpg" alt="img" style="zoom: 25%;" />
+
+**CredentialStorage 类相关的功能点有一个**：
+
+- 从存储中取出 AppID 和对应的密码。
+
+CredentialStorage 类非常简单，类图如下所示。为了做到抽象封装具体的存储方式，我们将 CredentialStorage 设计成了接口，基于接口而非具体的实现编程。
+
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201122123659.jpg)
+
+3. 定义类与类之间的交互关系
+
+- 泛化（Generalization）可以简单理解为继承关系。具体到 Java 代码就是下面这样：
+
+```
+public class A { ... }
+public class B extends A { ... }
+```
+
+- 实现（Realization）一般是指接口和实现类之间的关系。具体到 Java 代码就是下面这样：
+
+```
+public interface A {...}
+public class B implements A { ... }
+```
+
+- 聚合（Aggregation）是一种包含关系，A 类对象包含 B 类对象，B 类对象的生命周期可以不依赖 A 类对象的生命周期，也就是说可以单独销毁 A 类对象而不影响 B 对象，比如课程与学生之间的关系。具体到 Java 代码就是下面这样：
+
+```
+public class A {
+  private B b;
+  public A(B b) {
+    this.b = b;
+  }
+}
+```
+
+- 组合（Composition）也是一种包含关系。A 类对象包含 B 类对象，B 类对象的生命周期依赖 A 类对象的生命周期，B 类对象不可单独存在，比如鸟与翅膀之间的关系。具体到 Java 代码就是下面这样：
+
+```
+public class A {
+  private B b;
+  public A() {
+    this.b = new B();
+  }
+}
+```
+
+- 关联（Association）是一种非常弱的关系，包含聚合、组合两种关系。具体到代码层面，如果 B 类对象是 A 类的成员变量，那 B 类和 A 类就是关联关系。具体到 Java 代码就是下面这样：
+
+```
+public class A {
+  private B b;
+  public A(B b) {
+    this.b = b;
+  }
+}
+或者
+public class A {
+  private B b;
+  public A() {
+    this.b = new B();
+  }
+}
+```
+
+- 依赖（Dependency）是一种比关联关系更加弱的关系，包含关联关系。不管是 B 类对象是 A 类对象的成员变量，还是 A 类的方法使用 B 类对象作为参数或者返回值、局部变量，只要 B 类对象和 A 类对象有任何使用关系，我们都称它们有依赖关系。具体到 Java 代码就是下面这样：
+
+```
+public class A {
+  private B b;
+  public A(B b) {
+    this.b = b;
+  }
+}
+或者
+public class A {
+  private B b;
+  public A() {
+    this.b = new B();
+  }
+}
+或者
+public class A {
+  public void func(B b) { ... }
+}
+```
+
+4. 将类组装起来并提供执行入口
+
+接口鉴权并不是一个独立运行的系统，而是一个集成在系统上运行的组件，所以，我们封装所有的实现细节，设计了一个最顶层的 ApiAuthenticator 接口类，暴露一组给外部调用者使用的 API 接口，作为触发执行鉴权逻辑的入口。具体的类的设计如下所示：
+
+<img src="https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201122125223.jpg" alt="img" style="zoom:25%;" />
+
+**如何进行面向对象编程？**
+
+```java
+public interface ApiAuthenticator {
+  void auth(String url);
+  void auth(ApiRequest apiRequest);
+}
+
+public class DefaultApiAuthenticatorImpl implements ApiAuthenticator {
+  private CredentialStorage credentialStorage;
+  
+  public DefaultApiAuthenticatorImpl() {
+    this.credentialStorage = new MysqlCredentialStorage();
+  }
+  
+  public DefaultApiAuthenticatorImpl(CredentialStorage credentialStorage) {
+    this.credentialStorage = credentialStorage;
+  }
+
+  @Override
+  public void auth(String url) {
+    ApiRequest apiRequest = ApiRequest.buildFromUrl(url);
+    auth(apiRequest);
+  }
+
+  @Override
+  public void auth(ApiRequest apiRequest) {
+    String appId = apiRequest.getAppId();
+    String token = apiRequest.getToken();
+    long timestamp = apiRequest.getTimestamp();
+    String originalUrl = apiRequest.getOriginalUrl();
+
+    AuthToken clientAuthToken = new AuthToken(token, timestamp);
+    if (clientAuthToken.isExpired()) {
+      throw new RuntimeException("Token is expired.");
+    }
+
+    String password = credentialStorage.getPasswordByAppId(appId);
+    AuthToken serverAuthToken = AuthToken.generate(originalUrl, appId, password, timestamp);
+    if (!serverAuthToken.match(clientAuthToken)) {
+      throw new RuntimeException("Token verfication failed.");
+    }
+  }
+}
+```
+
+# 设计原则与思想：设计原则
+
+## 15 | 理论一：对于单一职责原则，如何判定某个类的职责是否够“单一”？
+
+### 如何理解单一职责原则（SRP）？
+
+文章的开头我们提到了 SOLID 原则，实际上，SOLID 原则并非单纯的 1 个原则，而是由 5 个设计原则组成的，它们分别是：单一职责原则、开闭原则、里式替换原则、接口隔离原则和依赖反转原则，依次对应 SOLID 中的 S、O、L、I、D 这 5 个英文字母。我们今天要学习的是 SOLID 原则中的第一个原则：单一职责原则。
+
+单一职责原则的英文是 Single Responsibility Principle，缩写为 SRP。这个原则的英文描述是这样的：A class or module should have a single responsibility。如果我们把它翻译成中文，那就是：一个类或者模块只负责完成一个职责（或者功能）。
+
+单一职责原则的定义描述非常简单，也不难理解。一个类只负责完成一个职责或者功能。也就是说，不要设计大而全的类，要设计粒度小、功能单一的类。换个角度来讲就是，一个类包含了两个或者两个以上业务不相干的功能，那我们就说它职责不够单一，应该将它拆分成多个功能更加单一、粒度更细的类。
+
+我举一个例子来解释一下。比如，一个类里既包含订单的一些操作，又包含用户的一些操作。而订单和用户是两个独立的业务领域模型，我们将两个不相干的功能放到同一个类中，那就违反了单一职责原则。为了满足单一职责原则，我们需要将这个类拆分成两个粒度更细、功能更加单一的两个类：订单类和用户类。
+
+### 如何判断类的职责是否足够单一？
+
+在一个社交产品中，我们用下面的 UserInfo 类来记录用户的信息。你觉得，UserInfo 类的设计是否满足单一职责原则呢？
+
+```
+public class UserInfo {
+  private long userId;
+  private String username;
+  private String email;
+  private String telephone;
+  private long createTime;
+  private long lastLoginTime;
+  private String avatarUrl;
+  private String provinceOfAddress; // 省
+  private String cityOfAddress; // 市
+  private String regionOfAddress; // 区 
+  private String detailedAddress; // 详细地址
+  // ...省略其他属性和方法...
+}
+```
+
+对于这个问题，有两种不同的观点。一种观点是，UserInfo 类包含的都是跟用户相关的信息，所有的属性和方法都隶属于用户这样一个业务模型，满足单一职责原则；另一种观点是，地址信息在 UserInfo 类中，所占的比重比较高，可以继续拆分成独立的 UserAddress 类，UserInfo 只保留除 Address 之外的其他信息，拆分之后的两个类的职责更加单一。
+
+哪种观点更对呢？实际上，要从中做出选择，我们不能脱离具体的应用场景。如果在这个社交产品中，用户的地址信息跟其他信息一样，只是单纯地用来展示，那 UserInfo 现在的设计就是合理的。但是，如果这个社交产品发展得比较好，之后又在产品中添加了电商的模块，用户的地址信息还会用在电商物流中，那我们最好将地址信息从 UserInfo 中拆分出来，独立成用户物流信息（或者叫地址信息、收货信息等）。
+
+我们再进一步延伸一下。如果做这个社交产品的公司发展得越来越好，公司内部又开发出了很多其他产品（可以理解为其他 App）。公司希望支持统一账号系统，也就是用户一个账号可以在公司内部的所有产品中登录。这个时候，我们就需要继续对 UserInfo 进行拆分，将跟身份认证相关的信息（比如，email、telephone 等）抽取成独立的类。
+
+从刚刚这个例子，我们可以总结出，不同的应用场景、不同阶段的需求背景下，对同一个类的职责是否单一的判定，可能都是不一样的。在某种应用场景或者当下的需求背景下，一个类的设计可能已经满足单一职责原则了，但如果换个应用场景或着在未来的某个需求背景下，可能就不满足了，需要继续拆分成粒度更细的类。
+
+除此之外，从不同的业务层面去看待同一个类的设计，对类是否职责单一，也会有不同的认识。比如，例子中的 UserInfo 类。如果我们从“用户”这个业务层面来看，UserInfo 包含的信息都属于用户，满足职责单一原则。如果我们从更加细分的“用户展示信息”“地址信息”“登录认证信息”等等这些更细粒度的业务层面来看，那 UserInfo 就应该继续拆分。
+
+综上所述，评价一个类的职责是否足够单一，我们并没有一个非常明确的、可以量化的标准，可以说，这是件非常主观、仁者见仁智者见智的事情。实际上，在真正的软件开发中，我们也没必要过于未雨绸缪，过度设计。所以，我们可以先写一个粗粒度的类，满足业务需求。随着业务的发展，如果粗粒度的类越来越庞大，代码越来越多，这个时候，我们就可以将这个粗粒度的类，拆分成几个更细粒度的类。这就是所谓的持续重构（后面的章节中我们会讲到）。
+
+- 类中的代码行数、函数或属性过多，会影响代码的可读性和可维护性，我们就需要考虑对类进行拆分；
+- 类依赖的其他类过多，或者依赖类的其他类过多，不符合高内聚、低耦合的设计思想，我们就需要考虑对类进行拆分；
+- 私有方法过多，我们就要考虑能否将私有方法独立到新的类中，设置为 public 方法，供更多的类使用，从而提高代码的复用性；
+- 比较难给类起一个合适名字，很难用一个业务名词概括，或者只能用一些笼统的 Manager、Context 之类的词语来命名，这就说明类的职责定义得可能不够清晰；
+- 类中大量的方法都是集中操作类中的某几个属性，比如，在 UserInfo 例子中，如果一半的方法都是在操作 address 信息，那就可以考虑将这几个属性和对应的方法拆分出来。
+
+### 类的职责是否设计得越单一越好？
+
+```
+/**
+ * Protocol format: identifier-string;{gson string}
+ * For example: UEUEUE;{"a":"A","b":"B"}
+ */
+public class Serialization {
+  private static final String IDENTIFIER_STRING = "UEUEUE;";
+  private Gson gson;
+  
+  public Serialization() {
+    this.gson = new Gson();
+  }
+  
+  public String serialize(Map<String, String> object) {
+    StringBuilder textBuilder = new StringBuilder();
+    textBuilder.append(IDENTIFIER_STRING);
+    textBuilder.append(gson.toJson(object));
+    return textBuilder.toString();
+  }
+  
+  public Map<String, String> deserialize(String text) {
+    if (!text.startsWith(IDENTIFIER_STRING)) {
+        return Collections.emptyMap();
+    }
+    String gsonStr = text.substring(IDENTIFIER_STRING.length());
+    return gson.fromJson(gsonStr, Map.class);
+  }
+}
+```
+
+如果我们想让类的职责更加单一，我们对 Serialization 类进一步拆分，拆分成一个只负责序列化工作的 Serializer 类和另一个只负责反序列化工作的 Deserializer 类。拆分后的具体代码如下所示：
+
+```java
+public class Serializer {
+  private static final String IDENTIFIER_STRING = "UEUEUE;";
+  private Gson gson;
+  
+  public Serializer() {
+    this.gson = new Gson();
+  }
+  
+  public String serialize(Map<String, String> object) {
+    StringBuilder textBuilder = new StringBuilder();
+    textBuilder.append(IDENTIFIER_STRING);
+    textBuilder.append(gson.toJson(object));
+    return textBuilder.toString();
+  }
+}
+
+public class Deserializer {
+  private static final String IDENTIFIER_STRING = "UEUEUE;";
+  private Gson gson;
+  
+  public Deserializer() {
+    this.gson = new Gson();
+  }
+  
+  public Map<String, String> deserialize(String text) {
+    if (!text.startsWith(IDENTIFIER_STRING)) {
+        return Collections.emptyMap();
+    }
+    String gsonStr = text.substring(IDENTIFIER_STRING.length());
+    return gson.fromJson(gsonStr, Map.class);
+  }
+}
+```
+
+虽然经过拆分之后，Serializer 类和 Deserializer 类的职责更加单一了，但也随之带来了新的问题。如果我们修改了协议的格式，数据标识从“UEUEUE”改为“DFDFDF”，或者序列化方式从 JSON 改为了 XML，那 Serializer 类和 Deserializer 类都需要做相应的修改，代码的内聚性显然没有原来 Serialization 高了。而且，如果我们仅仅对 Serializer 类做了协议修改，而忘记了修改 Deserializer 类的代码，那就会导致序列化、反序列化不匹配，程序运行出错，也就是说，拆分之后，代码的可维护性变差了。
+
+## 16 | 理论二：如何做到“对扩展开放、修改关闭”？扩展和修改各指什么？
+
+### 如何理解“对扩展开放、修改关闭”？
+
+开闭原则的英文全称是 Open Closed Principle，简写为 OCP。它的英文描述是：software entities (modules, classes, functions, etc.) should be open for extension , but closed for modification。我们把它翻译成中文就是：软件实体（模块、类、方法等）应该“对扩展开放、对修改关闭”。
+
+这个描述比较简略，如果我们详细表述一下，那就是，添加一个新的功能应该是，在已有代码基础上扩展代码（新增模块、类、方法等），而非修改已有代码（修改模块、类、方法等）。
+
+这是一段 API 接口监控告警的代码。其中，AlertRule 存储告警规则，可以自由设置。Notification 是告警通知类，支持邮件、短信、微信、手机等多种通知渠道。NotificationEmergencyLevel 表示通知的紧急程度，包括 SEVERE（严重）、URGENCY（紧急）、NORMAL（普通）、TRIVIAL（无关紧要），不同的紧急程度对应不同的发送渠道。关于 API 接口监控告警这部分，更加详细的业务需求分析和设计，我们会在后面的设计模式模块再拿出来进一步讲解，这里你只要简单知道这些，就够我们今天用了。
+
+```java
+public class Alert {
+  private AlertRule rule;
+  private Notification notification;
+
+  public Alert(AlertRule rule, Notification notification) {
+    this.rule = rule;
+    this.notification = notification;
+  }
+
+  public void check(String api, long requestCount, long errorCount, long durationOfSeconds) {
+    long tps = requestCount / durationOfSeconds;
+    if (tps > rule.getMatchedRule(api).getMaxTps()) {
+      notification.notify(NotificationEmergencyLevel.URGENCY, "...");
+    }
+    if (errorCount > rule.getMatchedRule(api).getMaxErrorCount()) {
+      notification.notify(NotificationEmergencyLevel.SEVERE, "...");
+    }
+  }
+}
+```
+
+上面这段代码非常简单，业务逻辑主要集中在 check() 函数中。当接口的 TPS 超过某个预先设置的最大值时，以及当接口请求出错数大于某个最大允许值时，就会触发告警，通知接口的相关负责人或者团队。
+
+现在，如果我们需要添加一个功能，当每秒钟接口超时请求个数，超过某个预先设置的最大阈值时，我们也要触发告警发送通知。这个时候，我们该如何改动代码呢？主要的改动有两处：第一处是修改 check() 函数的入参，添加一个新的统计数据 timeoutCount，表示超时接口请求数；第二处是在 check() 函数中添加新的告警逻辑。具体的代码改动如下所示：
+
+```java
+public class Alert {
+  // ...省略AlertRule/Notification属性和构造函数...
+  
+  // 改动一：添加参数timeoutCount
+  public void check(String api, long requestCount, long errorCount, long timeoutCount, long durationOfSeconds) {
+    long tps = requestCount / durationOfSeconds;
+    if (tps > rule.getMatchedRule(api).getMaxTps()) {
+      notification.notify(NotificationEmergencyLevel.URGENCY, "...");
+    }
+    if (errorCount > rule.getMatchedRule(api).getMaxErrorCount()) {
+      notification.notify(NotificationEmergencyLevel.SEVERE, "...");
+    }
+    // 改动二：添加接口超时处理逻辑
+    long timeoutTps = timeoutCount / durationOfSeconds;
+    if (timeoutTps > rule.getMatchedRule(api).getMaxTimeoutTps()) {
+      notification.notify(NotificationEmergencyLevel.URGENCY, "...");
+    }
+  }
+}
+```
+
+这样的代码修改实际上存在挺多问题的。一方面，我们对接口进行了修改，这就意味着调用这个接口的代码都要做相应的修改。另一方面，修改了 check() 函数，相应的单元测试都需要修改（关于单元测试的内容我们在重构那部分会详细介绍）。
+
+上面的代码改动是基于“修改”的方式来实现新功能的。如果我们遵循开闭原则，也就是“对扩展开放、对修改关闭”。那如何通过“扩展”的方式，来实现同样的功能呢？
+
+我们先重构一下之前的 Alert 代码，让它的扩展性更好一些。重构的内容主要包含两部分：
+
+- 第一部分是将 check() 函数的多个入参封装成 ApiStatInfo 类；
+- 第二部分是引入 handler 的概念，将 if 判断逻辑分散在各个 handler 中。
+
+```java
+public class Alert {
+  private List<AlertHandler> alertHandlers = new ArrayList<>();
+  
+  public void addAlertHandler(AlertHandler alertHandler) {
+    this.alertHandlers.add(alertHandler);
+  }
+
+  public void check(ApiStatInfo apiStatInfo) {
+    for (AlertHandler handler : alertHandlers) {
+      handler.check(apiStatInfo);
+    }
+  }
+}
+
+public class ApiStatInfo {//省略constructor/getter/setter方法
+  private String api;
+  private long requestCount;
+  private long errorCount;
+  private long durationOfSeconds;
+}
+
+public abstract class AlertHandler {
+  protected AlertRule rule;
+  protected Notification notification;
+  public AlertHandler(AlertRule rule, Notification notification) {
+    this.rule = rule;
+    this.notification = notification;
+  }
+  public abstract void check(ApiStatInfo apiStatInfo);
+}
+
+public class TpsAlertHandler extends AlertHandler {
+  public TpsAlertHandler(AlertRule rule, Notification notification) {
+    super(rule, notification);
+  }
+
+  @Override
+  public void check(ApiStatInfo apiStatInfo) {
+    long tps = apiStatInfo.getRequestCount()/ apiStatInfo.getDurationOfSeconds();
+    if (tps > rule.getMatchedRule(apiStatInfo.getApi()).getMaxTps()) {
+      notification.notify(NotificationEmergencyLevel.URGENCY, "...");
+    }
+  }
+}
+
+public class ErrorAlertHandler extends AlertHandler {
+  public ErrorAlertHandler(AlertRule rule, Notification notification){
+    super(rule, notification);
+  }
+
+  @Override
+  public void check(ApiStatInfo apiStatInfo) {
+    if (apiStatInfo.getErrorCount() > rule.getMatchedRule(apiStatInfo.getApi()).getMaxErrorCount()) {
+      notification.notify(NotificationEmergencyLevel.SEVERE, "...");
+    }
+  }
+}
+```
+
+ApplicationContext 是一个单例类，负责 Alert 的创建、组装（alertRule 和 notification 的依赖注入）、初始化（添加 handlers）工作。
+
+```java
+public class ApplicationContext {
+  private AlertRule alertRule;
+  private Notification notification;
+  private Alert alert;
+  
+  public void initializeBeans() {
+    alertRule = new AlertRule(/*.省略参数.*/); //省略一些初始化代码
+    notification = new Notification(/*.省略参数.*/); //省略一些初始化代码
+    alert = new Alert();
+    alert.addAlertHandler(new TpsAlertHandler(alertRule, notification));
+    alert.addAlertHandler(new ErrorAlertHandler(alertRule, notification));
+  }
+  public Alert getAlert() { return alert; }
+
+  // 饿汉式单例
+  private static final ApplicationContext instance = new ApplicationContext();
+  private ApplicationContext() {
+    initializeBeans();
+  }
+  public static ApplicationContext getInstance() {
+    return instance;
+  }
+}
+
+public class Demo {
+  public static void main(String[] args) {
+    ApiStatInfo apiStatInfo = new ApiStatInfo();
+    // ...省略设置apiStatInfo数据值的代码
+    ApplicationContext.getInstance().getAlert().check(apiStatInfo);
+  }
+}
+```
+
+现在，我们再来看下，基于重构之后的代码，如果再添加上面讲到的那个新功能，每秒钟接口超时请求个数超过某个最大阈值就告警，我们又该如何改动代码呢？主要的改动有下面四处。
+
+- 第一处改动是：在 ApiStatInfo 类中添加新的属性 timeoutCount。
+- 第二处改动是：添加新的 TimeoutAlertHander 类。
+- 第三处改动是：在 ApplicationContext 类的 initializeBeans() 方法中，往 alert 对象中注册新的 timeoutAlertHandler。
+- 第四处改动是：在使用 Alert 类的时候，需要给 check() 函数的入参 apiStatInfo 对象设置 timeoutCount 的值。
+
+```java
+
+public class Alert { // 代码未改动... }
+public class ApiStatInfo {//省略constructor/getter/setter方法
+  private String api;
+  private long requestCount;
+  private long errorCount;
+  private long durationOfSeconds;
+  private long timeoutCount; // 改动一：添加新字段
+}
+public abstract class AlertHandler { //代码未改动... }
+public class TpsAlertHandler extends AlertHandler {//代码未改动...}
+public class ErrorAlertHandler extends AlertHandler {//代码未改动...}
+// 改动二：添加新的handler
+public class TimeoutAlertHandler extends AlertHandler {//省略代码...}
+
+public class ApplicationContext {
+  private AlertRule alertRule;
+  private Notification notification;
+  private Alert alert;
+  
+  public void initializeBeans() {
+    alertRule = new AlertRule(/*.省略参数.*/); //省略一些初始化代码
+    notification = new Notification(/*.省略参数.*/); //省略一些初始化代码
+    alert = new Alert();
+    alert.addAlertHandler(new TpsAlertHandler(alertRule, notification));
+    alert.addAlertHandler(new ErrorAlertHandler(alertRule, notification));
+    // 改动三：注册handler
+    alert.addAlertHandler(new TimeoutAlertHandler(alertRule, notification));
+  }
+  //...省略其他未改动代码...
+}
+
+public class Demo {
+  public static void main(String[] args) {
+    ApiStatInfo apiStatInfo = new ApiStatInfo();
+    // ...省略apiStatInfo的set字段代码
+    apiStatInfo.setTimeoutCount(289); // 改动四：设置tiemoutCount值
+    ApplicationContext.getInstance().getAlert().check(apiStatInfo);
+}
+```
+
+重构之后的代码更加灵活和易扩展。如果我们要想添加新的告警逻辑，只需要基于扩展的方式创建新的 handler 类即可，不需要改动原来的 check() 函数的逻辑。而且，我们只需要为新的 handler 类添加单元测试，老的单元测试都不会失败，也不用修改。
+
+### 修改代码就意味着违背开闭原则吗？
+
+看了上面重构之后的代码，你可能还会有疑问：在添加新的告警逻辑的时候，尽管改动二（添加新的 handler 类）是基于扩展而非修改的方式来完成的，但改动一、三、四貌似不是基于扩展而是基于修改的方式来完成的，那改动一、三、四不就违背了开闭原则吗？
+
+1. 往 ApiStatInfo 类中添加新的属性 timeoutCount。
+
+实际上，我们不仅往 ApiStatInfo 类中添加了属性，还添加了对应的 getter/setter 方法。那这个问题就转化为：给类中添加新的属性和方法，算作“修改”还是“扩展”？
+
+我们再一块回忆一下开闭原则的定义：软件实体（模块、类、方法等）应该“对扩展开放、对修改关闭”。从定义中，我们可以看出，开闭原则可以应用在不同粒度的代码中，可以是模块，也可以类，还可以是方法（及其属性）。同样一个代码改动，在粗代码粒度下，被认定为“修改”，在细代码粒度下，又可以被认定为“扩展”。比如，改动一，添加属性和方法相当于修改类，在类这个层面，这个代码改动可以被认定为“修改”；但这个代码改动并没有修改已有的属性和方法，在方法（及其属性）这一层面，它又可以被认定为“扩展”。
+
+实际上，我们也没必要纠结某个代码改动是“修改”还是“扩展”，更没必要太纠结它是否违反“开闭原则”。我们回到这条原则的设计初衷：只要它没有破坏原有的代码的正常运行，没有破坏原有的单元测试，我们就可以说，这是一个合格的代码改动。
+
+2. 在 ApplicationContext 类的 initializeBeans() 方法中，往 alert 对象中注册新的 timeoutAlertHandler；在使用 Alert 类的时候，需要给 check() 函数的入参 apiStatInfo 对象设置 timeoutCount 的值。
+
+这两处改动都是在方法内部进行的，不管从哪个层面（模块、类、方法）来讲，都不能算是“扩展”，而是地地道道的“修改”。不过，有些修改是在所难免的，是可以被接受的。为什么这么说呢？我来解释一下。
+
+在重构之后的 Alert 代码中，我们的核心逻辑集中在 Alert 类及其各个 handler 中，当我们在添加新的告警逻辑的时候，Alert 类完全不需要修改，而只需要扩展一个新 handler 类。如果我们把 Alert 类及各个 handler 类合起来看作一个“模块”，那模块本身在添加新的功能的时候，完全满足开闭原则。
+
+而且，我们要认识到，添加一个新功能，不可能任何模块、类、方法的代码都不“修改”，这个是做不到的。类需要创建、组装、并且做一些初始化操作，才能构建成可运行的的程序，这部分代码的修改是在所难免的。我们要做的是尽量让修改操作更集中、更少、更上层，尽量让最核心、最复杂的那部分逻辑代码满足开闭原则。
+
+### 如何做到“对扩展开放、修改关闭”？
+
+实际上，开闭原则讲的就是代码的扩展性问题，是判断一段代码是否易扩展的“金标准”。如果某段代码在应对未来需求变化的时候，能够做到“对扩展开放、对修改关闭”，那就说明这段代码的扩展性比较好。所以，问如何才能做到“对扩展开放、对修改关闭”，也就粗略地等同于在问，如何才能写出扩展性好的代码。
+
+在讲具体的方法论之前，我们先来看一些更加偏向顶层的指导思想。为了尽量写出扩展性好的代码，我们要时刻具备扩展意识、抽象意识、封装意识。这些“潜意识”可能比任何开发技巧都重要。
+
+比如，我们代码中通过 Kafka 来发送异步消息。对于这样一个功能的开发，我们要学会将其抽象成一组跟具体消息队列（Kafka）无关的异步消息接口。所有上层系统都依赖这组抽象的接口编程，并且通过依赖注入的方式来调用。当我们要替换新的消息队列的时候，比如将 Kafka 替换成 RocketMQ，可以很方便地拔掉老的消息队列实现，插入新的消息队列实现。具体代码如下所示：
+
+```java
+// 这一部分体现了抽象意识
+public interface MessageQueue { //... }
+public class KafkaMessageQueue implements MessageQueue { //... }
+public class RocketMQMessageQueue implements MessageQueue {//...}
+
+public interface MessageFromatter { //... }
+public class JsonMessageFromatter implements MessageFromatter {//...}
+public class ProtoBufMessageFromatter implements MessageFromatter {//...}
+
+public class Demo {
+  private MessageQueue msgQueue; // 基于接口而非实现编程
+  public Demo(MessageQueue msgQueue) { // 依赖注入
+    this.msgQueue = msgQueue;
+  }
+  
+  // msgFormatter：多态、依赖注入
+  public void sendNotification(Notification notification, MessageFormatter msgFormatter) {
+    //...    
+  }
+}
+```
+
+### 如何在项目中灵活应用开闭原则？
+
+如果你开发的是一个业务导向的系统，比如金融系统、电商系统、物流系统等，要想识别出尽可能多的扩展点，就要对业务有足够的了解，能够知道当下以及未来可能要支持的业务需求。如果你开发的是跟业务无关的、通用的、偏底层的系统，比如，框架、组件、类库，你需要了解“它们会被如何使用？今后你打算添加哪些功能？使用者未来会有哪些更多的功能需求？”等问题。
+
+## 17 | 理论三：里式替换（LSP）跟多态有何区别？哪些代码违背了LSP？
+
+### 如何理解“里式替换原则”？
+
+里式替换原则的英文翻译是：Liskov Substitution Principle，缩写为 LSP。这个原则最早是在 1986 年由 Barbara Liskov 提出，他是这么描述这条原则的：
+
+If S is a subtype of T, then objects of type T may be replaced with objects of type S, without breaking the program。
+
+在 1996 年，Robert Martin 在他的 SOLID 原则中，重新描述了这个原则，英文原话是这样的：
+
+Functions that use pointers of references to base classes must be able to use objects of derived classes without knowing it。
+
+我们综合两者的描述，将这条原则用中文描述出来，是这样的：子类对象（object of subtype/derived class）能够替换程序（program）中父类对象（object of base/parent class）出现的任何地方，并且保证原来程序的逻辑行为（behavior）不变及正确性不被破坏。
+
+这么说还是比较抽象，我们通过一个例子来解释一下。如下代码中，父类 Transporter 使用 org.apache.http 库中的 HttpClient 类来传输网络数据。子类 SecurityTransporter 继承父类 Transporter，增加了额外的功能，支持传输 appId 和 appToken 安全认证信息。
+
+```java
+public class Transporter {
+  private HttpClient httpClient;
+  
+  public Transporter(HttpClient httpClient) {
+    this.httpClient = httpClient;
+  }
+
+  public Response sendRequest(Request request) {
+    // ...use httpClient to send request
+  }
+}
+
+public class SecurityTransporter extends Transporter {
+  private String appId;
+  private String appToken;
+
+  public SecurityTransporter(HttpClient httpClient, String appId, String appToken) {
+    super(httpClient);
+    this.appId = appId;
+    this.appToken = appToken;
+  }
+
+  @Override
+  public Response sendRequest(Request request) {
+    if (StringUtils.isNotBlank(appId) && StringUtils.isNotBlank(appToken)) {
+      request.addPayload("app-id", appId);
+      request.addPayload("app-token", appToken);
+    }
+    return super.sendRequest(request);
+  }
+}
+
+public class Demo {    
+  public void demoFunction(Transporter transporter) {    
+    Reuqest request = new Request();
+    //...省略设置request中数据值的代码...
+    Response response = transporter.sendRequest(request);
+    //...省略其他逻辑...
+  }
+}
+
+// 里式替换原则
+Demo demo = new Demo();
+demo.demofunction(new SecurityTransporter(/*省略参数*/););
+```
+
+在上面的代码中，子类 SecurityTransporter 的设计完全符合里式替换原则，可以替换父类出现的任何位置，并且原来代码的逻辑行为不变且正确性也没有被破坏。
+
+不过，你可能会有这样的疑问，刚刚的代码设计不就是简单利用了面向对象的多态特性吗？多态和里式替换原则说的是不是一回事呢？从刚刚的例子和定义描述来看，里式替换原则跟多态看起来确实有点类似，但实际上它们完全是两回事。为什么这么说呢？我们还是通过刚才这个例子来解释一下。不过，我们需要对 SecurityTransporter 类中 sendRequest() 函数稍加改造一下。改造前，如果 appId 或者 appToken 没有设置，我们就不做校验；改造后，如果 appId 或者 appToken 没有设置，则直接抛出 NoAuthorizationRuntimeException 未授权异常。改造前后的代码对比如下所示：
+
+```java
+// 改造前：
+public class SecurityTransporter extends Transporter {
+  //...省略其他代码..
+  @Override
+  public Response sendRequest(Request request) {
+    if (StringUtils.isNotBlank(appId) && StringUtils.isNotBlank(appToken)) {
+      request.addPayload("app-id", appId);
+      request.addPayload("app-token", appToken);
+    }
+    return super.sendRequest(request);
+  }
+}
+
+// 改造后：
+public class SecurityTransporter extends Transporter {
+  //...省略其他代码..
+  @Override
+  public Response sendRequest(Request request) {
+    if (StringUtils.isBlank(appId) || StringUtils.isBlank(appToken)) {
+      throw new NoAuthorizationRuntimeException(...);
+    }
+    request.addPayload("app-id", appId);
+    request.addPayload("app-token", appToken);
+    return super.sendRequest(request);
+  }
+}
+```
+
+在改造之后的代码中，如果传递进 demoFunction() 函数的是父类 Transporter 对象，那 demoFunction() 函数并不会有异常抛出，但如果传递给 demoFunction() 函数的是子类 SecurityTransporter 对象，那 demoFunction() 有可能会有异常抛出。尽管代码中抛出的是运行时异常（Runtime Exception），我们可以不在代码中显式地捕获处理，但子类替换父类传递进 demoFunction 函数之后，整个程序的逻辑行为有了改变。
+
+虽然改造之后的代码仍然可以通过 Java 的多态语法，动态地用子类 SecurityTransporter 来替换父类 Transporter，也并不会导致程序编译或者运行报错。但是，从设计思路上来讲，SecurityTransporter 的设计是不符合里式替换原则的。
+
+好了，我们稍微总结一下。虽然从定义描述和代码实现上来看，多态和里式替换有点类似，但它们关注的角度是不一样的。多态是面向对象编程的一大特性，也是面向对象编程语言的一种语法。它是一种代码实现的思路。而里式替换是一种设计原则，是用来指导继承关系中子类该如何设计的，子类的设计要保证在替换父类的时候，不改变原有程序的逻辑以及不破坏原有程序的正确性。
+
+### 哪些代码明显违背了 LSP？
+
+看起来比较抽象，我来进一步解读一下。子类在设计的时候，要遵守父类的行为约定（或者叫协议）。父类定义了函数的行为约定，那子类可以改变函数的内部实现逻辑，但不能改变函数原有的行为约定。这里的行为约定包括：函数声明要实现的功能；对输入、输出、异常的约定；甚至包括注释中所罗列的任何特殊说明。实际上，定义中父类和子类之间的关系，也可以替换成接口和实现类之间的关系。
+
+为了更好地理解这句话，我举几个违反里式替换原则的例子来解释一下。
+
+1. 子类违背父类声明要实现的功能
+
+父类中提供的 sortOrdersByAmount() 订单排序函数，是按照金额从小到大来给订单排序的，而子类重写这个 sortOrdersByAmount() 订单排序函数之后，是按照创建日期来给订单排序的。那子类的设计就违背里式替换原则。
+
+2. 子类违背父类对输入、输出、异常的约定
+
+在父类中，某个函数约定：运行出错的时候返回 null；获取数据为空的时候返回空集合（empty collection）。而子类重载函数之后，实现变了，运行出错返回异常（exception），获取不到数据返回 null。那子类的设计就违背里式替换原则。
+
+在父类中，某个函数约定，输入数据可以是任意整数，但子类实现的时候，只允许输入数据是正整数，负数就抛出，也就是说，子类对输入的数据的校验比父类更加严格，那子类的设计就违背了里式替换原则。
+
+在父类中，某个函数约定，只会抛出 ArgumentNullException 异常，那子类的设计实现中只允许抛出 ArgumentNullException 异常，任何其他异常的抛出，都会导致子类违背里式替换原则。
+
+3. 子类违背父类注释中所罗列的任何特殊说明
+
+父类中定义的 withdraw() 提现函数的注释是这么写的：“用户的提现金额不得超过账户余额……”，而子类重写 withdraw() 函数之后，针对 VIP 账号实现了透支提现的功能，也就是提现金额可以大于账户余额，那这个子类的设计也是不符合里式替换原则的。
+
+以上便是三种典型的违背里式替换原则的情况。除此之外，判断子类的设计实现是否违背里式替换原则，还有一个小窍门，那就是拿父类的单元测试去验证子类的代码。如果某些单元测试运行失败，就有可能说明，子类的设计实现没有完全地遵守父类的约定，子类有可能违背了里式替换原则。
+
+## 18 | 理论四：接口隔离原则有哪三种应用？原则中的“接口”该如何理解？
+
+### 如何理解“接口隔离原则”？
+
+接口隔离原则的英文翻译是“ Interface Segregation Principle”，缩写为 ISP。Robert Martin 在 SOLID 原则中是这样定义它的：“Clients should not be forced to depend upon interfaces that they do not use。”直译成中文的话就是：客户端不应该被强迫依赖它不需要的接口。其中的“客户端”，可以理解为接口的调用者或者使用者。
+
+在这条原则中，我们可以把“接口”理解为下面三种东西：
+
+- 一组 API 接口集合
+- 单个 API 接口或函数
+- OOP 中的接口概念
+
+### 把“接口”理解为一组 API 接口集合
+
+我们还是结合一个例子来讲解。微服务用户系统提供了一组跟用户相关的 API 给其他系统使用，比如：注册、登录、获取用户信息等。具体代码如下所示：
+
+```java
+public interface UserService {
+  boolean register(String cellphone, String password);
+  boolean login(String cellphone, String password);
+  UserInfo getUserInfoById(long id);
+  UserInfo getUserInfoByCellphone(String cellphone);
+}
+
+public class UserServiceImpl implements UserService {
+  //...
+}
+```
+
+现在，我们的后台管理系统要实现删除用户的功能，希望用户系统提供一个删除用户的接口。这个时候我们该如何来做呢？你可能会说，这不是很简单吗，我只需要在 UserService 中新添加一个 deleteUserByCellphone() 或 deleteUserById() 接口就可以了。这个方法可以解决问题，但是也隐藏了一些安全隐患。
+
+删除用户是一个非常慎重的操作，我们只希望通过后台管理系统来执行，所以这个接口只限于给后台管理系统使用。如果我们把它放到 UserService 中，那所有使用到 UserService 的系统，都可以调用这个接口。不加限制地被其他业务系统调用，就有可能导致误删用户。
+
+当然，最好的解决方案是从架构设计的层面，通过接口鉴权的方式来限制接口的调用。不过，如果暂时没有鉴权框架来支持，我们还可以从代码设计的层面，尽量避免接口被误用。我们参照接口隔离原则，调用者不应该强迫依赖它不需要的接口，将删除接口单独放到另外一个接口 RestrictedUserService 中，然后将 RestrictedUserService 只打包提供给后台管理系统来使用。具体的代码实现如下所示：
+
+```java
+public interface UserService {
+  boolean register(String cellphone, String password);
+  boolean login(String cellphone, String password);
+  UserInfo getUserInfoById(long id);
+  UserInfo getUserInfoByCellphone(String cellphone);
+}
+
+public interface RestrictedUserService {
+  boolean deleteUserByCellphone(String cellphone);
+  boolean deleteUserById(long id);
+}
+
+public class UserServiceImpl implements UserService, RestrictedUserService {
+  // ...省略实现代码...
+}
+```
+
+在刚刚的这个例子中，我们把接口隔离原则中的接口，理解为一组接口集合，它可以是某个微服务的接口，也可以是某个类库的接口等等。在设计微服务或者类库接口的时候，如果部分接口只被部分调用者使用，那我们就需要将这部分接口隔离出来，单独给对应的调用者使用，而不是强迫其他调用者也依赖这部分不会被用到的接口。
+
+### 把“接口”理解为单个 API 接口或函数
+
+现在我们再换一种理解方式，把接口理解为单个接口或函数（以下为了方便讲解，我都简称为“函数”）。那接口隔离原则就可以理解为：函数的设计要功能单一，不要将多个不同的功能逻辑在一个函数中实现。接下来，我们还是通过一个例子来解释一下。
+
+```java
+public class Statistics {
+  private Long max;
+  private Long min;
+  private Long average;
+  private Long sum;
+  private Long percentile99;
+  private Long percentile999;
+  //...省略constructor/getter/setter等方法...
+}
+
+public Statistics count(Collection<Long> dataSet) {
+  Statistics statistics = new Statistics();
+  //...省略计算逻辑...
+  return statistics;
+}
+```
+
+在上面的代码中，count() 函数的功能不够单一，包含很多不同的统计功能，比如，求最大值、最小值、平均值等等。按照接口隔离原则，我们应该把 count() 函数拆成几个更小粒度的函数，每个函数负责一个独立的统计功能。拆分之后的代码如下所示：
+
+```java
+public Long max(Collection<Long> dataSet) { //... }
+public Long min(Collection<Long> dataSet) { //... } 
+public Long average(Colletion<Long> dataSet) { //... }
+// ...省略其他统计函数...
+```
+
+如果在项目中，对每个统计需求，Statistics 定义的那几个统计信息都有涉及，那 count() 函数的设计就是合理的。相反，如果每个统计需求只涉及 Statistics 罗列的统计信息中一部分，比如，有的只需要用到 max、min、average 这三类统计信息，有的只需要用到 average、sum。而 count() 函数每次都会把所有的统计信息计算一遍，就会做很多无用功，势必影响代码的性能，特别是在需要统计的数据量很大的时候。所以，在这个应用场景下，count() 函数的设计就有点不合理了，我们应该按照第二种设计思路，将其拆分成粒度更细的多个统计函数。
+
+不过，你应该已经发现，接口隔离原则跟单一职责原则有点类似，不过稍微还是有点区别。单一职责原则针对的是模块、类、接口的设计。而接口隔离原则相对于单一职责原则，一方面它更侧重于接口的设计，另一方面它的思考的角度不同。它提供了一种判断接口是否职责单一的标准：通过调用者如何使用接口来间接地判定。如果调用者只使用部分接口或接口的部分功能，那接口的设计就不够职责单一。
+
+### 把“接口”理解为 OOP 中的接口概念
+
+除了刚讲过的两种理解方式，我们还可以把“接口”理解为 OOP 中的接口概念，比如 Java 中的 interface。
+
+假设我们的项目中用到了三个外部系统：Redis、MySQL、Kafka。每个系统都对应一系列配置信息，比如地址、端口、访问超时时间等。为了在内存中存储这些配置信息，供项目中的其他模块来使用，我们分别设计实现了三个 Configuration 类：RedisConfig、MysqlConfig、KafkaConfig。具体的代码实现如下所示。注意，这里我只给出了 RedisConfig 的代码实现，另外两个都是类似的，我这里就不贴了。
+
+```mysql
+public class RedisConfig {
+    private ConfigSource configSource; //配置中心（比如zookeeper）
+    private String address;
+    private int timeout;
+    private int maxTotal;
+    //省略其他配置: maxWaitMillis,maxIdle,minIdle...
+
+    public RedisConfig(ConfigSource configSource) {
+        this.configSource = configSource;
+    }
+
+    public String getAddress() {
+        return this.address;
+    }
+    //...省略其他get()、init()方法...
+
+    public void update() {
+      //从configSource加载配置到address/timeout/maxTotal...
+    }
+}
+
+public class KafkaConfig { //...省略... }
+public class MysqlConfig { //...省略... }
+```
+
+现在，我们有一个新的功能需求，希望支持 Redis 和 Kafka 配置信息的热更新。所谓“热更新（hot update）”就是，如果在配置中心中更改了配置信息，我们希望在不用重启系统的情况下，能将最新的配置信息加载到内存中（也就是 RedisConfig、KafkaConfig 类中）。但是，因为某些原因，我们并不希望对 MySQL 的配置信息进行热更新。
+
+为了实现这样一个功能需求，我们设计实现了一个 ScheduledUpdater 类，以固定时间频率（periodInSeconds）来调用 RedisConfig、KafkaConfig 的 update() 方法更新配置信息。具体的代码实现如下所示：
+
+```java
+public interface Updater {
+  void update();
+}
+
+public class RedisConfig implemets Updater {
+  //...省略其他属性和方法...
+  @Override
+  public void update() { //... }
+}
+
+public class KafkaConfig implements Updater {
+  //...省略其他属性和方法...
+  @Override
+  public void update() { //... }
+}
+
+public class MysqlConfig { //...省略其他属性和方法... }
+
+public class ScheduledUpdater {
+    private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();;
+    private long initialDelayInSeconds;
+    private long periodInSeconds;
+    private Updater updater;
+
+    public ScheduleUpdater(Updater updater, long initialDelayInSeconds, long periodInSeconds) {
+        this.updater = updater;
+        this.initialDelayInSeconds = initialDelayInSeconds;
+        this.periodInSeconds = periodInSeconds;
+    }
+
+    public void run() {
+        executor.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                updater.update();
+            }
+        }, this.initialDelayInSeconds, this.periodInSeconds, TimeUnit.SECONDS);
+    }
+}
+
+public class Application {
+  ConfigSource configSource = new ZookeeperConfigSource(/*省略参数*/);
+  public static final RedisConfig redisConfig = new RedisConfig(configSource);
+  public static final KafkaConfig kafkaConfig = new KakfaConfig(configSource);
+  public static final MySqlConfig mysqlConfig = new MysqlConfig(configSource);
+
+  public static void main(String[] args) {
+    ScheduledUpdater redisConfigUpdater = new ScheduledUpdater(redisConfig, 300, 300);
+    redisConfigUpdater.run();
+    
+    ScheduledUpdater kafkaConfigUpdater = new ScheduledUpdater(kafkaConfig, 60, 60);
+    redisConfigUpdater.run();
+  }
+}
+```
+
+刚刚的热更新的需求我们已经搞定了。现在，我们又有了一个新的监控功能需求。通过命令行来查看 Zookeeper 中的配置信息是比较麻烦的。所以，我们希望能有一种更加方便的配置信息查看方式。我们可以在项目中开发一个内嵌的 SimpleHttpServer，输出项目的配置信息到一个固定的 HTTP 地址，比如：http://127.0.0.1:2389/config 。我们只需要在浏览器中输入这个地址，就可以显示出系统的配置信息。不过，出于某些原因，我们只想暴露 MySQL 和 Redis 的配置信息，不想暴露 Kafka 的配置信息。为了实现这样一个功能，我们还需要对上面的代码做进一步改造。改造之后的代码如下所示：
+
+```mysql
+public interface Updater {
+  void update();
+}
+
+public interface Viewer {
+  String outputInPlainText();
+  Map<String, String> output();
+}
+
+public class RedisConfig implemets Updater, Viewer {
+  //...省略其他属性和方法...
+  @Override
+  public void update() { //... }
+  @Override
+  public String outputInPlainText() { //... }
+  @Override
+  public Map<String, String> output() { //...}
+}
+
+public class KafkaConfig implements Updater {
+  //...省略其他属性和方法...
+  @Override
+  public void update() { //... }
+}
+
+public class MysqlConfig implements Viewer {
+  //...省略其他属性和方法...
+  @Override
+  public String outputInPlainText() { //... }
+  @Override
+  public Map<String, String> output() { //...}
+}
+
+public class SimpleHttpServer {
+  private String host;
+  private int port;
+  private Map<String, List<Viewer>> viewers = new HashMap<>();
+  
+  public SimpleHttpServer(String host, int port) {//...}
+  
+  public void addViewers(String urlDirectory, Viewer viewer) {
+    if (!viewers.containsKey(urlDirectory)) {
+      viewers.put(urlDirectory, new ArrayList<Viewer>());
+    }
+    this.viewers.get(urlDirectory).add(viewer);
+  }
+  
+  public void run() { //... }
+}
+
+public class Application {
+    ConfigSource configSource = new ZookeeperConfigSource();
+    public static final RedisConfig redisConfig = new RedisConfig(configSource);
+    public static final KafkaConfig kafkaConfig = new KakfaConfig(configSource);
+    public static final MySqlConfig mysqlConfig = new MySqlConfig(configSource);
+    
+    public static void main(String[] args) {
+        ScheduledUpdater redisConfigUpdater =
+            new ScheduledUpdater(redisConfig, 300, 300);
+        redisConfigUpdater.run();
+        
+        ScheduledUpdater kafkaConfigUpdater =
+            new ScheduledUpdater(kafkaConfig, 60, 60);
+        redisConfigUpdater.run();
+        
+        SimpleHttpServer simpleHttpServer = new SimpleHttpServer(“127.0.0.1”, 2389);
+        simpleHttpServer.addViewer("/config", redisConfig);
+        simpleHttpServer.addViewer("/config", mysqlConfig);
+        simpleHttpServer.run();
+    }
+}
+```
+
+至此，热更新和监控的需求我们就都实现了。我们来回顾一下这个例子的设计思想。
+
+我们设计了两个功能非常单一的接口：Updater 和 Viewer。ScheduledUpdater 只依赖 Updater 这个跟热更新相关的接口，不需要被强迫去依赖不需要的 Viewer 接口，满足接口隔离原则。同理，SimpleHttpServer 只依赖跟查看信息相关的 Viewer 接口，不依赖不需要的 Updater 接口，也满足接口隔离原则。
+
+你可能会说，如果我们不遵守接口隔离原则，不设计 Updater 和 Viewer 两个小接口，而是设计一个大而全的 Config 接口，让 RedisConfig、KafkaConfig、MysqlConfig 都实现这个 Config 接口，并且将原来传递给 ScheduledUpdater 的 Updater 和传递给 SimpleHttpServer 的 Viewer，都替换为 Config，那会有什么问题呢？我们先来看一下，按照这个思路来实现的代码是什么样的。
+
+```java
+public interface Config {
+  void update();
+  String outputInPlainText();
+  Map<String, String> output();
+}
+
+public class RedisConfig implements Config {
+  //...需要实现Config的三个接口update/outputIn.../output
+}
+
+public class KafkaConfig implements Config {
+  //...需要实现Config的三个接口update/outputIn.../output
+}
+
+public class MysqlConfig implements Config {
+  //...需要实现Config的三个接口update/outputIn.../output
+}
+
+public class ScheduledUpdater {
+  //...省略其他属性和方法..
+  private Config config;
+
+  public ScheduleUpdater(Config config, long initialDelayInSeconds, long periodInSeconds) {
+      this.config = config;
+      //...
+  }
+  //...
+}
+
+public class SimpleHttpServer {
+  private String host;
+  private int port;
+  private Map<String, List<Config>> viewers = new HashMap<>();
+ 
+  public SimpleHttpServer(String host, int port) {//...}
+  
+  public void addViewer(String urlDirectory, Config config) {
+    if (!viewers.containsKey(urlDirectory)) {
+      viewers.put(urlDirectory, new ArrayList<Config>());
+    }
+    viewers.get(urlDirectory).add(config);
+  }
+  
+  public void run() { //... }
+}
+```
+
+这样的设计思路也是能工作的，但是对比前后两个设计思路，在同样的代码量、实现复杂度、同等可读性的情况下，第一种设计思路显然要比第二种好很多。为什么这么说呢？主要有两点原因。
+
+首先，第一种设计思路更加灵活、易扩展、易复用。因为 Updater、Viewer 职责更加单一，单一就意味了通用、复用性好。比如，我们现在又有一个新的需求，开发一个 Metrics 性能统计模块，并且希望将 Metrics 也通过 SimpleHttpServer 显示在网页上，以方便查看。这个时候，尽管 Metrics 跟 RedisConfig 等没有任何关系，但我们仍然可以让 Metrics 类实现非常通用的 Viewer 接口，复用 SimpleHttpServer 的代码实现。具体的代码如下所示：
+
+```java
+public class ApiMetrics implements Viewer {//...}
+public class DbMetrics implements Viewer {//...}
+
+public class Application {
+    ConfigSource configSource = new ZookeeperConfigSource();
+    public static final RedisConfig redisConfig = new RedisConfig(configSource);
+    public static final KafkaConfig kafkaConfig = new KakfaConfig(configSource);
+    public static final MySqlConfig mySqlConfig = new MySqlConfig(configSource);
+    public static final ApiMetrics apiMetrics = new ApiMetrics();
+    public static final DbMetrics dbMetrics = new DbMetrics();
+    
+    public static void main(String[] args) {
+        SimpleHttpServer simpleHttpServer = new SimpleHttpServer(“127.0.0.1”, 2389);
+        simpleHttpServer.addViewer("/config", redisConfig);
+        simpleHttpServer.addViewer("/config", mySqlConfig);
+        simpleHttpServer.addViewer("/metrics", apiMetrics);
+        simpleHttpServer.addViewer("/metrics", dbMetrics);
+        simpleHttpServer.run();
+    }
+}
+```
+
+其次，第二种设计思路在代码实现上做了一些无用功。因为 Config 接口中包含两类不相关的接口，一类是 update()，一类是 output() 和 outputInPlainText()。理论上，KafkaConfig 只需要实现 update() 接口，并不需要实现 output() 相关的接口。同理，MysqlConfig 只需要实现 output() 相关接口，并需要实现 update() 接口。但第二种设计思路要求 RedisConfig、KafkaConfig、MySqlConfig 必须同时实现 Config 的所有接口函数（update、output、outputInPlainText）。除此之外，如果我们要往 Config 中继续添加一个新的接口，那所有的实现类都要改动。相反，如果我们的接口粒度比较小，那涉及改动的类就比较少。
+
+## 19 | 理论五：控制反转、依赖反转、依赖注入，这三者有何区别和联系？
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
