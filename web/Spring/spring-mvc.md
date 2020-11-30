@@ -4,7 +4,7 @@ SpringMVC是Spring家族的一员，Spring是将现在开发中流行的组件�
 
 为什么要有Spring MVC？Struts2过于拉胯。
 
-![image-20201020141724803](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201020141724.png)
+<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20201020141724.png" alt="image-20201020141724803" style="zoom:33%;" />
 
 # 1. 快速入门
 
