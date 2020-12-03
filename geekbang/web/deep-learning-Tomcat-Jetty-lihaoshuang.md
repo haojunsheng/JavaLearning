@@ -967,6 +967,203 @@ public abstract class ClassLoader {
 - findClass 方法的主要职责就是找到“.class”文件，可能来自文件系统或者网络，找到后把“.class”文件读到内存得到字节码数组，然后调用 defineClass 方法得到 Class 对象。
 - loadClass 是个 public 方法，说明它才是对外提供服务的接口，具体实现也比较清晰：首先检查这个类是不是已经被加载过了，如果加载过了直接返回，否则交给父加载器去加载。请你注意，这是一个递归调用，也就是说子加载器持有父加载器的引用，当一个类加载器需要加载一个 Java 类时，会先委托父加载器去加载，然后父加载器在自己的加载路径中搜索 Java 类，当父加载器在自己的加载范围内找不到时，才会交还给子加载器加载，这就是双亲委托机制。
 
+JDK 中有哪些默认的类加载器？它们的本质区别是什么？为什么需要双亲委托机制？JDK 中有 3 个类加载器，另外你也可以自定义类加载器，它们的关系如下图所示。
+
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201203231900.png)
+
+- BootstrapClassLoader 是启动类加载器，由 C 语言实现，用来加载 JVM 启动时所需要的核心类，比如rt.jar、resources.jar等
+- ExtClassLoader 是扩展类加载器，用来加载\jre\lib\ext目录下 JAR 包。
+- AppClassLoader 是系统类加载器，用来加载 classpath 下的类，应用程序默认用它来加载类。
+- 自定义类加载器，用来加载自定义路径下的类。
+
+这些类加载器的工作原理是一样的，区别是它们的加载路径不同，也就是说 findClass 这个方法查找的路径不同。双亲委托机制是为了保证一个 Java 类在 JVM 中是唯一的，假如你不小心写了一个与 JRE 核心类同名的类，比如 Object 类，双亲委托机制能保证加载的是 JRE 里的那个 Object 类，而不是你写的 Object 类。这是因为 AppClassLoader 在加载你的 Object 类时，会委托给 ExtClassLoader 去加载，而 ExtClassLoader 又会委托给 BootstrapClassLoader，BootstrapClassLoader 发现自己已经加载过了 Object 类，会直接返回，不会去加载你写的 Object 类。
+
+这里请你注意，类加载器的父子关系不是通过继承来实现的，比如 AppClassLoader 并不是 ExtClassLoader 的子类，而是说 AppClassLoader 的 parent 成员变量指向 ExtClassLoader 对象。同样的道理，如果你要自定义类加载器，不去继承 AppClassLoader，而是继承 ClassLoader 抽象类，再重写 findClass 和 loadClass 方法即可，Tomcat 就是通过自定义类加载器来实现自己的类加载逻辑。不知道你发现没有，如果你要打破双亲委托机制，就需要重写 loadClass 方法，因为 loadClass 的默认实现就是双亲委托机制。
+
+### Tomcat 的类加载器
+
+Tomcat 的自定义类加载器 WebAppClassLoader 打破了双亲委托机制，它首先自己尝试去加载某个类，如果找不到再代理给父类加载器，其目的是优先加载 Web 应用自己定义的类。具体实现就是重写 ClassLoader 的两个方法：findClass 和 loadClass。
+
+我们先来看看 findClass 方法的实现，为了方便理解和阅读，我去掉了一些细节：
+
+```java
+
+public Class<?> findClass(String name) throws ClassNotFoundException {
+    ...
+    
+    Class<?> clazz = null;
+    try {
+            //1. 先在Web应用目录下查找类 
+            clazz = findClassInternal(name);
+    }  catch (RuntimeException e) {
+           throw e;
+       }
+    
+    if (clazz == null) {
+    try {
+            //2. 如果在本地目录没有找到，交给父加载器去查找
+            clazz = super.findClass(name);
+    }  catch (RuntimeException e) {
+           throw e;
+       }
+    
+    //3. 如果父类也没找到，抛出ClassNotFoundException
+    if (clazz == null) {
+        throw new ClassNotFoundException(name);
+     }
+
+    return clazz;
+}
+```
+
+在 findClass 方法里，主要有三个步骤：
+
+1. 先在 Web 应用本地目录下查找要加载的类。
+2. 如果没有找到，交给父加载器去查找，它的父加载器就是上面提到的系统类加载器 AppClassLoader。
+3. 如何父加载器也没找到这个类，抛出 ClassNotFound 异常。
+
+
+
+接着我们再来看 Tomcat 类加载器的 loadClass 方法的实现，同样我也去掉了一些细节：
+
+```java
+public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+
+    synchronized (getClassLoadingLock(name)) {
+ 
+        Class<?> clazz = null;
+
+        //1. 先在本地cache查找该类是否已经加载过
+        clazz = findLoadedClass0(name);
+        if (clazz != null) {
+            if (resolve)
+                resolveClass(clazz);
+            return clazz;
+        }
+
+        //2. 从系统类加载器的cache中查找是否加载过
+        clazz = findLoadedClass(name);
+        if (clazz != null) {
+            if (resolve)
+                resolveClass(clazz);
+            return clazz;
+        }
+
+        // 3. 尝试用ExtClassLoader类加载器类加载，为什么？
+        ClassLoader javaseLoader = getJavaseClassLoader();
+        try {
+            clazz = javaseLoader.loadClass(name);
+            if (clazz != null) {
+                if (resolve)
+                    resolveClass(clazz);
+                return clazz;
+            }
+        } catch (ClassNotFoundException e) {
+            // Ignore
+        }
+
+        // 4. 尝试在本地目录搜索class并加载
+        try {
+            clazz = findClass(name);
+            if (clazz != null) {
+                if (resolve)
+                    resolveClass(clazz);
+                return clazz;
+            }
+        } catch (ClassNotFoundException e) {
+            // Ignore
+        }
+
+        // 5. 尝试用系统类加载器(也就是AppClassLoader)来加载
+            try {
+                clazz = Class.forName(name, false, parent);
+                if (clazz != null) {
+                    if (resolve)
+                        resolveClass(clazz);
+                    return clazz;
+                }
+            } catch (ClassNotFoundException e) {
+                // Ignore
+            }
+       }
+    
+    //6. 上述过程都加载失败，抛出异常
+    throw new ClassNotFoundException(name);
+}
+```
+
+loadClass 方法稍微复杂一点，主要有六个步骤：
+
+1. 先在本地 Cache 查找该类是否已经加载过，也就是说 Tomcat 的类加载器是否已经加载过这个类。
+2. 如果 Tomcat 类加载器没有加载过这个类，再看看系统类加载器是否加载过。
+3. 如果都没有，就让 ExtClassLoader 去加载，这一步比较关键，目的防止 Web 应用自己的类覆盖 JRE 的核心类。因为 Tomcat 需要打破双亲委托机制，假如 Web 应用里自定义了一个叫 Object 的类，如果先加载这个 Object 类，就会覆盖 JRE 里面的那个 Object 类，这就是为什么 Tomcat 的类加载器会优先尝试用 ExtClassLoader 去加载，因为 ExtClassLoader 会委托给 BootstrapClassLoader 去加载，BootstrapClassLoader 发现自己已经加载了 Object 类，直接返回给 Tomcat 的类加载器，这样 Tomcat 的类加载器就不会去加载 Web 应用下的 Object 类了，也就避免了覆盖 JRE 核心类的问题。
+4. 如果 ExtClassLoader 加载器加载失败，也就是说 JRE 核心类中没有这类，那么就在本地 Web 应用目录下查找并加载。
+5. 如果本地目录下没有这个类，说明不是 Web 应用自己定义的类，那么由系统类加载器去加载。这里请你注意，Web 应用是通过Class.forName调用交给系统类加载器的，因为Class.forName的默认加载器就是系统类加载器。
+6. 如果上述加载过程全部失败，抛出 ClassNotFound 异常。
+
+从上面的过程我们可以看到，Tomcat 的类加载器打破了双亲委托机制，没有一上来就直接委托给父加载器，而是先在本地目录下加载，为了避免本地目录下的类覆盖 JRE 的核心类，先尝试用 JVM 扩展类加载器 ExtClassLoader 去加载。那为什么不先用系统类加载器 AppClassLoader 去加载？很显然，如果是这样的话，那就变成双亲委托机制了，这就是 Tomcat 类加载器的巧妙之处。
+
+### 精华
+
+今天我介绍了 JVM 的类加载器原理和源码剖析，以及 Tomcat 的类加载器是如何打破双亲委托机制的，目的是为了优先加载 Web 应用目录下的类，然后再加载其他目录下的类，这也是 Servlet 规范的推荐做法。
+
+要打破双亲委托机制，需要继承 ClassLoader 抽象类，并且需要重写它的 loadClass 方法，因为 ClassLoader 的默认实现就是双亲委托。
+
+## 25 | Context容器（中）：Tomcat如何隔离Web应用？
+
+我在专栏上一期提到，Tomcat 通过自定义类加载器 WebAppClassLoader 打破了双亲委托机制，具体来说就是重写了 JVM 的类加载器 ClassLoader 的 findClass 方法和 loadClass 方法，这样做的目的是优先加载 Web 应用目录下的类。除此之外，你觉得 Tomcat 的类加载器还需要完成哪些需求呢？或者说在设计上还需要考虑哪些方面？
+
+我们知道，Tomcat 作为 Servlet 容器，它负责加载我们的 Servlet 类，此外它还负责加载 Servlet 所依赖的 JAR 包。并且 Tomcat 本身也是一个 Java 程序，因此它需要加载自己的类和依赖的 JAR 包。首先让我们思考这一下这几个问题：
+
+1. 假如我们在 Tomcat 中运行了两个 Web 应用程序，两个 Web 应用中有同名的 Servlet，但是功能不同，Tomcat 需要同时加载和管理这两个同名的 Servlet 类，保证它们不会冲突，因此 Web 应用之间的类需要隔离。
+2. 假如两个 Web 应用都依赖同一个第三方的 JAR 包，比如 Spring，那 Spring 的 JAR 包被加载到内存后，Tomcat 要保证这两个 Web 应用能够共享，也就是说 Spring 的 JAR 包只被加载一次，否则随着依赖的第三方 JAR 包增多，JVM 的内存会膨胀。
+3. 跟 JVM 一样，我们需要隔离 Tomcat 本身的类和 Web 应用的类。
+
+在了解了 Tomcat 的类加载器在设计时要考虑的这些问题以后，今天我们主要来学习一下 Tomcat 是如何通过设计多层次的类加载器来解决这些问题的。
+
+### Tomcat 类加载器的层次结构
+
+为了解决这些问题，Tomcat 设计了类加载器的层次结构，它们的关系如下图所示。下面我来详细解释为什么要设计这些类加载器，告诉你它们是怎么解决上面这些问题的。
+
+<img src="https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201204001404.png" alt="img" style="zoom: 50%;" />
+
+我们先来看第 1 个问题，假如我们使用 JVM 默认 AppClassLoader 来加载 Web 应用，AppClassLoader 只能加载一个 Servlet 类，在加载第二个同名 Servlet 类时，AppClassLoader 会返回第一个 Servlet 类的 Class 实例，这是因为在 AppClassLoader 看来，同名的 Servlet 类只被加载一次。
+
+因此 Tomcat 的解决方案是自定义一个类加载器 WebAppClassLoader， 并且给每个 Web 应用创建一个类加载器实例。我们知道，Context 容器组件对应一个 Web 应用，因此，每个 Context 容器负责创建和维护一个 WebAppClassLoader 加载器实例。这背后的原理是，不同的加载器实例加载的类被认为是不同的类，即使它们的类名相同。这就相当于在 Java 虚拟机内部创建了一个个相互隔离的 Java 类空间，每一个 Web 应用都有自己的类空间，Web 应用之间通过各自的类加载器互相隔离。
+
+我们再来看第 2 个问题，本质需求是两个 Web 应用之间怎么共享库类，并且不能重复加载相同的类。我们知道，在双亲委托机制里，各个子加载器都可以通过父加载器去加载类，那么把需要共享的类放到父加载器的加载路径下不就行了吗，应用程序也正是通过这种方式共享 JRE 的核心类。因此 Tomcat 的设计者又加了一个类加载器 SharedClassLoader，作为 WebAppClassLoader 的父加载器，专门来加载 Web 应用之间共享的类。如果 WebAppClassLoader 自己没有加载到某个类，就会委托父加载器 SharedClassLoader 去加载这个类，SharedClassLoader 会在指定目录下加载共享类，之后返回给 WebAppClassLoader，这样共享的问题就解决了。
+
+我们来看第 3 个问题，如何隔离 Tomcat 本身的类和 Web 应用的类？我们知道，要共享可以通过父子关系，要隔离那就需要兄弟关系了。兄弟关系就是指两个类加载器是平行的，它们可能拥有同一个父加载器，但是两个兄弟类加载器加载的类是隔离的。基于此 Tomcat 又设计一个类加载器 CatalinaClassLoader，专门来加载 Tomcat 自身的类。这样设计有个问题，那 Tomcat 和各 Web 应用之间需要共享一些类时该怎么办呢？
+
+老办法，还是再增加一个 CommonClassLoader，作为 CatalinaClassLoader 和 SharedClassLoader 的父加载器。CommonClassLoader 能加载的类都可以被 CatalinaClassLoader 和 SharedClassLoader 使用，而 CatalinaClassLoader 和 SharedClassLoader 能加载的类则与对方相互隔离。WebAppClassLoader 可以使用 SharedClassLoader 加载到的类，但各个 WebAppClassLoader 实例之间相互隔离。
+
+### Spring 的加载问题
+
+在 JVM 的实现中有一条隐含的规则，默认情况下，如果一个类由类加载器 A 加载，那么这个类的依赖类也是由相同的类加载器加载。比如 Spring 作为一个 Bean 工厂，它需要创建业务类的实例，并且在创建业务类实例之前需要加载这些类。Spring 是通过调用Class.forName来加载业务类的，我们来看一下 forName 的源码：
+
+```java
+public static Class<?> forName(String className) {
+    Class<?> caller = Reflection.getCallerClass();
+    return forName0(className, true, ClassLoader.getClassLoader(caller), caller);
+}
+```
+
+可以看到在 forName 的函数里，会用调用者也就是 Spring 的加载器去加载业务类。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # 参考
