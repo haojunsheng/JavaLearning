@@ -24,8 +24,6 @@ java基础。spring，mysql，redis。
 
 8. JVM 相关的常见面试问题必知必会、全面分析。
 
-
-
 ## NIO
 
 1. 同步/异步、阻塞/非阻塞、BIO、NIO、AIO、Reactor/Proactor；
@@ -97,8 +95,6 @@ java基础。spring，mysql，redis。
 3. 消息的 4 个主要功能，搭建一个 Kafka 集群，实现常用的消息发送、消息消费功能；
 
 4. 典型使用场景，使用 MQ 实现交易订单的处理，动手实现一个简化版的消息队列。
-
-
 
 ## 数据结构与算法
 
