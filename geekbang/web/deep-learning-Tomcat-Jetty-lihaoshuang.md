@@ -794,7 +794,21 @@ Jetty 是 Eclipse 基金会的一个开源项目，和 Tomcat 一样，Jetty 也
 
 简单来说，Jetty Server 就是由多个 Connector（连接器）、多个 Handler（处理器），以及一个线程池组成。整体结构请看下面这张图。
 
-![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201208145507.jpg)
+<img src="https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201208145507.jpg" alt="img" style="zoom:50%;" />
+
+跟 Tomcat 一样，Jetty 也有 HTTP 服务器和 Servlet 容器的功能，因此 Jetty 中的 Connector 组件和 Handler 组件分别来实现这两个功能，而这两个组件工作时所需要的线程资源都直接从一个全局线程池 ThreadPool 中获取。
+
+Jetty Server 可以有多个 Connector 在不同的端口上监听客户请求，而对于请求处理的 Handler 组件，也可以根据具体场景使用不同的 Handler。这样的设计提高了 Jetty 的灵活性，需要支持 Servlet，则可以使用 ServletHandler；需要支持 Session，则再增加一个 SessionHandler。也就是说我们可以不使用 Servlet 或者 Session，只要不配置这个 Handler 就行了。
+
+为了启动和协调上面的核心组件工作，Jetty 提供了一个 Server 类来做这个事情，它负责创建并初始化 Connector、Handler、ThreadPool 组件，然后调用 start 方法启动它们。
+
+我们对比一下 Tomcat 的整体架构图，你会发现 Tomcat 在整体上跟 Jetty 很相似，它们的第一个区别是 Jetty 中没有 Service 的概念，Tomcat 中的 Service 包装了多个连接器和一个容器组件，一个 Tomcat 实例可以配置多个 Service，不同的 Service 通过不同的连接器监听不同的端口；而 Jetty 中 Connector 是被所有 Handler 共享的。
+
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201208224305.jpg)
+
+它们的第二个区别是，在 Tomcat 中每个连接器都有自己的线程池，而在 Jetty 中所有的 Connector 共享一个全局的线程池。
+
+讲完了 Jetty 的整体架构，接下来我来详细分析 Jetty 的 Connector 组件的设计，下一期我将分析 Handler 组件的设计。
 
 
 
@@ -913,6 +927,119 @@ Acceptor 在接收连接时，可能会阻塞，为了不耽误其他工作，�
 # 连接器
 
 ## 14 | NioEndpoint组件：Tomcat如何实现非阻塞I/O？
+
+UNIX 系统下的 I/O 模型有 5 种：同步阻塞 I/O、同步非阻塞 I/O、I/O 多路复用、信号驱动 I/O 和异步 I/O。这些名词我们好像都似曾相识，但这些 I/O 通信模型有什么区别？同步和阻塞似乎是一回事，到底有什么不同？等一下，在这之前你是不是应该问自己一个终极问题：什么是 I/O？为什么需要这些 I/O 模型？
+
+所谓的 I/O 就是计算机内存与外部设备之间拷贝数据的过程。我们知道 CPU 访问内存的速度远远高于外部设备，因此 CPU 是先把外部设备的数据读到内存里，然后再进行处理。请考虑一下这个场景，当你的程序通过 CPU 向外部设备发出一个读指令时，数据从外部设备拷贝到内存往往需要一段时间，这个时候 CPU 没事干了，你的程序是主动把 CPU 让给别人？还是让 CPU 不停地查：数据到了吗，数据到了吗……
+
+这就是 I/O 模型要解决的问题。今天我会先说说各种 I/O 模型的区别，然后重点分析 Tomcat 的 NioEndpoint 组件是如何实现非阻塞 I/O 模型的。
+
+### Java I/O 模型
+
+对于一个网络 I/O 通信过程，比如网络数据读取，会涉及两个对象，一个是调用这个 I/O 操作的用户线程，另外一个就是操作系统内核。一个进程的地址空间分为用户空间和内核空间，用户线程不能直接访问内核空间。
+
+当用户线程发起 I/O 操作后，网络数据读取操作会经历两个步骤：
+
+- 用户线程等待内核将数据从网卡拷贝到内核空间。
+- 内核将数据从内核空间拷贝到用户空间。
+
+各种 I/O 模型的区别就是：它们实现这两个步骤的方式是不一样的。
+
+同步阻塞 I/O：用户线程发起 read 调用后就阻塞了，让出 CPU。内核等待网卡数据到来，把数据从网卡拷贝到内核空间，接着把数据拷贝到用户空间，再把用户线程叫醒。
+
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201208233205.jpg)
+
+同步非阻塞 I/O：用户线程不断的发起 read 调用，数据没到内核空间时，每次都返回失败，直到数据到了内核空间，这一次 read 调用后，在等待数据从内核空间拷贝到用户空间这段时间里，线程还是阻塞的，等数据到了用户空间再把线程叫醒。
+
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201208233222.jpg)
+
+I/O 多路复用：用户线程的读取操作分成两步了，线程先发起 select 调用，目的是问内核数据准备好了吗？等内核把数据准备好了，用户线程再发起 read 调用。在等待数据从内核空间拷贝到用户空间这段时间里，线程还是阻塞的。那为什么叫 I/O 多路复用呢？因为一次 select 调用可以向内核查多个数据通道（Channel）的状态，所以叫多路复用。
+
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201208233235.jpg)
+
+异步 I/O：用户线程发起 read 调用的同时注册一个回调函数，read 立即返回，等内核将数据准备好后，再调用指定的回调函数完成处理。在这个过程中，用户线程一直没有阻塞。
+
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201208233243.jpg)
+
+### **NioEndpoint 组件**
+
+Tomcat 的 NioEndpoint 组件实现了 I/O 多路复用模型，接下来我会介绍 NioEndpoint 的实现原理，下一期我会介绍 Tomcat 如何实现异步 I/O 模型。
+
+**总体工作流程**
+
+我们知道，对于 Java 的多路复用器的使用，无非是两步：
+
+1. 创建一个 Selector，在它身上注册各种感兴趣的事件，然后调用 select 方法，等待感兴趣的事情发生。
+2. 感兴趣的事情发生了，比如可以读了，这时便创建一个新的线程从 Channel 中读数据。
+
+Tomcat 的 NioEndpoint 组件虽然实现比较复杂，但基本原理就是上面两步。我们先来看看它有哪些组件，它一共包含 LimitLatch、Acceptor、Poller、SocketProcessor 和 Executor 共 5 个组件，它们的工作过程如下图所示。
+
+<img src="https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201208233427.jpg" alt="img" style="zoom: 33%;" />
+
+LimitLatch 是连接控制器，它负责控制最大连接数，NIO 模式下默认是 10000，达到这个阈值后，连接请求被拒绝。
+
+Acceptor 跑在一个单独的线程里，它在一个死循环里调用 accept 方法来接收新连接，一旦有新的连接请求到来，accept 方法返回一个 Channel 对象，接着把 Channel 对象交给 Poller 去处理。
+
+Poller 的本质是一个 Selector，也跑在单独线程里。Poller 在内部维护一个 Channel 数组，它在一个死循环里不断检测 Channel 的数据就绪状态，一旦有 Channel 可读，就生成一个 SocketProcessor 任务对象扔给 Executor 去处理。
+
+Executor 就是线程池，负责运行 SocketProcessor 任务类，SocketProcessor 的 run 方法会调用 Http11Processor 来读取和解析请求数据。我们知道，Http11Processor 是应用层协议的封装，它会调用容器获得响应，再把响应通过 Channel 写出。
+
+接下来我详细介绍一下各组件的设计特点。
+
+**LimitLatch**
+
+LimitLatch 用来控制连接个数，当连接数到达最大时阻塞线程，直到后续组件处理完一个连接后将连接数减 1。请你注意到达最大连接数后操作系统底层还是会接收客户端连接，但用户层已经不再接收。LimitLatch 的核心代码如下：
+
+```java
+public class LimitLatch {
+    private class Sync extends AbstractQueuedSynchronizer {
+     
+        @Override
+        protected int tryAcquireShared() {
+            long newCount = count.incrementAndGet();
+            if (newCount > limit) {
+                count.decrementAndGet();
+                return -1;
+            } else {
+                return 1;
+            }
+        }
+
+        @Override
+        protected boolean tryReleaseShared(int arg) {
+            count.decrementAndGet();
+            return true;
+        }
+    }
+
+    private final Sync sync;
+    private final AtomicLong count;
+    private volatile long limit;
+    
+    //线程调用这个方法来获得接收新连接的许可，线程可能被阻塞
+    public void countUpOrAwait() throws InterruptedException {
+      sync.acquireSharedInterruptibly(1);
+    }
+
+    //调用这个方法来释放一个连接许可，那么前面阻塞的线程可能被唤醒
+    public long countDown() {
+      sync.releaseShared(0);
+      long result = getCount();
+      return result;
+   }
+}
+```
+
+从上面的代码我们看到，LimitLatch 内步定义了内部类 Sync，而 Sync 扩展了 AQS，AQS 是 Java 并发包中的一个核心类，它在内部维护一个状态和一个线程队列，可以用来控制线程什么时候挂起，什么时候唤醒。我们可以扩展它来实现自己的同步器，实际上 Java 并发包里的锁和条件变量等等都是通过 AQS 来实现的，而这里的 LimitLatch 也不例外。
+
+理解上面的代码时有两个要点：
+
+1. 用户线程通过调用 LimitLatch 的 countUpOrAwait 方法来拿到锁，如果暂时无法获取，这个线程会被阻塞到 AQS 的队列中。那 AQS 怎么知道是阻塞还是不阻塞用户线程呢？其实这是由 AQS 的使用者来决定的，也就是内部类 Sync 来决定的，因为 Sync 类重写了 AQS 的 tryAcquireShared() 方法。它的实现逻辑是如果当前连接数 count 小于 limit，线程能获取锁，返回 1，否则返回 -1。
+2. 如何用户线程被阻塞到了 AQS 的队列，那什么时候唤醒呢？同样是由 Sync 内部类决定，Sync 重写了 AQS 的 tryReleaseShared() 方法，其实就是当一个连接请求处理完了，这时又可以接收一个新连接了，这样前面阻塞的线程将会被唤醒。
+
+其实你会发现 AQS 就是一个骨架抽象类，它帮我们搭了个架子，用来控制线程的阻塞和唤醒。具体什么时候阻塞、什么时候唤醒由你来决定。我们还注意到，当前线程数被定义成原子变量 AtomicLong，而 limit 变量用 volatile 关键字来修饰，这些并发编程的实际运用。
+
+
 
 # 容器
 
