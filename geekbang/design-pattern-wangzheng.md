@@ -1950,6 +1950,8 @@ public class VirtualWallet {
 
 基于充血模型的 DDD 开发模式跟基于贫血模型的传统开发模式相比，Controller 层和 Repository 层的代码基本上相同。这是因为，Repository 层的 Entity 生命周期有限，Controller 层的 VO 只是单纯作为一种 DTO。两部分的业务逻辑都不会太复杂。业务逻辑主要集中在 Service 层。所以，Repository 层和 Controller 层继续沿用贫血模型的设计思路是没有问题的。
 
+
+
 ## 13 | 实战二（上）：如何对接口鉴权这样一个功能开发做面向对象分析？
 
 
