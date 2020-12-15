@@ -1,61 +1,94 @@
 <!--ts-->
-   * [前言](#前言)
-   * [设计原则与思想：面向对象](#设计原则与思想面向对象)
-      * [07 | 理论四：哪些代码设计看似是面向对象，实际是面向过程的？](#07--理论四哪些代码设计看似是面向对象实际是面向过程的)
-      * [08 | 理论五：接口vs抽象类的区别？如何用普通的类模拟抽象类和接口？](#08--理论五接口vs抽象类的区别如何用普通的类模拟抽象类和接口)
-      * [09 | 理论六：为什么基于接口而非实现编程？有必要为每个类都定义接口吗？](#09--理论六为什么基于接口而非实现编程有必要为每个类都定义接口吗)
-      * [10 | 理论七：为何说要多用组合少用继承？如何决定该用组合还是继承？](#10--理论七为何说要多用组合少用继承如何决定该用组合还是继承)
-      * [11. 实战一（上）：业务开发常用的基于贫血模型的MVC架构违背OOP吗？](#11-实战一上业务开发常用的基于贫血模型的mvc架构违背oop吗)
-      * [12 | 实战一（下）：如何利用基于充血模型的DDD开发一个虚拟钱包系统？](#12--实战一下如何利用基于充血模型的ddd开发一个虚拟钱包系统)
-      * [13 | 实战二（上）：如何对接口鉴权这样一个功能开发做面向对象分析？](#13--实战二上如何对接口鉴权这样一个功能开发做面向对象分析)
-      * [14 | 实战二（下）：如何利用面向对象设计和编程开发接口鉴权功能？](#14--实战二下如何利用面向对象设计和编程开发接口鉴权功能)
-   * [设计原则与思想：设计原则](#设计原则与思想设计原则)
-      * [15 | 理论一：对于单一职责原则，如何判定某个类的职责是否够“单一”？](#15--理论一对于单一职责原则如何判定某个类的职责是否够单一)
-         * [如何理解单一职责原则（SRP）？](#如何理解单一职责原则srp)
-         * [如何判断类的职责是否足够单一？](#如何判断类的职责是否足够单一)
-         * [类的职责是否设计得越单一越好？](#类的职责是否设计得越单一越好)
-      * [16 | 理论二：如何做到“对扩展开放、修改关闭”？扩展和修改各指什么？](#16--理论二如何做到对扩展开放修改关闭扩展和修改各指什么)
-         * [如何理解“对扩展开放、修改关闭”？](#如何理解对扩展开放修改关闭)
-         * [修改代码就意味着违背开闭原则吗？](#修改代码就意味着违背开闭原则吗)
-         * [如何做到“对扩展开放、修改关闭”？](#如何做到对扩展开放修改关闭)
-         * [如何在项目中灵活应用开闭原则？](#如何在项目中灵活应用开闭原则)
-      * [17 | 理论三：里式替换（LSP）跟多态有何区别？哪些代码违背了LSP？](#17--理论三里式替换lsp跟多态有何区别哪些代码违背了lsp)
-         * [如何理解“里式替换原则”？](#如何理解里式替换原则)
-         * [哪些代码明显违背了 LSP？](#哪些代码明显违背了-lsp)
-      * [18 | 理论四：接口隔离原则有哪三种应用？原则中的“接口”该如何理解？](#18--理论四接口隔离原则有哪三种应用原则中的接口该如何理解)
-         * [如何理解“接口隔离原则”？](#如何理解接口隔离原则)
-         * [把“接口”理解为一组 API 接口集合](#把接口理解为一组-api-接口集合)
-         * [把“接口”理解为单个 API 接口或函数](#把接口理解为单个-api-接口或函数)
-         * [把“接口”理解为 OOP 中的接口概念](#把接口理解为-oop-中的接口概念)
-      * [19 | 理论五：控制反转、依赖反转、依赖注入，这三者有何区别和联系？](#19--理论五控制反转依赖反转依赖注入这三者有何区别和联系)
-         * [控制反转（IOC）](#控制反转ioc)
-         * [依赖注入（DI）](#依赖注入di)
-         * [依赖注入框架（DI Framework）](#依赖注入框架di-framework)
-         * [依赖反转原则（DIP）](#依赖反转原则dip)
-      * [20 | 理论六：我为何说KISS、YAGNI原则看似简单，却经常被用错？](#20--理论六我为何说kissyagni原则看似简单却经常被用错)
-         * [如何理解“KISS 原则”？](#如何理解kiss-原则)
-   * [设计模式与范式：创建型 (7讲)](#设计模式与范式创建型-7讲)
-      * [41 | 单例模式（上）：为什么说支持懒加载的双重检测不比饿汉式更优？](#41--单例模式上为什么说支持懒加载的双重检测不比饿汉式更优)
-         * [为什么要使用单例？](#为什么要使用单例)
-         * [如何实现一个单例？](#如何实现一个单例)
-      * [42 | 单例模式（中）：我为什么不推荐使用单例模式？又有何替代方案？](#42--单例模式中我为什么不推荐使用单例模式又有何替代方案)
-         * [单例存在哪些问题?](#单例存在哪些问题)
-         * [有何替代解决方案？](#有何替代解决方案)
-      * [43 | 单例模式（下）：如何设计实现一个集群环境下的分布式单例模式？](#43--单例模式下如何设计实现一个集群环境下的分布式单例模式)
-         * [如何理解单例模式中的唯一性？](#如何理解单例模式中的唯一性)
-         * [如何实现线程唯一的单例？](#如何实现线程唯一的单例)
-         * [如何实现集群环境下的单例？](#如何实现集群环境下的单例)
-         * [如何实现一个多例模式？](#如何实现一个多例模式)
-      * [44 | 工厂模式（上）：我为什么说没事不要随便用工厂模式创建对象？](#44--工厂模式上我为什么说没事不要随便用工厂模式创建对象)
-         * [简单工厂（Simple Factory）](#简单工厂simple-factory)
-         * [工厂方法（Factory Method）](#工厂方法factory-method)
-         * [抽象工厂（Abstract Factory）](#抽象工厂abstract-factory)
-      * [45 | 工厂模式（下）：如何设计实现一个Dependency Injection框架？](#45--工厂模式下如何设计实现一个dependency-injection框架)
-   * [开源与项目实战：开源实战 (14讲)](#开源与项目实战开源实战-14讲)
-      * [76 | 开源实战一（上）：通过剖析Java JDK源码学习灵活应用设计模式](#76--开源实战一上通过剖析java-jdk源码学习灵活应用设计模式)
-         * [工厂模式在 Calendar 类中的应用](#工厂模式在-calendar-类中的应用)
+   * [前言](#\xE5\x89\x8D\xE8\xA8\x80)
+   * [设计模式导读](#\xE8\xAE\xBE\xE8\xAE\xA1\xE6\xA8\xA1\xE5\xBC\x8F\xE5\xAF\xBC\xE8\xAF\xBB)
+      * [01 | 为什么说每个程序员都要尽早地学习并掌握设计模式相关知识？](#01--\xE4\xB8\xBA\xE4\xBB\x80\xE4\xB9\x88\xE8\xAF\xB4\xE6\xAF\x8F\xE4\xB8\xAA\xE7\xA8\x8B\xE5\xBA\x8F\xE5\x91\x98\xE9\x83\xBD\xE8\xA6\x81\xE5\xB0\xBD\xE6\x97\xA9\xE5\x9C\xB0\xE5\xAD\xA6\xE4\xB9\xA0\xE5\xB9\xB6\xE6\x8E\x8C\xE6\x8F\xA1\xE8\xAE\xBE\xE8\xAE\xA1\xE6\xA8\xA1\xE5\xBC\x8F\xE7\x9B\xB8\xE5\x85\xB3\xE7\x9F\xA5\xE8\xAF\x86)
+   * [设计原则与思想：面向对象](#\xE8\xAE\xBE\xE8\xAE\xA1\xE5\x8E\x9F\xE5\x88\x99\xE4\xB8\x8E\xE6\x80\x9D\xE6\x83\xB3\xE9\x9D\xA2\xE5\x90\x91\xE5\xAF\xB9\xE8\xB1\xA1)
+      * [04 | 理论一：当谈论面向对象的时候，我们到底在谈论什么？](#04--\xE7\x90\x86\xE8\xAE\xBA\xE4\xB8\x80\xE5\xBD\x93\xE8\xB0\x88\xE8\xAE\xBA\xE9\x9D\xA2\xE5\x90\x91\xE5\xAF\xB9\xE8\xB1\xA1\xE7\x9A\x84\xE6\x97\xB6\xE5\x80\x99\xE6\x88\x91\xE4\xBB\xAC\xE5\x88\xB0\xE5\xBA\x95\xE5\x9C\xA8\xE8\xB0\x88\xE8\xAE\xBA\xE4\xBB\x80\xE4\xB9\x88)
+         * [什么是面向对象编程和面向对象编程语言？](#\xE4\xBB\x80\xE4\xB9\x88\xE6\x98\xAF\xE9\x9D\xA2\xE5\x90\x91\xE5\xAF\xB9\xE8\xB1\xA1\xE7\xBC\x96\xE7\xA8\x8B\xE5\x92\x8C\xE9\x9D\xA2\xE5\x90\x91\xE5\xAF\xB9\xE8\xB1\xA1\xE7\xBC\x96\xE7\xA8\x8B\xE8\xAF\xAD\xE8\xA8\x80)
+         * [如何判定某编程语言是否是面向对象编程语言？](#\xE5\xA6\x82\xE4\xBD\x95\xE5\x88\xA4\xE5\xAE\x9A\xE6\x9F\x90\xE7\xBC\x96\xE7\xA8\x8B\xE8\xAF\xAD\xE8\xA8\x80\xE6\x98\xAF\xE5\x90\xA6\xE6\x98\xAF\xE9\x9D\xA2\xE5\x90\x91\xE5\xAF\xB9\xE8\xB1\xA1\xE7\xBC\x96\xE7\xA8\x8B\xE8\xAF\xAD\xE8\xA8\x80)
+         * [什么是面向对象分析和面向对象设计？](#\xE4\xBB\x80\xE4\xB9\x88\xE6\x98\xAF\xE9\x9D\xA2\xE5\x90\x91\xE5\xAF\xB9\xE8\xB1\xA1\xE5\x88\x86\xE6\x9E\x90\xE5\x92\x8C\xE9\x9D\xA2\xE5\x90\x91\xE5\xAF\xB9\xE8\xB1\xA1\xE8\xAE\xBE\xE8\xAE\xA1)
+         * [什么是 UML？我们是否需要 UML？](#\xE4\xBB\x80\xE4\xB9\x88\xE6\x98\xAF-uml\xE6\x88\x91\xE4\xBB\xAC\xE6\x98\xAF\xE5\x90\xA6\xE9\x9C\x80\xE8\xA6\x81-uml)
+         * [总结](#\xE6\x80\xBB\xE7\xBB\x93)
+      * [05 | 理论二：封装、抽象、继承、多态分别可以解决哪些编程问题？](#05--\xE7\x90\x86\xE8\xAE\xBA\xE4\xBA\x8C\xE5\xB0\x81\xE8\xA3\x85\xE6\x8A\xBD\xE8\xB1\xA1\xE7\xBB\xA7\xE6\x89\xBF\xE5\xA4\x9A\xE6\x80\x81\xE5\x88\x86\xE5\x88\xAB\xE5\x8F\xAF\xE4\xBB\xA5\xE8\xA7\xA3\xE5\x86\xB3\xE5\x93\xAA\xE4\xBA\x9B\xE7\xBC\x96\xE7\xA8\x8B\xE9\x97\xAE\xE9\xA2\x98)
+         * [封装（Encapsulation）](#\xE5\xB0\x81\xE8\xA3\x85encapsulation)
+         * [抽象（Abstraction）](#\xE6\x8A\xBD\xE8\xB1\xA1abstraction)
+         * [继承（Inheritance）](#\xE7\xBB\xA7\xE6\x89\xBFinheritance)
+         * [多态（Polymorphism）](#\xE5\xA4\x9A\xE6\x80\x81polymorphism)
+         * [总结](#\xE6\x80\xBB\xE7\xBB\x93-1)
+      * [06 | 理论三：面向对象相比面向过程有哪些优势？面向过程真的过时了吗？](#06--\xE7\x90\x86\xE8\xAE\xBA\xE4\xB8\x89\xE9\x9D\xA2\xE5\x90\x91\xE5\xAF\xB9\xE8\xB1\xA1\xE7\x9B\xB8\xE6\xAF\x94\xE9\x9D\xA2\xE5\x90\x91\xE8\xBF\x87\xE7\xA8\x8B\xE6\x9C\x89\xE5\x93\xAA\xE4\xBA\x9B\xE4\xBC\x98\xE5\x8A\xBF\xE9\x9D\xA2\xE5\x90\x91\xE8\xBF\x87\xE7\xA8\x8B\xE7\x9C\x9F\xE7\x9A\x84\xE8\xBF\x87\xE6\x97\xB6\xE4\xBA\x86\xE5\x90\x97)
+         * [什么是面向过程编程与面向过程编程语言？](#\xE4\xBB\x80\xE4\xB9\x88\xE6\x98\xAF\xE9\x9D\xA2\xE5\x90\x91\xE8\xBF\x87\xE7\xA8\x8B\xE7\xBC\x96\xE7\xA8\x8B\xE4\xB8\x8E\xE9\x9D\xA2\xE5\x90\x91\xE8\xBF\x87\xE7\xA8\x8B\xE7\xBC\x96\xE7\xA8\x8B\xE8\xAF\xAD\xE8\xA8\x80)
+         * [面向对象编程相比面向过程编程有哪些优势？](#\xE9\x9D\xA2\xE5\x90\x91\xE5\xAF\xB9\xE8\xB1\xA1\xE7\xBC\x96\xE7\xA8\x8B\xE7\x9B\xB8\xE6\xAF\x94\xE9\x9D\xA2\xE5\x90\x91\xE8\xBF\x87\xE7\xA8\x8B\xE7\xBC\x96\xE7\xA8\x8B\xE6\x9C\x89\xE5\x93\xAA\xE4\xBA\x9B\xE4\xBC\x98\xE5\x8A\xBF)
+         * [总结](#\xE6\x80\xBB\xE7\xBB\x93-2)
+      * [07 | 理论四：哪些代码设计看似是面向对象，实际是面向过程的？](#07--\xE7\x90\x86\xE8\xAE\xBA\xE5\x9B\x9B\xE5\x93\xAA\xE4\xBA\x9B\xE4\xBB\xA3\xE7\xA0\x81\xE8\xAE\xBE\xE8\xAE\xA1\xE7\x9C\x8B\xE4\xBC\xBC\xE6\x98\xAF\xE9\x9D\xA2\xE5\x90\x91\xE5\xAF\xB9\xE8\xB1\xA1\xE5\xAE\x9E\xE9\x99\x85\xE6\x98\xAF\xE9\x9D\xA2\xE5\x90\x91\xE8\xBF\x87\xE7\xA8\x8B\xE7\x9A\x84)
+         * [哪些代码设计看似是面向对象，实际是面向过程的？](#\xE5\x93\xAA\xE4\xBA\x9B\xE4\xBB\xA3\xE7\xA0\x81\xE8\xAE\xBE\xE8\xAE\xA1\xE7\x9C\x8B\xE4\xBC\xBC\xE6\x98\xAF\xE9\x9D\xA2\xE5\x90\x91\xE5\xAF\xB9\xE8\xB1\xA1\xE5\xAE\x9E\xE9\x99\x85\xE6\x98\xAF\xE9\x9D\xA2\xE5\x90\x91\xE8\xBF\x87\xE7\xA8\x8B\xE7\x9A\x84)
+         * [在面向对象编程中，为什么容易写出面向过程风格的代码？](#\xE5\x9C\xA8\xE9\x9D\xA2\xE5\x90\x91\xE5\xAF\xB9\xE8\xB1\xA1\xE7\xBC\x96\xE7\xA8\x8B\xE4\xB8\xAD\xE4\xB8\xBA\xE4\xBB\x80\xE4\xB9\x88\xE5\xAE\xB9\xE6\x98\x93\xE5\x86\x99\xE5\x87\xBA\xE9\x9D\xA2\xE5\x90\x91\xE8\xBF\x87\xE7\xA8\x8B\xE9\xA3\x8E\xE6\xA0\xBC\xE7\x9A\x84\xE4\xBB\xA3\xE7\xA0\x81)
+         * [面向过程编程及面向过程编程语言就真的无用武之地了吗？](#\xE9\x9D\xA2\xE5\x90\x91\xE8\xBF\x87\xE7\xA8\x8B\xE7\xBC\x96\xE7\xA8\x8B\xE5\x8F\x8A\xE9\x9D\xA2\xE5\x90\x91\xE8\xBF\x87\xE7\xA8\x8B\xE7\xBC\x96\xE7\xA8\x8B\xE8\xAF\xAD\xE8\xA8\x80\xE5\xB0\xB1\xE7\x9C\x9F\xE7\x9A\x84\xE6\x97\xA0\xE7\x94\xA8\xE6\xAD\xA6\xE4\xB9\x8B\xE5\x9C\xB0\xE4\xBA\x86\xE5\x90\x97)
+         * [总结](#\xE6\x80\xBB\xE7\xBB\x93-3)
+      * [08 | 理论五：接口vs抽象类的区别？如何用普通的类模拟抽象类和接口？](#08--\xE7\x90\x86\xE8\xAE\xBA\xE4\xBA\x94\xE6\x8E\xA5\xE5\x8F\xA3vs\xE6\x8A\xBD\xE8\xB1\xA1\xE7\xB1\xBB\xE7\x9A\x84\xE5\x8C\xBA\xE5\x88\xAB\xE5\xA6\x82\xE4\xBD\x95\xE7\x94\xA8\xE6\x99\xAE\xE9\x80\x9A\xE7\x9A\x84\xE7\xB1\xBB\xE6\xA8\xA1\xE6\x8B\x9F\xE6\x8A\xBD\xE8\xB1\xA1\xE7\xB1\xBB\xE5\x92\x8C\xE6\x8E\xA5\xE5\x8F\xA3)
+         * [什么是抽象类和接口？区别在哪里？](#\xE4\xBB\x80\xE4\xB9\x88\xE6\x98\xAF\xE6\x8A\xBD\xE8\xB1\xA1\xE7\xB1\xBB\xE5\x92\x8C\xE6\x8E\xA5\xE5\x8F\xA3\xE5\x8C\xBA\xE5\x88\xAB\xE5\x9C\xA8\xE5\x93\xAA\xE9\x87\x8C)
+         * [抽象类和接口能解决什么编程问题？](#\xE6\x8A\xBD\xE8\xB1\xA1\xE7\xB1\xBB\xE5\x92\x8C\xE6\x8E\xA5\xE5\x8F\xA3\xE8\x83\xBD\xE8\xA7\xA3\xE5\x86\xB3\xE4\xBB\x80\xE4\xB9\x88\xE7\xBC\x96\xE7\xA8\x8B\xE9\x97\xAE\xE9\xA2\x98)
+         * [如何决定该用抽象类还是接口？](#\xE5\xA6\x82\xE4\xBD\x95\xE5\x86\xB3\xE5\xAE\x9A\xE8\xAF\xA5\xE7\x94\xA8\xE6\x8A\xBD\xE8\xB1\xA1\xE7\xB1\xBB\xE8\xBF\x98\xE6\x98\xAF\xE6\x8E\xA5\xE5\x8F\xA3)
+         * [总结](#\xE6\x80\xBB\xE7\xBB\x93-4)
+      * [09 | 理论六：为什么基于接口而非实现编程？有必要为每个类都定义接口吗？](#09--\xE7\x90\x86\xE8\xAE\xBA\xE5\x85\xAD\xE4\xB8\xBA\xE4\xBB\x80\xE4\xB9\x88\xE5\x9F\xBA\xE4\xBA\x8E\xE6\x8E\xA5\xE5\x8F\xA3\xE8\x80\x8C\xE9\x9D\x9E\xE5\xAE\x9E\xE7\x8E\xB0\xE7\xBC\x96\xE7\xA8\x8B\xE6\x9C\x89\xE5\xBF\x85\xE8\xA6\x81\xE4\xB8\xBA\xE6\xAF\x8F\xE4\xB8\xAA\xE7\xB1\xBB\xE9\x83\xBD\xE5\xAE\x9A\xE4\xB9\x89\xE6\x8E\xA5\xE5\x8F\xA3\xE5\x90\x97)
+         * [如何解读原则中的“接口”二字？](#\xE5\xA6\x82\xE4\xBD\x95\xE8\xA7\xA3\xE8\xAF\xBB\xE5\x8E\x9F\xE5\x88\x99\xE4\xB8\xAD\xE7\x9A\x84\xE6\x8E\xA5\xE5\x8F\xA3\xE4\xBA\x8C\xE5\xAD\x97)
+         * [如何将这条原则应用到实战中？](#\xE5\xA6\x82\xE4\xBD\x95\xE5\xB0\x86\xE8\xBF\x99\xE6\x9D\xA1\xE5\x8E\x9F\xE5\x88\x99\xE5\xBA\x94\xE7\x94\xA8\xE5\x88\xB0\xE5\xAE\x9E\xE6\x88\x98\xE4\xB8\xAD)
+         * [是否需要为每个类定义接口？](#\xE6\x98\xAF\xE5\x90\xA6\xE9\x9C\x80\xE8\xA6\x81\xE4\xB8\xBA\xE6\xAF\x8F\xE4\xB8\xAA\xE7\xB1\xBB\xE5\xAE\x9A\xE4\xB9\x89\xE6\x8E\xA5\xE5\x8F\xA3)
+         * [总结](#\xE6\x80\xBB\xE7\xBB\x93-5)
+      * [10 | 理论七：为何说要多用组合少用继承？如何决定该用组合还是继承？](#10--\xE7\x90\x86\xE8\xAE\xBA\xE4\xB8\x83\xE4\xB8\xBA\xE4\xBD\x95\xE8\xAF\xB4\xE8\xA6\x81\xE5\xA4\x9A\xE7\x94\xA8\xE7\xBB\x84\xE5\x90\x88\xE5\xB0\x91\xE7\x94\xA8\xE7\xBB\xA7\xE6\x89\xBF\xE5\xA6\x82\xE4\xBD\x95\xE5\x86\xB3\xE5\xAE\x9A\xE8\xAF\xA5\xE7\x94\xA8\xE7\xBB\x84\xE5\x90\x88\xE8\xBF\x98\xE6\x98\xAF\xE7\xBB\xA7\xE6\x89\xBF)
+         * [为什么不推荐使用继承？](#\xE4\xB8\xBA\xE4\xBB\x80\xE4\xB9\x88\xE4\xB8\x8D\xE6\x8E\xA8\xE8\x8D\x90\xE4\xBD\xBF\xE7\x94\xA8\xE7\xBB\xA7\xE6\x89\xBF)
+      * [11. 实战一（上）：业务开发常用的基于贫血模型的MVC架构违背OOP吗？](#11-\xE5\xAE\x9E\xE6\x88\x98\xE4\xB8\x80\xE4\xB8\x8A\xE4\xB8\x9A\xE5\x8A\xA1\xE5\xBC\x80\xE5\x8F\x91\xE5\xB8\xB8\xE7\x94\xA8\xE7\x9A\x84\xE5\x9F\xBA\xE4\xBA\x8E\xE8\xB4\xAB\xE8\xA1\x80\xE6\xA8\xA1\xE5\x9E\x8B\xE7\x9A\x84mvc\xE6\x9E\xB6\xE6\x9E\x84\xE8\xBF\x9D\xE8\x83\x8Coop\xE5\x90\x97)
+      * [12 | 实战一（下）：如何利用基于充血模型的DDD开发一个虚拟钱包系统？](#12--\xE5\xAE\x9E\xE6\x88\x98\xE4\xB8\x80\xE4\xB8\x8B\xE5\xA6\x82\xE4\xBD\x95\xE5\x88\xA9\xE7\x94\xA8\xE5\x9F\xBA\xE4\xBA\x8E\xE5\x85\x85\xE8\xA1\x80\xE6\xA8\xA1\xE5\x9E\x8B\xE7\x9A\x84ddd\xE5\xBC\x80\xE5\x8F\x91\xE4\xB8\x80\xE4\xB8\xAA\xE8\x99\x9A\xE6\x8B\x9F\xE9\x92\xB1\xE5\x8C\x85\xE7\xB3\xBB\xE7\xBB\x9F)
+      * [13 | 实战二（上）：如何对接口鉴权这样一个功能开发做面向对象分析？](#13--\xE5\xAE\x9E\xE6\x88\x98\xE4\xBA\x8C\xE4\xB8\x8A\xE5\xA6\x82\xE4\xBD\x95\xE5\xAF\xB9\xE6\x8E\xA5\xE5\x8F\xA3\xE9\x89\xB4\xE6\x9D\x83\xE8\xBF\x99\xE6\xA0\xB7\xE4\xB8\x80\xE4\xB8\xAA\xE5\x8A\x9F\xE8\x83\xBD\xE5\xBC\x80\xE5\x8F\x91\xE5\x81\x9A\xE9\x9D\xA2\xE5\x90\x91\xE5\xAF\xB9\xE8\xB1\xA1\xE5\x88\x86\xE6\x9E\x90)
+      * [14 | 实战二（下）：如何利用面向对象设计和编程开发接口鉴权功能？](#14--\xE5\xAE\x9E\xE6\x88\x98\xE4\xBA\x8C\xE4\xB8\x8B\xE5\xA6\x82\xE4\xBD\x95\xE5\x88\xA9\xE7\x94\xA8\xE9\x9D\xA2\xE5\x90\x91\xE5\xAF\xB9\xE8\xB1\xA1\xE8\xAE\xBE\xE8\xAE\xA1\xE5\x92\x8C\xE7\xBC\x96\xE7\xA8\x8B\xE5\xBC\x80\xE5\x8F\x91\xE6\x8E\xA5\xE5\x8F\xA3\xE9\x89\xB4\xE6\x9D\x83\xE5\x8A\x9F\xE8\x83\xBD)
+   * [设计原则与思想：设计原则](#\xE8\xAE\xBE\xE8\xAE\xA1\xE5\x8E\x9F\xE5\x88\x99\xE4\xB8\x8E\xE6\x80\x9D\xE6\x83\xB3\xE8\xAE\xBE\xE8\xAE\xA1\xE5\x8E\x9F\xE5\x88\x99)
+      * [15 | 理论一：对于单一职责原则，如何判定某个类的职责是否够“单一”？](#15--\xE7\x90\x86\xE8\xAE\xBA\xE4\xB8\x80\xE5\xAF\xB9\xE4\xBA\x8E\xE5\x8D\x95\xE4\xB8\x80\xE8\x81\x8C\xE8\xB4\xA3\xE5\x8E\x9F\xE5\x88\x99\xE5\xA6\x82\xE4\xBD\x95\xE5\x88\xA4\xE5\xAE\x9A\xE6\x9F\x90\xE4\xB8\xAA\xE7\xB1\xBB\xE7\x9A\x84\xE8\x81\x8C\xE8\xB4\xA3\xE6\x98\xAF\xE5\x90\xA6\xE5\xA4\x9F\xE5\x8D\x95\xE4\xB8\x80)
+         * [如何理解单一职责原则（SRP）？](#\xE5\xA6\x82\xE4\xBD\x95\xE7\x90\x86\xE8\xA7\xA3\xE5\x8D\x95\xE4\xB8\x80\xE8\x81\x8C\xE8\xB4\xA3\xE5\x8E\x9F\xE5\x88\x99srp)
+         * [如何判断类的职责是否足够单一？](#\xE5\xA6\x82\xE4\xBD\x95\xE5\x88\xA4\xE6\x96\xAD\xE7\xB1\xBB\xE7\x9A\x84\xE8\x81\x8C\xE8\xB4\xA3\xE6\x98\xAF\xE5\x90\xA6\xE8\xB6\xB3\xE5\xA4\x9F\xE5\x8D\x95\xE4\xB8\x80)
+         * [类的职责是否设计得越单一越好？](#\xE7\xB1\xBB\xE7\x9A\x84\xE8\x81\x8C\xE8\xB4\xA3\xE6\x98\xAF\xE5\x90\xA6\xE8\xAE\xBE\xE8\xAE\xA1\xE5\xBE\x97\xE8\xB6\x8A\xE5\x8D\x95\xE4\xB8\x80\xE8\xB6\x8A\xE5\xA5\xBD)
+      * [16 | 理论二：如何做到“对扩展开放、修改关闭”？扩展和修改各指什么？](#16--\xE7\x90\x86\xE8\xAE\xBA\xE4\xBA\x8C\xE5\xA6\x82\xE4\xBD\x95\xE5\x81\x9A\xE5\x88\xB0\xE5\xAF\xB9\xE6\x89\xA9\xE5\xB1\x95\xE5\xBC\x80\xE6\x94\xBE\xE4\xBF\xAE\xE6\x94\xB9\xE5\x85\xB3\xE9\x97\xAD\xE6\x89\xA9\xE5\xB1\x95\xE5\x92\x8C\xE4\xBF\xAE\xE6\x94\xB9\xE5\x90\x84\xE6\x8C\x87\xE4\xBB\x80\xE4\xB9\x88)
+         * [如何理解“对扩展开放、修改关闭”？](#\xE5\xA6\x82\xE4\xBD\x95\xE7\x90\x86\xE8\xA7\xA3\xE5\xAF\xB9\xE6\x89\xA9\xE5\xB1\x95\xE5\xBC\x80\xE6\x94\xBE\xE4\xBF\xAE\xE6\x94\xB9\xE5\x85\xB3\xE9\x97\xAD)
+         * [修改代码就意味着违背开闭原则吗？](#\xE4\xBF\xAE\xE6\x94\xB9\xE4\xBB\xA3\xE7\xA0\x81\xE5\xB0\xB1\xE6\x84\x8F\xE5\x91\xB3\xE7\x9D\x80\xE8\xBF\x9D\xE8\x83\x8C\xE5\xBC\x80\xE9\x97\xAD\xE5\x8E\x9F\xE5\x88\x99\xE5\x90\x97)
+         * [如何做到“对扩展开放、修改关闭”？](#\xE5\xA6\x82\xE4\xBD\x95\xE5\x81\x9A\xE5\x88\xB0\xE5\xAF\xB9\xE6\x89\xA9\xE5\xB1\x95\xE5\xBC\x80\xE6\x94\xBE\xE4\xBF\xAE\xE6\x94\xB9\xE5\x85\xB3\xE9\x97\xAD)
+         * [如何在项目中灵活应用开闭原则？](#\xE5\xA6\x82\xE4\xBD\x95\xE5\x9C\xA8\xE9\xA1\xB9\xE7\x9B\xAE\xE4\xB8\xAD\xE7\x81\xB5\xE6\xB4\xBB\xE5\xBA\x94\xE7\x94\xA8\xE5\xBC\x80\xE9\x97\xAD\xE5\x8E\x9F\xE5\x88\x99)
+      * [17 | 理论三：里式替换（LSP）跟多态有何区别？哪些代码违背了LSP？](#17--\xE7\x90\x86\xE8\xAE\xBA\xE4\xB8\x89\xE9\x87\x8C\xE5\xBC\x8F\xE6\x9B\xBF\xE6\x8D\xA2lsp\xE8\xB7\x9F\xE5\xA4\x9A\xE6\x80\x81\xE6\x9C\x89\xE4\xBD\x95\xE5\x8C\xBA\xE5\x88\xAB\xE5\x93\xAA\xE4\xBA\x9B\xE4\xBB\xA3\xE7\xA0\x81\xE8\xBF\x9D\xE8\x83\x8C\xE4\xBA\x86lsp)
+         * [如何理解“里式替换原则”？](#\xE5\xA6\x82\xE4\xBD\x95\xE7\x90\x86\xE8\xA7\xA3\xE9\x87\x8C\xE5\xBC\x8F\xE6\x9B\xBF\xE6\x8D\xA2\xE5\x8E\x9F\xE5\x88\x99)
+         * [哪些代码明显违背了 LSP？](#\xE5\x93\xAA\xE4\xBA\x9B\xE4\xBB\xA3\xE7\xA0\x81\xE6\x98\x8E\xE6\x98\xBE\xE8\xBF\x9D\xE8\x83\x8C\xE4\xBA\x86-lsp)
+      * [18 | 理论四：接口隔离原则有哪三种应用？原则中的“接口”该如何理解？](#18--\xE7\x90\x86\xE8\xAE\xBA\xE5\x9B\x9B\xE6\x8E\xA5\xE5\x8F\xA3\xE9\x9A\x94\xE7\xA6\xBB\xE5\x8E\x9F\xE5\x88\x99\xE6\x9C\x89\xE5\x93\xAA\xE4\xB8\x89\xE7\xA7\x8D\xE5\xBA\x94\xE7\x94\xA8\xE5\x8E\x9F\xE5\x88\x99\xE4\xB8\xAD\xE7\x9A\x84\xE6\x8E\xA5\xE5\x8F\xA3\xE8\xAF\xA5\xE5\xA6\x82\xE4\xBD\x95\xE7\x90\x86\xE8\xA7\xA3)
+         * [如何理解“接口隔离原则”？](#\xE5\xA6\x82\xE4\xBD\x95\xE7\x90\x86\xE8\xA7\xA3\xE6\x8E\xA5\xE5\x8F\xA3\xE9\x9A\x94\xE7\xA6\xBB\xE5\x8E\x9F\xE5\x88\x99)
+         * [把“接口”理解为一组 API 接口集合](#\xE6\x8A\x8A\xE6\x8E\xA5\xE5\x8F\xA3\xE7\x90\x86\xE8\xA7\xA3\xE4\xB8\xBA\xE4\xB8\x80\xE7\xBB\x84-api-\xE6\x8E\xA5\xE5\x8F\xA3\xE9\x9B\x86\xE5\x90\x88)
+         * [把“接口”理解为单个 API 接口或函数](#\xE6\x8A\x8A\xE6\x8E\xA5\xE5\x8F\xA3\xE7\x90\x86\xE8\xA7\xA3\xE4\xB8\xBA\xE5\x8D\x95\xE4\xB8\xAA-api-\xE6\x8E\xA5\xE5\x8F\xA3\xE6\x88\x96\xE5\x87\xBD\xE6\x95\xB0)
+         * [把“接口”理解为 OOP 中的接口概念](#\xE6\x8A\x8A\xE6\x8E\xA5\xE5\x8F\xA3\xE7\x90\x86\xE8\xA7\xA3\xE4\xB8\xBA-oop-\xE4\xB8\xAD\xE7\x9A\x84\xE6\x8E\xA5\xE5\x8F\xA3\xE6\xA6\x82\xE5\xBF\xB5)
+      * [19 | 理论五：控制反转、依赖反转、依赖注入，这三者有何区别和联系？](#19--\xE7\x90\x86\xE8\xAE\xBA\xE4\xBA\x94\xE6\x8E\xA7\xE5\x88\xB6\xE5\x8F\x8D\xE8\xBD\xAC\xE4\xBE\x9D\xE8\xB5\x96\xE5\x8F\x8D\xE8\xBD\xAC\xE4\xBE\x9D\xE8\xB5\x96\xE6\xB3\xA8\xE5\x85\xA5\xE8\xBF\x99\xE4\xB8\x89\xE8\x80\x85\xE6\x9C\x89\xE4\xBD\x95\xE5\x8C\xBA\xE5\x88\xAB\xE5\x92\x8C\xE8\x81\x94\xE7\xB3\xBB)
+         * [控制反转（IOC）](#\xE6\x8E\xA7\xE5\x88\xB6\xE5\x8F\x8D\xE8\xBD\xACioc)
+         * [依赖注入（DI）](#\xE4\xBE\x9D\xE8\xB5\x96\xE6\xB3\xA8\xE5\x85\xA5di)
+         * [依赖注入框架（DI Framework）](#\xE4\xBE\x9D\xE8\xB5\x96\xE6\xB3\xA8\xE5\x85\xA5\xE6\xA1\x86\xE6\x9E\xB6di-framework)
+         * [依赖反转原则（DIP）](#\xE4\xBE\x9D\xE8\xB5\x96\xE5\x8F\x8D\xE8\xBD\xAC\xE5\x8E\x9F\xE5\x88\x99dip)
+      * [20 | 理论六：我为何说KISS、YAGNI原则看似简单，却经常被用错？](#20--\xE7\x90\x86\xE8\xAE\xBA\xE5\x85\xAD\xE6\x88\x91\xE4\xB8\xBA\xE4\xBD\x95\xE8\xAF\xB4kissyagni\xE5\x8E\x9F\xE5\x88\x99\xE7\x9C\x8B\xE4\xBC\xBC\xE7\xAE\x80\xE5\x8D\x95\xE5\x8D\xB4\xE7\xBB\x8F\xE5\xB8\xB8\xE8\xA2\xAB\xE7\x94\xA8\xE9\x94\x99)
+         * [如何理解“KISS 原则”？](#\xE5\xA6\x82\xE4\xBD\x95\xE7\x90\x86\xE8\xA7\xA3kiss-\xE5\x8E\x9F\xE5\x88\x99)
+   * [设计模式与范式：创建型 (7讲)](#\xE8\xAE\xBE\xE8\xAE\xA1\xE6\xA8\xA1\xE5\xBC\x8F\xE4\xB8\x8E\xE8\x8C\x83\xE5\xBC\x8F\xE5\x88\x9B\xE5\xBB\xBA\xE5\x9E\x8B-7\xE8\xAE\xB2)
+      * [41 | 单例模式（上）：为什么说支持懒加载的双重检测不比饿汉式更优？](#41--\xE5\x8D\x95\xE4\xBE\x8B\xE6\xA8\xA1\xE5\xBC\x8F\xE4\xB8\x8A\xE4\xB8\xBA\xE4\xBB\x80\xE4\xB9\x88\xE8\xAF\xB4\xE6\x94\xAF\xE6\x8C\x81\xE6\x87\x92\xE5\x8A\xA0\xE8\xBD\xBD\xE7\x9A\x84\xE5\x8F\x8C\xE9\x87\x8D\xE6\xA3\x80\xE6\xB5\x8B\xE4\xB8\x8D\xE6\xAF\x94\xE9\xA5\xBF\xE6\xB1\x89\xE5\xBC\x8F\xE6\x9B\xB4\xE4\xBC\x98)
+         * [为什么要使用单例？](#\xE4\xB8\xBA\xE4\xBB\x80\xE4\xB9\x88\xE8\xA6\x81\xE4\xBD\xBF\xE7\x94\xA8\xE5\x8D\x95\xE4\xBE\x8B)
+         * [如何实现一个单例？](#\xE5\xA6\x82\xE4\xBD\x95\xE5\xAE\x9E\xE7\x8E\xB0\xE4\xB8\x80\xE4\xB8\xAA\xE5\x8D\x95\xE4\xBE\x8B)
+      * [42 | 单例模式（中）：我为什么不推荐使用单例模式？又有何替代方案？](#42--\xE5\x8D\x95\xE4\xBE\x8B\xE6\xA8\xA1\xE5\xBC\x8F\xE4\xB8\xAD\xE6\x88\x91\xE4\xB8\xBA\xE4\xBB\x80\xE4\xB9\x88\xE4\xB8\x8D\xE6\x8E\xA8\xE8\x8D\x90\xE4\xBD\xBF\xE7\x94\xA8\xE5\x8D\x95\xE4\xBE\x8B\xE6\xA8\xA1\xE5\xBC\x8F\xE5\x8F\x88\xE6\x9C\x89\xE4\xBD\x95\xE6\x9B\xBF\xE4\xBB\xA3\xE6\x96\xB9\xE6\xA1\x88)
+         * [单例存在哪些问题?](#\xE5\x8D\x95\xE4\xBE\x8B\xE5\xAD\x98\xE5\x9C\xA8\xE5\x93\xAA\xE4\xBA\x9B\xE9\x97\xAE\xE9\xA2\x98)
+         * [有何替代解决方案？](#\xE6\x9C\x89\xE4\xBD\x95\xE6\x9B\xBF\xE4\xBB\xA3\xE8\xA7\xA3\xE5\x86\xB3\xE6\x96\xB9\xE6\xA1\x88)
+      * [43 | 单例模式（下）：如何设计实现一个集群环境下的分布式单例模式？](#43--\xE5\x8D\x95\xE4\xBE\x8B\xE6\xA8\xA1\xE5\xBC\x8F\xE4\xB8\x8B\xE5\xA6\x82\xE4\xBD\x95\xE8\xAE\xBE\xE8\xAE\xA1\xE5\xAE\x9E\xE7\x8E\xB0\xE4\xB8\x80\xE4\xB8\xAA\xE9\x9B\x86\xE7\xBE\xA4\xE7\x8E\xAF\xE5\xA2\x83\xE4\xB8\x8B\xE7\x9A\x84\xE5\x88\x86\xE5\xB8\x83\xE5\xBC\x8F\xE5\x8D\x95\xE4\xBE\x8B\xE6\xA8\xA1\xE5\xBC\x8F)
+         * [如何理解单例模式中的唯一性？](#\xE5\xA6\x82\xE4\xBD\x95\xE7\x90\x86\xE8\xA7\xA3\xE5\x8D\x95\xE4\xBE\x8B\xE6\xA8\xA1\xE5\xBC\x8F\xE4\xB8\xAD\xE7\x9A\x84\xE5\x94\xAF\xE4\xB8\x80\xE6\x80\xA7)
+         * [如何实现线程唯一的单例？](#\xE5\xA6\x82\xE4\xBD\x95\xE5\xAE\x9E\xE7\x8E\xB0\xE7\xBA\xBF\xE7\xA8\x8B\xE5\x94\xAF\xE4\xB8\x80\xE7\x9A\x84\xE5\x8D\x95\xE4\xBE\x8B)
+         * [如何实现集群环境下的单例？](#\xE5\xA6\x82\xE4\xBD\x95\xE5\xAE\x9E\xE7\x8E\xB0\xE9\x9B\x86\xE7\xBE\xA4\xE7\x8E\xAF\xE5\xA2\x83\xE4\xB8\x8B\xE7\x9A\x84\xE5\x8D\x95\xE4\xBE\x8B)
+         * [如何实现一个多例模式？](#\xE5\xA6\x82\xE4\xBD\x95\xE5\xAE\x9E\xE7\x8E\xB0\xE4\xB8\x80\xE4\xB8\xAA\xE5\xA4\x9A\xE4\xBE\x8B\xE6\xA8\xA1\xE5\xBC\x8F)
+      * [44 | 工厂模式（上）：我为什么说没事不要随便用工厂模式创建对象？](#44--\xE5\xB7\xA5\xE5\x8E\x82\xE6\xA8\xA1\xE5\xBC\x8F\xE4\xB8\x8A\xE6\x88\x91\xE4\xB8\xBA\xE4\xBB\x80\xE4\xB9\x88\xE8\xAF\xB4\xE6\xB2\xA1\xE4\xBA\x8B\xE4\xB8\x8D\xE8\xA6\x81\xE9\x9A\x8F\xE4\xBE\xBF\xE7\x94\xA8\xE5\xB7\xA5\xE5\x8E\x82\xE6\xA8\xA1\xE5\xBC\x8F\xE5\x88\x9B\xE5\xBB\xBA\xE5\xAF\xB9\xE8\xB1\xA1)
+         * [简单工厂（Simple Factory）](#\xE7\xAE\x80\xE5\x8D\x95\xE5\xB7\xA5\xE5\x8E\x82simple-factory)
+         * [工厂方法（Factory Method）](#\xE5\xB7\xA5\xE5\x8E\x82\xE6\x96\xB9\xE6\xB3\x95factory-method)
+         * [抽象工厂（Abstract Factory）](#\xE6\x8A\xBD\xE8\xB1\xA1\xE5\xB7\xA5\xE5\x8E\x82abstract-factory)
+      * [45 | 工厂模式（下）：如何设计实现一个Dependency Injection框架？](#45--\xE5\xB7\xA5\xE5\x8E\x82\xE6\xA8\xA1\xE5\xBC\x8F\xE4\xB8\x8B\xE5\xA6\x82\xE4\xBD\x95\xE8\xAE\xBE\xE8\xAE\xA1\xE5\xAE\x9E\xE7\x8E\xB0\xE4\xB8\x80\xE4\xB8\xAAdependency-injection\xE6\xA1\x86\xE6\x9E\xB6)
+         * [工厂模式和 DI 容器有何区别？](#\xE5\xB7\xA5\xE5\x8E\x82\xE6\xA8\xA1\xE5\xBC\x8F\xE5\x92\x8C-di-\xE5\xAE\xB9\xE5\x99\xA8\xE6\x9C\x89\xE4\xBD\x95\xE5\x8C\xBA\xE5\x88\xAB)
+         * [DI 容器的核心功能有哪些？](#di-\xE5\xAE\xB9\xE5\x99\xA8\xE7\x9A\x84\xE6\xA0\xB8\xE5\xBF\x83\xE5\x8A\x9F\xE8\x83\xBD\xE6\x9C\x89\xE5\x93\xAA\xE4\xBA\x9B)
+   * [开源与项目实战：开源实战 (14讲)](#\xE5\xBC\x80\xE6\xBA\x90\xE4\xB8\x8E\xE9\xA1\xB9\xE7\x9B\xAE\xE5\xAE\x9E\xE6\x88\x98\xE5\xBC\x80\xE6\xBA\x90\xE5\xAE\x9E\xE6\x88\x98-14\xE8\xAE\xB2)
+      * [76 | 开源实战一（上）：通过剖析Java JDK源码学习灵活应用设计模式](#76--\xE5\xBC\x80\xE6\xBA\x90\xE5\xAE\x9E\xE6\x88\x98\xE4\xB8\x80\xE4\xB8\x8A\xE9\x80\x9A\xE8\xBF\x87\xE5\x89\x96\xE6\x9E\x90java-jdk\xE6\xBA\x90\xE7\xA0\x81\xE5\xAD\xA6\xE4\xB9\xA0\xE7\x81\xB5\xE6\xB4\xBB\xE5\xBA\x94\xE7\x94\xA8\xE8\xAE\xBE\xE8\xAE\xA1\xE6\xA8\xA1\xE5\xBC\x8F)
+         * [工厂模式在 Calendar 类中的应用](#\xE5\xB7\xA5\xE5\x8E\x82\xE6\xA8\xA1\xE5\xBC\x8F\xE5\x9C\xA8-calendar-\xE7\xB1\xBB\xE4\xB8\xAD\xE7\x9A\x84\xE5\xBA\x94\xE7\x94\xA8)
 
-<!-- Added by: haojunsheng, at: 2020年11月28日 星期六 18时07分29秒 CST -->
+<!-- Added by: haojunsheng, at: 2020年12月15日 星期二 17时21分11秒 CST -->
 
 <!--te-->
 
@@ -450,52 +483,708 @@ def demo():
 
 ## 06 | 理论三：面向对象相比面向过程有哪些优势？面向过程真的过时了吗？
 
+在上两节课中，我们讲了面向对象这种现在非常流行的编程范式，或者说编程风格。实际上，除了面向对象之外，被大家熟知的编程范式还有另外两种，面向过程编程和函数式编程。面向过程这种编程范式随着面向对象的出现，已经慢慢退出了舞台，而函数式编程目前还没有被广泛接受。
 
+在专栏中，我不会对函数式编程做讲解，但我会花两节课的时间，讲一下面向过程这种编程范式。你可能会问，既然面向对象已经成为主流的编程范式，而面向过程已经不那么推荐使用，那为什么又要浪费时间讲它呢？
 
-## 07 | 理论四：哪些代码设计看似是面向对象，实际是面向过程的？
+那是因为在过往的工作中，我发现很多人搞不清楚面向对象和面向过程的区别，总以为使用面向对象编程语言来做开发，就是在进行面向对象编程了。而实际上，他们只是在用面向对象编程语言，编写面向过程风格的代码而已，并没有发挥面向对象编程的优势。这就相当于手握一把屠龙刀，却只是把它当作一把普通的刀剑来用，相当可惜。
 
-三种违反面向对象编程风格的典型代码设计：
+### 什么是面向过程编程与面向过程编程语言？
 
-- 滥用 getter、setter 方法
+如果你是一名比较资深的程序员，最开始学习编程的时候，接触的是 Basic、Pascal、C 等面向过程的编程语言，那你对这两个概念肯定不陌生。但如果你是新生代的程序员，一开始学编程的时候，接触的就是面向对象编程语言，那你对这两个概念可能会比较不熟悉。所以，在对比面向对象与面向过程优劣之前，我们先把面向过程编程和面向过程编程语言这两个概念搞清楚。
 
-在设计实现类的时候，除非真的需要，否则尽量不要给属性定义 setter 方法。除此之外，尽管 getter 方法相对 setter 方法要安全些，但是如果返回的是集合容器，那也要防范集合内部数据被修改的风险。原因是可能会破坏封装的特性。
+实际上，我们可以对比着面向对象编程和面向对象编程语言这两个概念，来理解面向过程编程和面向过程编程语言。还记得我们之前是如何定义面向对象编程和面向对象编程语言的吗？让我们一块再来回顾一下。
 
-- Constants 类、Utils 类的设计问题
+- 面向对象编程是一种编程范式或编程风格。它以类或对象作为组织代码的基本单元，并将封装、抽象、继承、多态四个特性，作为代码设计和实现的基石 。
+- 面向对象编程语言是支持类或对象的语法机制，并有现成的语法机制，能方便地实现面向对象编程四大特性（封装、抽象、继承、多态）的编程语言。
 
-> Utils 类的出现是基于这样一个问题背景：如果我们有两个类 A 和 B，它们要用到一块相同的功能逻辑，为了避免代码重复，我们不应该在两个类中，将这个相同的功能逻辑，重复地实现两遍。但是A和B又没有继承的关系，所以就可以把它定义为只包含静态方法的 Utils 类了。
+类比面向对象编程与面向对象编程语言的定义，对于面向过程编程和面向过程编程语言这两个概念，我给出下面这样的定义。
 
-对于这两种类的设计，我们尽量能做到职责单一，定义一些细化的小类，比如 RedisConstants、FileUtils，而不是定义一个大而全的 Constants 类、Utils 类。除此之外，如果能将这些类中的属性和方法，划分归并到其他业务类中，那是最好不过的了，能极大地提高类的内聚性和代码的可复用性。
+- 面向过程编程也是一种编程范式或编程风格。它以过程（可以理解为方法、函数、操作）作为组织代码的基本单元，以数据（可以理解为成员变量、属性）与方法相分离为最主要的特点。面向过程风格是一种流程化的编程风格，通过拼接一组顺序执行的方法来操作数据完成一项功能。
+- 面向过程编程语言首先是一种编程语言。它最大的特点是不支持类和对象两个语法概念，不支持丰富的面向对象编程特性（比如继承、多态、封装），仅支持面向过程编程。
 
-- 基于贫血模型的开发模式
+不过，这里我必须声明一下，就像我们在之前讲到的，面向对象编程和面向对象编程语言并没有官方的定义一样，这里我给出的面向过程编程和面向过程编程语言的定义，也并不是严格的官方定义。之所以要给出这样的定义，只是为了跟面向对象编程及面向对象编程语言做个对比，以方便你理解它们的区别。
 
-为什么这种开发模式是彻彻底底的面向过程编程风格的。这是因为数据和操作是分开定义在 VO/BO/Entity 和 Controler/Service/Repository 中的。
+定义不是很严格，也比较抽象，所以，我再用一个例子进一步解释一下。假设我们有一个记录了用户信息的文本文件 users.txt，每行文本的格式是 name&age&gender（比如，小王 &28& 男）。我们希望写一个程序，从 users.txt 文件中逐行读取用户信息，然后格式化成 name\tage\tgender（其中，\t 是分隔符）这种文本格式，并且按照 age 从小到大排序之后，重新写入到另一个文本文件 formatted_users.txt 中。针对这样一个小程序的开发，我们一块来看看，用面向过程和面向对象两种编程风格，编写出来的代码有什么不同。
 
-传统的 MVC 结构分为 Model 层、Controller 层、View 层这三层。不过，在做前后端分离之后，三层结构在后端开发中，会稍微有些调整，被分为 Controller 层、Service 层、Repository 层。Controller 层负责暴露接口给前端调用，Service 层负责核心业务逻辑，Repository 层负责数据读写。而在每一层中，我们又会定义相应的 VO（View Object）、BO（Business Object）、Entity。一般情况下，VO、BO、Entity 中只会定义数据，不会定义方法，所有操作这些数据的业务逻辑都定义在对应的 Controller 类、Service 类、Repository 类中。这就是典型的面向过程的编程风格，这种开发模式叫作基于贫血模型的开发模式。
+首先，我们先来看，用面向过程这种编程风格写出来的代码是什么样子的。注意，下面的代码是用 C 语言这种面向过程的编程语言来编写的。
 
-## 08 | 理论五：接口vs抽象类的区别？如何用普通的类模拟抽象类和接口？
+```c
+struct User {
+  char name[64];
+  int age;
+  char gender[16];
+};
 
-1、定义：
-抽象类：不允许实例化，只能被继承；可包含属性和方法，包含抽象方法；子类继承抽象类必须重写抽象方法。
-接口：不允许实例化，只能被实现；不包含属性和普通方法，包含抽象方法、静态方法、default 方法；类实现接口时，必须实现抽象方法。
-2、意义：
-抽象类：解决复用问题，适用于is-a的关系。从下至上，发现重复代码，进而进行抽象。
-接口：解决抽象问题，适用于has-a的关系。从上至下，先设计接口，在考虑实现。
-3、应用：
-解决复用问题：java中的子类FileInputStream和PipeInputStream等继承抽象类InputStream。重写了read(source)方法，InputStream 中还包含其他方法，FileInputStream继承抽象类复用了父类的其他方法。
-解决抽象问题：抽象类InputStream实现了Closeable接口，该接口中包含close()抽象方法。Closeable这个接口还在很多其他类中实现了，例如Channel，Socket中都有close() 关闭这个功能，但具体实现每个类又各有不同的实现，这个就是抽象。
+struct User parse_to_user(char* text) {
+  // 将text(“小王&28&男”)解析成结构体struct User
+}
 
-## 09 | 理论六：为什么基于接口而非实现编程？有必要为每个类都定义接口吗？
+char* format_to_text(struct User user) {
+  // 将结构体struct User格式化成文本（"小王\t28\t男"）
+}
 
-> Program to an interface, not an implementation.
+void sort_users_by_age(struct User users[]) {
+  // 按照年龄从小到大排序users
+}
 
-> 我们在定义接口的时候，一方面，命名要足够通用，不能包含跟具体实现相关的字眼；另一方面，与特定实现有关的方法不要定义在接口中。
+void format_user_file(char* origin_file_path, char* new_file_path) {
+  // open files...
+  struct User users[1024]; // 假设最大1024个用户
+  int count = 0;
+  while(1) { // read until the file is empty
+    struct User user = parse_to_user(line);
+    users[count++] = user;
+  }
+  
+  sort_users_by_age(users);
+  
+  for (int i = 0; i < count; ++i) {
+    char* formatted_user_text = format_to_text(users[i]);
+    // write to new file...
+  }
+  // close files...
+}
 
-这里的接口是指抽象的意思。
+int main(char** args, int argv) {
+  format_user_file("/home/zheng/user.txt", "/home/zheng/formatted_users.txt");
+}
+```
 
-来看个例子。实现了把图片上传到阿里云的逻辑。整个上传流程包含三个步骤：创建 bucket（你可以简单理解为存储目录）、生成 access token 访问凭证、携带 access token 上传图片到指定的 bucket 中。
+然后，我们再来看，用面向对象这种编程风格写出来的代码是什么样子的。注意，下面的代码是用 Java 这种面向对象的编程语言来编写的。
 
 ```java
 
+ public class User {
+  private String name;
+  private int age;
+  private String gender;
+  
+  public User(String name, int age, String gender) {
+    this.name = name;
+    this.age = age;
+    this.gender = gender;
+  }
+  
+  public static User praseFrom(String userInfoText) {
+    // 将text(“小王&28&男”)解析成类User
+  }
+  
+  public String formatToText() {
+    // 将类User格式化成文本（"小王\t28\t男"）
+  }
+}
+
+public class UserFileFormatter {
+  public void format(String userFile, String formattedUserFile) {
+    // Open files...
+    List users = new ArrayList<>();
+    while (1) { // read until file is empty 
+      // read from file into userText...
+      User user = User.parseFrom(userText);
+      users.add(user);
+    }
+    // sort users by age...
+    for (int i = 0; i < users.size(); ++i) {
+      String formattedUserText = user.formatToText();
+      // write to new file...
+    }
+    // close files...
+  }
+}
+
+public class MainApplication {
+  public static void main(String[] args) {
+    UserFileFormatter userFileFormatter = new UserFileFormatter();
+    userFileFormatter.format("/home/zheng/users.txt", "/home/zheng/formatted_users.txt");
+  }
+}
+```
+
+从上面的代码中，我们可以看出，面向过程和面向对象最基本的区别就是，代码的组织方式不同。面向过程风格的代码被组织成了一组方法集合及其数据结构（struct User），方法和数据结构的定义是分开的。面向对象风格的代码被组织成一组类，方法和数据结构被绑定一起，定义在类中。
+
+看完这个例子之后，你可能会说，面向对象编程和面向过程编程，两种风格的区别就这么一点吗？当然不是，对于这两种编程风格的更多区别，我们继续往下看。
+
+### 面向对象编程相比面向过程编程有哪些优势？
+
+刚刚我们介绍了面向过程编程及面向过程编程语言的定义，并跟面向对象编程及面向对象编程语言做了一个简单对比。接下来，我们再来看一下，为什么面向对象编程晚于面向过程编程出现，却能取而代之，成为现在主流的编程范式？面向对象编程跟面向过程编程比起来，到底有哪些优势？
+
+1. OOP 更加能够应对大规模复杂程序的开发
+
+看了刚刚举的那个格式化文本文件的例子，你可能会有这样的疑问，两种编程风格实现的代码貌似差不多啊，顶多就是代码的组织方式有点区别，没有感觉到面向对象编程有什么明显的优势呀！你的感觉没错。之所以有这种感觉，主要原因是这个例子程序比较简单、不够复杂。
+
+对于简单程序的开发来说，不管是用面向过程编程风格，还是用面向对象编程风格，差别确实不会很大，甚至有的时候，面向过程的编程风格反倒更有优势。因为需求足够简单，整个程序的处理流程只有一条主线，很容易被划分成顺序执行的几个步骤，然后逐句翻译成代码，这就非常适合采用面向过程这种面条式的编程风格来实现。
+
+但对于大规模复杂程序的开发来说，整个程序的处理流程错综复杂，并非只有一条主线。如果把整个程序的处理流程画出来的话，会是一个网状结构。如果我们再用面向过程编程这种流程化、线性的思维方式，去翻译这个网状结构，去思考如何把程序拆解为一组顺序执行的方法，就会比较吃力。这个时候，面向对象的编程风格的优势就比较明显了。
+
+面向对象编程是以类为思考对象。在进行面向对象编程的时候，我们并不是一上来就去思考，如何将复杂的流程拆解为一个一个方法，而是采用曲线救国的策略，先去思考如何给业务建模，如何将需求翻译为类，如何给类之间建立交互关系，而完成这些工作完全不需要考虑错综复杂的处理流程。当我们有了类的设计之后，然后再像搭积木一样，按照处理流程，将类组装起来形成整个程序。这种开发模式、思考问题的方式，能让我们在应对复杂程序开发的时候，思路更加清晰。
+
+除此之外，面向对象编程还提供了一种更加清晰的、更加模块化的代码组织方式。比如，我们开发一个电商交易系统，业务逻辑复杂，代码量很大，可能要定义数百个函数、数百个数据结构，那如何分门别类地组织这些函数和数据结构，才能不至于看起来比较凌乱呢？类就是一种非常好的组织这些函数和数据结构的方式，是一种将代码模块化的有效手段。
+
+你可能会说，像 C 语言这种面向过程的编程语言，我们也可以按照功能的不同，把函数和数据结构放到不同的文件里，以达到给函数和数据结构分类的目的，照样可以实现代码的模块化。你说得没错。只不过面向对象编程本身提供了类的概念，强制你做这件事情，而面向过程编程并不强求。这也算是面向对象编程相对于面向过程编程的一个微创新吧。
+
+实际上，利用面向过程的编程语言照样可以写出面向对象风格的代码，只不过可能会比用面向对象编程语言来写面向对象风格的代码，付出的代价要高一些。而且，面向过程编程和面向对象编程并非完全对立的。很多软件开发中，尽管利用的是面向过程的编程语言，也都有借鉴面向对象编程的一些优点。
+
+2. OOP 风格的代码更易复用、易扩展、易维护
+
+在刚刚的那个例子中，因为代码比较简单，所以只用到到了类、对象这两个最基本的面向对象概念，并没有用到更加高级的四大特性，封装、抽象、继承、多态。因此，面向对象编程的优势其实并没有发挥出来。
+
+面向过程编程是一种非常简单的编程风格，并没有像面向对象编程那样提供丰富的特性。而面向对象编程提供的封装、抽象、继承、多态这些特性，能极大地满足复杂的编程需求，能方便我们写出更易复用、易扩展、易维护的代码。为什么这么说呢？还记得我们在上一节课中讲到的封装、抽象、继承、多态存在的意义吗？我们再来简单回顾一下。
+
+首先，我们先来看下封装特性。封装特性是面向对象编程相比于面向过程编程的一个最基本的区别，因为它基于的是面向对象编程中最基本的类的概念。面向对象编程通过类这种组织代码的方式，将数据和方法绑定在一起，通过访问权限控制，只允许外部调用者通过类暴露的有限方法访问数据，而不会像面向过程编程那样，数据可以被任意方法随意修改。因此，面向对象编程提供的封装特性更有利于提高代码的易维护性。
+
+其次，我们再来看下抽象特性。我们知道，函数本身就是一种抽象，它隐藏了具体的实现。我们在使用函数的时候，只需要了解函数具有什么功能，而不需要了解它是怎么实现的。从这一点上，不管面向过程编程还是是面向对象编程，都支持抽象特性。不过，面向对象编程还提供了其他抽象特性的实现方式。这些实现方式是面向过程编程所不具备的，比如基于接口实现的抽象。基于接口的抽象，可以让我们在不改变原有实现的情况下，轻松替换新的实现逻辑，提高了代码的可扩展性。
+
+再次，我们来看下继承特性。继承特性是面向对象编程相比于面向过程编程所特有的两个特性之一（另一个是多态）。如果两个类有一些相同的属性和方法，我们就可以将这些相同的代码，抽取到父类中，让两个子类继承父类。这样两个子类也就可以重用父类中的代码，避免了代码重复写多遍，提高了代码的复用性。
+
+最后，我们来看下多态特性。基于这个特性，我们在需要修改一个功能实现的时候，可以通过实现一个新的子类的方式，在子类中重写原来的功能逻辑，用子类替换父类。在实际的代码运行过程中，调用子类新的功能逻辑，而不是在原有代码上做修改。这就遵从了“对修改关闭、对扩展开放”的设计原则，提高代码的扩展性。除此之外，利用多态特性，不同的类对象可以传递给相同的方法，执行不同的代码逻辑，提高了代码的复用性。
+
+所以说，基于这四大特性，利用面向对象编程，我们可以更轻松地写出易复用、易扩展、易维护的代码。当然，我们不能说，利用面向过程风格就不可以写出易复用、易扩展、易维护的代码，但没有四大特性的帮助，付出的代价可能就要高一些。
+
+3. OOP 语言更加人性化、更加高级、更加智能
+
+人类最开始跟机器打交道是通过 0、1 这样的二进制指令，然后是汇编语言，再之后才出现了高级编程语言。在高级编程语言中，面向过程编程语言又早于面向对象编程语言出现。之所以先出现面向过程编程语言，那是因为跟机器交互的方式，从二进制指令、汇编语言到面向过程编程语言，是一个非常自然的过渡，都是一种流程化的、面条式的编程风格，用一组指令顺序操作数据，来完成一项任务。
+
+从指令到汇编再到面向过程编程语言，跟机器打交道的方式在不停地演进，从中我们很容易发现这样一条规律，那就是编程语言越来越人性化，让人跟机器打交道越来越容易。笼统点讲，就是编程语言越来越高级。实际上，在面向过程编程语言之后，面向对象编程语言的出现，也顺应了这样的发展规律，也就是说，面向对象编程语言比面向过程编程语言更加高级！
+
+跟二进制指令、汇编语言、面向过程编程语言相比，面向对象编程语言的编程套路、思考问题的方式，是完全不一样的。前三者是一种计算机思维方式，而面向对象是一种人类的思维方式。我们在用前面三种语言编程的时候，我们是在思考，如何设计一组指令，告诉机器去执行这组指令，操作某些数据，帮我们完成某个任务。而在进行面向对象编程时候，我们是在思考，如何给业务建模，如何将真实的世界映射为类或者对象，这让我们更加能聚焦到业务本身，而不是思考如何跟机器打交道。可以这么说，越高级的编程语言离机器越“远”，离我们人类越“近”，越“智能”。
+
+### 总结
+
+1. 什么是面向过程编程？什么是面向过程编程语言？
+
+实际上，面向过程编程和面向过程编程语言并没有严格的官方定义。理解这两个概念最好的方式是跟面向对象编程和面向对象编程语言进行对比。相较于面向对象编程以类为组织代码的基本单元，面向过程编程则是以过程（或方法）作为组织代码的基本单元。它最主要的特点就是数据和方法相分离。相较于面向对象编程语言，面向过程编程语言最大的特点就是不支持丰富的面向对象编程特性，比如继承、多态、封装。
+
+2. 面向对象编程相比面向过程编程有哪些优势？
+
+面向对象编程相比起面向过程编程的优势主要有三个。
+
+- 对于大规模复杂程序的开发，程序的处理流程并非单一的一条主线，而是错综复杂的网状结构。面向对象编程比起面向过程编程，更能应对这种复杂类型的程序开发。
+- 面向对象编程相比面向过程编程，具有更加丰富的特性（封装、抽象、继承、多态）。利用这些特性编写出来的代码，更加易扩展、易复用、易维护。
+- 从编程语言跟机器打交道的方式的演进规律中，我们可以总结出：面向对象编程语言比起面向过程编程语言，更加人性化、更加高级、更加智能。
+
+## 07 | 理论四：哪些代码设计看似是面向对象，实际是面向过程的？
+
+### 哪些代码设计看似是面向对象，实际是面向过程的？
+
+三种违反面向对象编程风格的典型代码设计：
+
+1. 滥用 getter、setter 方法
+
+在之前参与的项目开发中，我经常看到，有同事定义完类的属性之后，就顺手把这些属性的 getter、setter 方法都定义上。有些同事更加省事，直接用 IDE 或者 Lombok 插件（如果是 Java 项目的话）自动生成所有属性的 getter、setter 方法。
+
+当我问起，为什么要给每个属性都定义 getter、setter 方法的时候，他们的理由一般是，为了以后可能会用到，现在事先定义好，类用起来就更加方便，而且即便用不到这些 getter、setter 方法，定义上它们也无伤大雅。
+
+实际上，这样的做法我是非常不推荐的。它违反了面向对象编程的封装特性，相当于将面向对象编程风格退化成了面向过程编程风格。我通过下面这个例子来给你解释一下这句话。
+
+```java
+public class ShoppingCart {
+  private int itemsCount;
+  private double totalPrice;
+  private List<ShoppingCartItem> items = new ArrayList<>();
+  
+  public int getItemsCount() {
+    return this.itemsCount;
+  }
+  
+  public void setItemsCount(int itemsCount) {
+    this.itemsCount = itemsCount;
+  }
+  
+  public double getTotalPrice() {
+    return this.totalPrice;
+  }
+  
+  public void setTotalPrice(double totalPrice) {
+    this.totalPrice = totalPrice;
+  }
+
+  public List<ShoppingCartItem> getItems() {
+    return this.items;
+  }
+  
+  public void addItem(ShoppingCartItem item) {
+    items.add(item);
+    itemsCount++;
+    totalPrice += item.getPrice();
+  }
+  // ...省略其他方法...
+}
+```
+
+在这段代码中，ShoppingCart 是一个简化后的购物车类，有三个私有（private）属性：itemsCount、totalPrice、items。对于 itemsCount、totalPrice 两个属性，我们定义了它们的 getter、setter 方法。对于 items 属性，我们定义了它的 getter 方法和 addItem() 方法。代码很简单，理解起来不难。那你有没有发现，这段代码有什么问题呢？
+
+我们先来看前两个属性，itemsCount 和 totalPrice。虽然我们将它们定义成 private 私有属性，但是提供了 public 的 getter、setter 方法，这就跟将这两个属性定义为 public 公有属性，没有什么两样了。外部可以通过 setter 方法随意地修改这两个属性的值。除此之外，任何代码都可以随意调用 setter 方法，来重新设置 itemsCount、totalPrice 属性的值，这也会导致其跟 items 属性的值不一致。
+
+而面向对象封装的定义是：通过访问权限控制，隐藏内部数据，外部仅能通过类提供的有限的接口访问、修改内部数据。所以，暴露不应该暴露的 setter 方法，明显违反了面向对象的封装特性。数据没有访问权限控制，任何代码都可以随意修改它，代码就退化成了面向过程编程风格的了。
+
+看完了前两个属性，我们再来看 items 这个属性。对于 items 这个属性，我们定义了它的 getter 方法和 addItem() 方法，并没有定义它的 setter 方法。这样的设计貌似看起来没有什么问题，但实际上并不是。
+
+对于 itemsCount 和 totalPrice 这两个属性来说，定义一个 public 的 getter 方法，确实无伤大雅，毕竟 getter 方法不会修改数据。但是，对于 items 属性就不一样了，这是因为 items 属性的 getter 方法，返回的是一个 List集合容器。外部调用者在拿到这个容器之后，是可以操作容器内部数据的，也就是说，外部代码还是能修改 items 中的数据。比如像下面这样：
+
+```java
+ShoppingCart cart = new ShoppCart();
+...
+cart.getItems().clear(); // 清空购物车
+```
+
+你可能会说，清空购物车这样的功能需求看起来合情合理啊，上面的代码没有什么不妥啊。你说得没错，需求是合理的，但是这样的代码写法，会导致 itemsCount、totalPrice、items 三者数据不一致。我们不应该将清空购物车的业务逻辑暴露给上层代码。正确的做法应该是，在 ShoppingCart 类中定义一个 clear() 方法，将清空购物车的业务逻辑封装在里面，透明地给调用者使用。ShoppingCart 类的 clear() 方法的具体代码实现如下：
+
+```java
+public class ShoppingCart {
+  // ...省略其他代码...
+  public void clear() {
+    items.clear();
+    itemsCount = 0;
+    totalPrice = 0.0;
+  }
+}
+```
+
+你可能还会说，我有一个需求，需要查看购物车中都买了啥，那这个时候，ShoppingCart 类不得不提供 items 属性的 getter 方法了，那又该怎么办才好呢？
+
+如果你熟悉 Java 语言，那解决这个问题的方法还是挺简单的。我们可以通过 Java 提供的 Collections.unmodifiableList() 方法，让 getter 方法返回一个不可被修改的 UnmodifiableList 集合容器，而这个容器类重写了 List 容器中跟修改数据相关的方法，比如 add()、clear() 等方法。一旦我们调用这些修改数据的方法，代码就会抛出 UnsupportedOperationException 异常，这样就避免了容器中的数据被修改。具体的代码实现如下所示。
+
+```java
+public class ShoppingCart {
+  // ...省略其他代码...
+  public List<ShoppingCartItem> getItems() {
+    return Collections.unmodifiableList(this.items);
+  }
+}
+
+public class UnmodifiableList<E> extends UnmodifiableCollection<E>
+                          implements List<E> {
+  public boolean add(E e) {
+    throw new UnsupportedOperationException();
+  }
+  public void clear() {
+    throw new UnsupportedOperationException();
+  }
+  // ...省略其他代码...
+}
+
+ShoppingCart cart = new ShoppingCart();
+List<ShoppingCartItem> items = cart.getItems();
+items.clear();//抛出UnsupportedOperationException异常
+```
+
+不过，这样的实现思路还是有点问题。因为当调用者通过 ShoppingCart 的 getItems() 获取到 items 之后，虽然我们没法修改容器中的数据，但我们仍然可以修改容器中每个对象（ShoppingCartItem）的数据。听起来有点绕，看看下面这几行代码你就明白了。
+
+```java
+ShoppingCart cart = new ShoppingCart();
+cart.add(new ShoppingCartItem(...));
+List<ShoppingCartItem> items = cart.getItems();
+ShoppingCartItem item = items.get(0);
+item.setPrice(19.0); // 这里修改了item的价格属性
+```
+
+getter、setter 问题我们就讲完了，我稍微总结一下，在设计实现类的时候，除非真的需要，否则，尽量不要给属性定义 setter 方法。除此之外，尽管 getter 方法相对 setter 方法要安全些，但是如果返回的是集合容器（比如例子中的 List 容器），也要防范集合内部数据被修改的危险。
+
+2. 滥用全局变量和全局方法
+
+我们再来看，另外一个违反面向对象编程风格的例子，那就是滥用全局变量和全局方法。首先，我们先来看，什么是全局变量和全局方法？
+
+如果你是用类似 C 语言这样的面向过程的编程语言来做开发，那对全局变量、全局方法肯定不陌生，甚至可以说，在代码中到处可见。但如果你是用类似 Java 这样的面向对象的编程语言来做开发，全局变量和全局方法就不是很多见了。
+
+在面向对象编程中，常见的全局变量有单例类对象、静态成员变量、常量等，常见的全局方法有静态方法。单例类对象在全局代码中只有一份，所以，它相当于一个全局变量。静态成员变量归属于类上的数据，被所有的实例化对象所共享，也相当于一定程度上的全局变量。而常量是一种非常常见的全局变量，比如一些代码中的配置参数，一般都设置为常量，放到一个 Constants 类中。静态方法一般用来操作静态变量或者外部数据。你可以联想一下我们常用的各种 Utils 类，里面的方法一般都会定义成静态方法，可以在不用创建对象的情况下，直接拿来使用。静态方法将方法与数据分离，破坏了封装特性，是典型的面向过程风格。
+
+在刚刚介绍的这些全局变量和全局方法中，Constants 类和 Utils 类最常用到。现在，我们就结合这两个几乎在每个软件开发中都会用到的类，来深入探讨一下全局变量和全局方法的利与弊。
+
+我们先来看一下，在我过去参与的项目中，一种常见的 Constants 类的定义方法。
+
+```java
+public class Constants {
+  public static final String MYSQL_ADDR_KEY = "mysql_addr";
+  public static final String MYSQL_DB_NAME_KEY = "db_name";
+  public static final String MYSQL_USERNAME_KEY = "mysql_username";
+  public static final String MYSQL_PASSWORD_KEY = "mysql_password";
+  
+  public static final String REDIS_DEFAULT_ADDR = "192.168.7.2:7234";
+  public static final int REDIS_DEFAULT_MAX_TOTAL = 50;
+  public static final int REDIS_DEFAULT_MAX_IDLE = 50;
+  public static final int REDIS_DEFAULT_MIN_IDLE = 20;
+  public static final String REDIS_DEFAULT_KEY_PREFIX = "rt:";
+  
+  // ...省略更多的常量定义...
+}
+```
+
+在这段代码中，我们把程序中所有用到的常量，都集中地放到这个 Constants 类中。不过，定义一个如此大而全的 Constants 类，并不是一种很好的设计思路。为什么这么说呢？原因主要有以下几点。
+
+首先，这样的设计会影响代码的可维护性。
+
+如果参与开发同一个项目的工程师有很多，在开发过程中，可能都要涉及修改这个类，比如往这个类里添加常量，那这个类就会变得越来越大，成百上千行都有可能，查找修改某个常量也会变得比较费时，而且还会增加提交代码冲突的概率。
+
+其次，这样的设计还会增加代码的编译时间。
+
+当 Constants 类中包含很多常量定义的时候，依赖这个类的代码就会很多。那每次修改 Constants 类，都会导致依赖它的类文件重新编译，因此会浪费很多不必要的编译时间。不要小看编译花费的时间，对于一个非常大的工程项目来说，编译一次项目花费的时间可能是几分钟，甚至几十分钟。而我们在开发过程中，每次运行单元测试，都会触发一次编译的过程，这个编译时间就有可能会影响到我们的开发效率。
+
+最后，这样的设计还会影响代码的复用性。
+
+如果我们要在另一个项目中，复用本项目开发的某个类，而这个类又依赖 Constants 类。即便这个类只依赖 Constants 类中的一小部分常量，我们仍然需要把整个 Constants 类也一并引入，也就引入了很多无关的常量到新的项目中。
+
+那如何改进 Constants 类的设计呢？
+
+我这里有两种思路可以借鉴。第一种是将 Constants 类拆解为功能更加单一的多个类，比如跟 MySQL 配置相关的常量，我们放到 MysqlConstants 类中；跟 Redis 配置相关的常量，我们放到 RedisConstants 类中。当然，还有一种我个人觉得更好的设计思路，那就是并不单独地设计 Constants 常量类，而是哪个类用到了某个常量，我们就把这个常量定义到这个类中。比如，RedisConfig 类用到了 Redis 配置相关的常量，那我们就直接将这些常量定义在 RedisConfig 中，这样也提高了类设计的内聚性和代码的复用性。
+
+讲完了 Constants 类，我们再来讨论一下 Utils 类。首先，我想问你这样一个问题，我们为什么需要 Utils 类？Utils 类存在的意义是什么？希望你先思考一下，然后再来看我下面的讲解。
+
+实际上，Utils 类的出现是基于这样一个问题背景：如果我们有两个类 A 和 B，它们要用到一块相同的功能逻辑，为了避免代码重复，我们不应该在两个类中，将这个相同的功能逻辑，重复地实现两遍。这个时候我们该怎么办呢？
+
+我们在讲面向对象特性的时候，讲过继承可以实现代码复用。利用继承特性，我们把相同的属性和方法，抽取出来，定义到父类中。子类复用父类中的属性和方法，达到代码复用的目的。但是，有的时候，从业务含义上，A 类和 B 类并不一定具有继承关系，比如 Crawler 类和 PageAnalyzer 类，它们都用到了 URL 拼接和分割的功能，但并不具有继承关系（既不是父子关系，也不是兄弟关系）。仅仅为了代码复用，生硬地抽象出一个父类出来，会影响到代码的可读性。如果不熟悉背后设计思路的同事，发现 Crawler 类和 PageAnalyzer 类继承同一个父类，而父类中定义的却是 URL 相关的操作，会觉得这个代码写得莫名其妙，理解不了。
+
+既然继承不能解决这个问题，我们可以定义一个新的类，实现 URL 拼接和分割的方法。而拼接和分割两个方法，不需要共享任何数据，所以新的类不需要定义任何属性，这个时候，我们就可以把它定义为只包含静态方法的 Utils 类了。
+
+实际上，只包含静态方法不包含任何属性的 Utils 类，是彻彻底底的面向过程的编程风格。但这并不是说，我们就要杜绝使用 Utils 类了。实际上，从刚刚讲的 Utils 类存在的目的来看，它在软件开发中还是挺有用的，能解决代码复用问题。所以，这里并不是说完全不能用 Utils 类，而是说，要尽量避免滥用，不要不加思考地随意去定义 Utils 类。
+
+在定义 Utils 类之前，你要问一下自己，你真的需要单独定义这样一个 Utils 类吗？是否可以把 Utils 类中的某些方法定义到其他类中呢？如果在回答完这些问题之后，你还是觉得确实有必要去定义这样一个 Utils 类，那就大胆地去定义它吧。因为即便在面向对象编程中，我们也并不是完全排斥面向过程风格的代码。只要它能为我们写出好的代码贡献力量，我们就可以适度地去使用。
+
+除此之外，类比 Constants 类的设计，我们设计 Utils 类的时候，最好也能细化一下，针对不同的功能，设计不同的 Utils 类，比如 FileUtils、IOUtils、StringUtils、UrlUtils 等，不要设计一个过于大而全的 Utils 类。
+
+3. 定义数据和方法分离的类
+
+我们再来看最后一种面向对象编程过程中，常见的面向过程风格的代码。那就是，数据定义在一个类中，方法定义在另一个类中。你可能会觉得，这么明显的面向过程风格的代码，谁会这么写呢？实际上，如果你是基于 MVC 三层结构做 Web 方面的后端开发，这样的代码你可能天天都在写。
+
+传统的 MVC 结构分为 Model 层、Controller 层、View 层这三层。不过，在做前后端分离之后，三层结构在后端开发中，会稍微有些调整，被分为 Controller 层、Service 层、Repository 层。Controller 层负责暴露接口给前端调用，Service 层负责核心业务逻辑，Repository 层负责数据读写。而在每一层中，我们又会定义相应的 VO（View Object）、BO（Business Object）、Entity。一般情况下，VO、BO、Entity 中只会定义数据，不会定义方法，所有操作这些数据的业务逻辑都定义在对应的 Controller 类、Service 类、Repository 类中。这就是典型的面向过程的编程风格。
+
+实际上，这种开发模式叫作基于贫血模型的开发模式，也是我们现在非常常用的一种 Web 项目的开发模式。看到这里，你内心里应该有很多疑惑吧？既然这种开发模式明显违背面向对象的编程风格，为什么大部分 Web 项目都是基于这种开发模式来开发呢？
+
+### 在面向对象编程中，为什么容易写出面向过程风格的代码？
+
+我们在进行面向对象编程的时候，很容易不由自主地就写出面向过程风格的代码，或者说感觉面向过程风格的代码更容易写。这是为什么呢？
+
+你可以联想一下，在生活中，你去完成一个任务，你一般都会思考，应该先做什么、后做什么，如何一步一步地顺序执行一系列操作，最后完成整个任务。面向过程编程风格恰恰符合人的这种流程化思维方式。而面向对象编程风格正好相反。它是一种自底向上的思考方式。它不是先去按照执行流程来分解任务，而是将任务翻译成一个一个的小的模块（也就是类），设计类之间的交互，最后按照流程将类组装起来，完成整个任务。我们在上一节课讲到了，这样的思考路径比较适合复杂程序的开发，但并不是特别符合人类的思考习惯。
+
+除此之外，面向对象编程要比面向过程编程难一些。在面向对象编程中，类的设计还是挺需要技巧，挺需要一定设计经验的。你要去思考如何封装合适的数据和方法到一个类里，如何设计类之间的关系，如何设计类之间的交互等等诸多设计问题。
+
+### 面向过程编程及面向过程编程语言就真的无用武之地了吗？
+
+前面我们讲了面向对象编程相比面向过程编程的各种优势，又讲了哪些代码看起来像面向对象风格，而实际上是面向过程编程风格的。那是不是面向过程编程风格就过时了被淘汰了呢？是不是在面向对象编程开发中，我们就要杜绝写面向过程风格的代码呢？
+
+前面我们有讲到，如果我们开发的是微小程序，或者是一个数据处理相关的代码，以算法为主，数据为辅，那脚本式的面向过程的编程风格就更适合一些。当然，面向过程编程的用武之地还不止这些。实际上，面向过程编程是面向对象编程的基础，面向对象编程离不开基础的面向过程编程。为什么这么说？我们仔细想想，类中每个方法的实现逻辑，不就是面向过程风格的代码吗？
+
+除此之外，面向对象和面向过程两种编程风格，也并不是非黑即白、完全对立的。在用面向对象编程语言开发的软件中，面向过程风格的代码并不少见，甚至在一些标准的开发库（比如 JDK、Apache Commons、Google Guava）中，也有很多面向过程风格的代码。
+
+不管使用面向过程还是面向对象哪种风格来写代码，我们最终的目的还是写出易维护、易读、易复用、易扩展的高质量代码。只要我们能避免面向过程编程风格的一些弊端，控制好它的副作用，在掌控范围内为我们所用，我们就大可不用避讳在面向对象编程中写面向过程风格的代码。
+
+### 总结
+
+1. 滥用 getter、setter 方法
+
+在设计实现类的时候，除非真的需要，否则尽量不要给属性定义 setter 方法。除此之外，尽管 getter 方法相对 setter 方法要安全些，但是如果返回的是集合容器，那也要防范集合内部数据被修改的风险。
+
+2. Constants 类、Utils 类的设计问题
+
+对于这两种类的设计，我们尽量能做到职责单一，定义一些细化的小类，比如 RedisConstants、FileUtils，而不是定义一个大而全的 Constants 类、Utils 类。除此之外，如果能将这些类中的属性和方法，划分归并到其他业务类中，那是最好不过的了，能极大地提高类的内聚性和代码的可复用性。
+
+3. 基于贫血模型的开发模式
+
+关于这一部分，我们只讲了为什么这种开发模式是彻彻底底的面向过程编程风格的。这是因为数据和操作是分开定义在 VO/BO/Entity 和 Controler/Service/Repository 中的。今天，你只需要掌握这一点就可以了。为什么这种开发模式如此流行？如何规避面向过程编程的弊端？有没有更好的可替代的开发模式？
+
+## 08 | 理论五：接口vs抽象类的区别？如何用普通的类模拟抽象类和接口？
+
+在面向对象编程中，抽象类和接口是两个经常被用到的语法概念，是面向对象四大特性，以及很多设计模式、设计思想、设计原则编程实现的基础。比如，我们可以使用接口来实现面向对象的抽象特性、多态特性和基于接口而非实现的设计原则，使用抽象类来实现面向对象的继承特性和模板设计模式等等。
+
+不过，并不是所有的面向对象编程语言都支持这两个语法概念，比如，C++ 这种编程语言只支持抽象类，不支持接口；而像 Python 这样的动态编程语言，既不支持抽象类，也不支持接口。尽管有些编程语言没有提供现成的语法来支持接口和抽象类，我们仍然可以通过一些手段来模拟实现这两个语法概念。
+
+### 什么是抽象类和接口？区别在哪里？
+
+首先，我们来看一下，在 Java 这种编程语言中，我们是如何定义抽象类的。
+
+下面这段代码是一个比较典型的抽象类的使用场景（模板设计模式）。Logger 是一个记录日志的抽象类，FileLogger 和 MessageQueueLogger 继承 Logger，分别实现两种不同的日志记录方式：记录日志到文件中和记录日志到消息队列中。FileLogger 和 MessageQueueLogger 两个子类复用了父类 Logger 中的 name、enabled、minPermittedLevel 属性和 log() 方法，但因为这两个子类写日志的方式不同，它们又各自重写了父类中的 doLog() 方法。
+
+```java
+// 抽象类
+public abstract class Logger {
+  private String name;
+  private boolean enabled;
+  private Level minPermittedLevel;
+
+  public Logger(String name, boolean enabled, Level minPermittedLevel) {
+    this.name = name;
+    this.enabled = enabled;
+    this.minPermittedLevel = minPermittedLevel;
+  }
+  
+  public void log(Level level, String message) {
+    boolean loggable = enabled && (minPermittedLevel.intValue() <= level.intValue());
+    if (!loggable) return;
+    doLog(level, message);
+  }
+  
+  protected abstract void doLog(Level level, String message);
+}
+// 抽象类的子类：输出日志到文件
+public class FileLogger extends Logger {
+  private Writer fileWriter;
+
+  public FileLogger(String name, boolean enabled,
+    Level minPermittedLevel, String filepath) {
+    super(name, enabled, minPermittedLevel);
+    this.fileWriter = new FileWriter(filepath); 
+  }
+  
+  @Override
+  public void doLog(Level level, String mesage) {
+    // 格式化level和message,输出到日志文件
+    fileWriter.write(...);
+  }
+}
+// 抽象类的子类: 输出日志到消息中间件(比如kafka)
+public class MessageQueueLogger extends Logger {
+  private MessageQueueClient msgQueueClient;
+  
+  public MessageQueueLogger(String name, boolean enabled,
+    Level minPermittedLevel, MessageQueueClient msgQueueClient) {
+    super(name, enabled, minPermittedLevel);
+    this.msgQueueClient = msgQueueClient;
+  }
+  
+  @Override
+  protected void doLog(Level level, String mesage) {
+    // 格式化level和message,输出到消息中间件
+    msgQueueClient.send(...);
+  }
+}
+```
+
+通过上面的这个例子，我们来看一下，抽象类具有哪些特性。我总结了下面三点。
+
+- 抽象类不允许被实例化，只能被继承。也就是说，你不能 new 一个抽象类的对象出来（Logger logger = new Logger(…); 会报编译错误）。
+- 抽象类可以包含属性和方法。方法既可以包含代码实现（比如 Logger 中的 log() 方法），也可以不包含代码实现（比如 Logger 中的 doLog() 方法）。不包含代码实现的方法叫作抽象方法。
+- 子类继承抽象类，必须实现抽象类中的所有抽象方法。对应到例子代码中就是，所有继承 Logger 抽象类的子类，都必须重写 doLog() 方法。
+
+刚刚我们讲了如何定义抽象类，现在我们再来看一下，在 Java 这种编程语言中，我们如何定义接口。
+
+```java
+// 接口
+public interface Filter {
+  void doFilter(RpcRequest req) throws RpcException;
+}
+// 接口实现类：鉴权过滤器
+public class AuthencationFilter implements Filter {
+  @Override
+  public void doFilter(RpcRequest req) throws RpcException {
+    //...鉴权逻辑..
+  }
+}
+// 接口实现类：限流过滤器
+public class RateLimitFilter implements Filter {
+  @Override
+  public void doFilter(RpcRequest req) throws RpcException {
+    //...限流逻辑...
+  }
+}
+// 过滤器使用Demo
+public class Application {
+  // filters.add(new AuthencationFilter());
+  // filters.add(new RateLimitFilter());
+  private List<Filter> filters = new ArrayList<>();
+  
+  public void handleRpcRequest(RpcRequest req) {
+    try {
+      for (Filter filter : filters) {
+        filter.doFilter(req);
+      }
+    } catch(RpcException e) {
+      // ...处理过滤结果...
+    }
+    // ...省略其他处理逻辑...
+  }
+}
+```
+
+上面这段代码是一个比较典型的接口的使用场景。我们通过 Java 中的 interface 关键字定义了一个 Filter 接口。AuthencationFilter 和 RateLimitFilter 是接口的两个实现类，分别实现了对 RPC 请求鉴权和限流的过滤功能。
+
+代码非常简洁。结合代码，我们再来看一下，接口都有哪些特性。我也总结了三点。
+
+- 接口不能包含属性（也就是成员变量）。
+- 接口只能声明方法，方法不能包含代码实现。
+- 类实现接口的时候，必须实现接口中声明的所有方法。
+
+前面我们讲了抽象类和接口的定义，以及各自的语法特性。从语法特性上对比，这两者有比较大的区别，比如抽象类中可以定义属性、方法的实现，而接口中不能定义属性，方法也不能包含代码实现等等。除了语法特性，从设计的角度，两者也有比较大的区别。
+
+抽象类实际上就是类，只不过是一种特殊的类，这种类不能被实例化为对象，只能被子类继承。我们知道，继承关系是一种 is-a 的关系，那抽象类既然属于类，也表示一种 is-a 的关系。相对于抽象类的 is-a 关系来说，接口表示一种 has-a 关系，表示具有某些功能。对于接口，有一个更加形象的叫法，那就是协议（contract）。
+
+### 抽象类和接口能解决什么编程问题？
+
+首先，我们来看一下，我们为什么需要抽象类？它能够解决什么编程问题？
+
+刚刚我们讲到，抽象类不能实例化，只能被继承。而前面的章节中，我们还讲到，继承能解决代码复用的问题。所以，抽象类也是为代码复用而生的。多个子类可以继承抽象类中定义的属性和方法，避免在子类中，重复编写相同的代码。
+
+不过，既然继承本身就能达到代码复用的目的，而继承也并不要求父类一定是抽象类，那我们不使用抽象类，照样也可以实现继承和复用。从这个角度上来讲，我们貌似并不需要抽象类这种语法呀。那抽象类除了解决代码复用的问题，还有什么其他存在的意义吗？
+
+我们还是拿之前那个打印日志的例子来讲解。我们先对上面的代码做下改造。在改造之后的代码中，Logger 不再是抽象类，只是一个普通的父类，删除了 Logger 中 log()、doLog() 方法，新增了 isLoggable() 方法。FileLogger 和 MessageQueueLogger 还是继承 Logger 父类，以达到代码复用的目的。具体的代码如下：
+
+```java
+// 父类：非抽象类，就是普通的类. 删除了log(),doLog()，新增了isLoggable().
+public class Logger {
+  private String name;
+  private boolean enabled;
+  private Level minPermittedLevel;
+
+  public Logger(String name, boolean enabled, Level minPermittedLevel) {
+    //...构造函数不变，代码省略...
+  }
+
+  protected boolean isLoggable() {
+    boolean loggable = enabled && (minPermittedLevel.intValue() <= level.intValue());
+    return loggable;
+  }
+}
+// 子类：输出日志到文件
+public class FileLogger extends Logger {
+  private Writer fileWriter;
+
+  public FileLogger(String name, boolean enabled,
+    Level minPermittedLevel, String filepath) {
+    //...构造函数不变，代码省略...
+  }
+  
+  public void log(Level level, String mesage) {
+    if (!isLoggable()) return;
+    // 格式化level和message,输出到日志文件
+    fileWriter.write(...);
+  }
+}
+// 子类: 输出日志到消息中间件(比如kafka)
+public class MessageQueueLogger extends Logger {
+  private MessageQueueClient msgQueueClient;
+  
+  public MessageQueueLogger(String name, boolean enabled,
+    Level minPermittedLevel, MessageQueueClient msgQueueClient) {
+    //...构造函数不变，代码省略...
+  }
+  
+  public void log(Level level, String mesage) {
+    if (!isLoggable()) return;
+    // 格式化level和message,输出到消息中间件
+    msgQueueClient.send(...);
+  }
+}
+```
+
+这个设计思路虽然达到了代码复用的目的，但是无法使用多态特性了。像下面这样编写代码，就会出现编译错误，因为 Logger 中并没有定义 log() 方法。
+
+```java
+Logger logger = new FileLogger("access-log", true, Level.WARN, "/users/wangzheng/access.log");
+logger.log(Level.ERROR, "This is a test log message.");
+```
+
+你可能会说，这个问题解决起来很简单啊。我们在 Logger 父类中，定义一个空的 log() 方法，让子类重写父类的 log() 方法，实现自己的记录日志的逻辑，不就可以了吗？
+
+```java
+public class Logger {
+  // ...省略部分代码...
+  public void log(Level level, String mesage) { // do nothing... }
+}
+public class FileLogger extends Logger {
+  // ...省略部分代码...
+  @Override
+  public void log(Level level, String mesage) {
+    if (!isLoggable()) return;
+    // 格式化level和message,输出到日志文件
+    fileWriter.write(...);
+  }
+}
+public class MessageQueueLogger extends Logger {
+  // ...省略部分代码...
+  @Override
+  public void log(Level level, String mesage) {
+    if (!isLoggable()) return;
+    // 格式化level和message,输出到消息中间件
+    msgQueueClient.send(...);
+  }
+}
+```
+
+这个设计思路能用，但是，它显然没有之前通过抽象类的实现思路优雅。我为什么这么说呢？主要有以下几点原因。
+
+- 在 Logger 中定义一个空的方法，会影响代码的可读性。如果我们不熟悉 Logger 背后的设计思想，代码注释又不怎么给力，我们在阅读 Logger 代码的时候，就可能对为什么定义一个空的 log() 方法而感到疑惑，需要查看 Logger、FileLogger、MessageQueueLogger 之间的继承关系，才能弄明白其设计意图。
+- 当创建一个新的子类继承 Logger 父类的时候，我们有可能会忘记重新实现 log() 方法。之前基于抽象类的设计思路，编译器会强制要求子类重写 log() 方法，否则会报编译错误。你可能会说，我既然要定义一个新的 Logger 子类，怎么会忘记重新实现 log() 方法呢？我们举的例子比较简单，Logger 中的方法不多，代码行数也很少。但是，如果 Logger 有几百行，有 n 多方法，除非你对 Logger 的设计非常熟悉，否则忘记重新实现 log() 方法，也不是不可能的。
+- Logger 可以被实例化，换句话说，我们可以 new 一个 Logger 出来，并且调用空的 log() 方法。这也增加了类被误用的风险。当然，这个问题可以通过设置私有的构造函数的方式来解决。不过，显然没有通过抽象类来的优雅。
+
+**其次，我们再来看一下，我们为什么需要接口？它能够解决什么编程问题？**
+
+抽象类更多的是为了代码复用，而接口就更侧重于解耦。接口是对行为的一种抽象，相当于一组协议或者契约，你可以联想类比一下 API 接口。调用者只需要关注抽象的接口，不需要了解具体的实现，具体的实现代码对调用者透明。接口实现了约定和实现相分离，可以降低代码间的耦合性，提高代码的可扩展性。
+
+实际上，接口是一个比抽象类应用更加广泛、更加重要的知识点。比如，我们经常提到的“基于接口而非实现编程”，就是一条几乎天天会用到，并且能极大地提高代码的灵活性、扩展性的设计思想。关于接口这个知识点，我会单独再用一节课的时间，更加详细全面的讲解，这里就不展开了。
+
+**如何模拟抽象类和接口两个语法概念？**
+
+在前面举的例子中，我们使用 Java 的接口语法实现了一个 Filter 过滤器。不过，如果你熟悉的是 C++ 这种编程语言，你可能会说，C++ 只有抽象类，并没有接口，那从代码实现的角度上来说，是不是就无法实现 Filter 的设计思路了呢？
+
+实际上，我们可以通过抽象类来模拟接口。怎么来模拟呢？这是一个不错的面试题，你可以先思考一下，然后再来看我的讲解。
+
+我们先来回忆一下接口的定义：接口中没有成员变量，只有方法声明，没有方法实现，实现接口的类必须实现接口中的所有方法。只要满足这样几点，从设计的角度上来说，我们就可以把它叫作接口。实际上，要满足接口的这些语法特性并不难。在下面这段 C++ 代码中，我们就用抽象类模拟了一个接口（下面这段代码实际上是策略模式中的一段代码）。
+
+```
+class Strategy { // 用抽象类模拟接口
+  public:
+    ~Strategy();
+    virtual void algorithm()=0;
+  protected:
+    Strategy();
+};
+```
+
+抽象类 Strategy 没有定义任何属性，并且所有的方法都声明为 virtual 类型（等同于 Java 中的 abstract 关键字），这样，所有的方法都不能有代码实现，并且所有继承这个抽象类的子类，都要实现这些方法。从语法特性上来看，这个抽象类就相当于一个接口。
+
+不过，如果你熟悉的既不是 Java，也不是 C++，而是现在比较流行的动态编程语言，比如 Python、Ruby 等，你可能还会有疑问：在这些动态语言中，不仅没有接口的概念，也没有类似 abstract、virtual 这样的关键字来定义抽象类，那该如何实现上面的讲到的 Filter、Logger 的设计思路呢？实际上，除了用抽象类来模拟接口之外，我们还可以用普通类来模拟接口。具体的 Java 代码实现如下所示。
+
+```
+public class MockInteface {
+  protected MockInteface() {}
+  public void funcA() {
+    throw new MethodUnSupportedException();
+  }
+}
+```
+
+我们知道类中的方法必须包含实现，这个不符合接口的定义。但是，我们可以让类中的方法抛出 MethodUnSupportedException 异常，来模拟不包含实现的接口，并且能强迫子类在继承这个父类的时候，都去主动实现父类的方法，否则就会在运行时抛出异常。那又如何避免这个类被实例化呢？实际上很简单，我们只需要将这个类的构造函数声明为 protected 访问权限就可以了。
+
+刚刚我们讲了如何用抽象类来模拟接口，以及如何用普通类来模拟接口，那如何用普通类来模拟抽象类呢？这个问题留给你自己思考，你可以留言说说你的实现方法。
+
+### 如何决定该用抽象类还是接口？
+
+刚刚的讲解可能有些偏理论，现在，我们就从真实项目开发的角度来看一下，在代码设计、编程开发的时候，什么时候该用抽象类？什么时候该用接口？
+
+实际上，判断的标准很简单。如果我们要表示一种 is-a 的关系，并且是为了解决代码复用的问题，我们就用抽象类；如果我们要表示一种 has-a 关系，并且是为了解决抽象而非代码复用的问题，那我们就可以使用接口。
+
+从类的继承层次上来看，抽象类是一种自下而上的设计思路，先有子类的代码重复，然后再抽象成上层的父类（也就是抽象类）。而接口正好相反，它是一种自上而下的设计思路。我们在编程的时候，一般都是先设计接口，再去考虑具体的实现。
+
+### 总结
+
+1. 抽象类和接口的语法特性
+
+抽象类不允许被实例化，只能被继承。它可以包含属性和方法。方法既可以包含代码实现，也可以不包含代码实现。不包含代码实现的方法叫作抽象方法。子类继承抽象类，必须实现抽象类中的所有抽象方法。接口不能包含属性，只能声明方法，方法不能包含代码实现。类实现接口的时候，必须实现接口中声明的所有方法。
+
+2. 抽象类和接口存在的意义
+
+抽象类是对成员变量和方法的抽象，是一种 is-a 关系，是为了解决代码复用问题。接口仅仅是对方法的抽象，是一种 has-a 关系，表示具有某一组行为特性，是为了解决解耦问题，隔离接口和具体的实现，提高代码的扩展性。
+
+3. 抽象类和接口的应用场景区别
+
+什么时候该用抽象类？什么时候该用接口？实际上，判断的标准很简单。如果要表示一种 is-a 的关系，并且是为了解决代码复用问题，我们就用抽象类；如果要表示一种 has-a 关系，并且是为了解决抽象而非代码复用问题，那我们就用接口。
+
+## 09 | 理论六：为什么基于接口而非实现编程？有必要为每个类都定义接口吗？
+
+### 如何解读原则中的“接口”二字？
+
+“基于接口而非实现编程”这条原则的英文描述是：“Program to an interface, not an implementation”。我们理解这条原则的时候，千万不要一开始就与具体的编程语言挂钩，局限在编程语言的“接口”语法中（比如 Java 中的 interface 接口语法）。这条原则最早出现于 1994 年 GoF 的《设计模式》这本书，它先于很多编程语言而诞生（比如 Java 语言），是一条比较抽象、泛化的设计思想。
+
+实际上，理解这条原则的关键，就是理解其中的“接口”两个字。还记得我们上一节课讲的“接口”的定义吗？从本质上来看，“接口”就是一组“协议”或者“约定”，是功能提供者提供给使用者的一个“功能列表”。“接口”在不同的应用场景下会有不同的解读，比如服务端与客户端之间的“接口”，类库提供的“接口”，甚至是一组通信的协议都可以叫作“接口”。刚刚对“接口”的理解，都比较偏上层、偏抽象，与实际的写代码离得有点远。如果落实到具体的编码，“基于接口而非实现编程”这条原则中的“接口”，可以理解为编程语言中的接口或者抽象类。
+
+前面我们提到，这条原则能非常有效地提高代码质量，之所以这么说，那是因为，应用这条原则，可以将接口和实现相分离，封装不稳定的实现，暴露稳定的接口。上游系统面向接口而非实现编程，不依赖不稳定的实现细节，这样当实现发生变化的时候，上游系统的代码基本上不需要做改动，以此来降低耦合性，提高扩展性。
+
+实际上，“基于接口而非实现编程”这条原则的另一个表述方式，是“基于抽象而非实现编程”。后者的表述方式其实更能体现这条原则的设计初衷。在软件开发中，最大的挑战之一就是需求的不断变化，这也是考验代码设计好坏的一个标准。越抽象、越顶层、越脱离具体某一实现的设计，越能提高代码的灵活性，越能应对未来的需求变化。好的代码设计，不仅能应对当下的需求，而且在将来需求发生变化的时候，仍然能够在不破坏原有代码设计的情况下灵活应对。而抽象就是提高代码扩展性、灵活性、可维护性最有效的手段之一。
+
+### 如何将这条原则应用到实战中？
+
+对于这条原则，我们结合一个具体的实战案例来进一步讲解一下。假设我们的系统中有很多涉及图片处理和存储的业务逻辑。图片经过处理之后被上传到阿里云上。为了代码复用，我们封装了图片存储相关的代码逻辑，提供了一个统一的 AliyunImageStore 类，供整个系统来使用。具体的代码实现如下所示：
+
+```java
 public class AliyunImageStore {
   //...省略属性、构造函数等...
   
@@ -534,11 +1223,25 @@ public class ImageProcessingJob {
 }
 ```
 
-如果我们需要把图片上传到私有云，那么问题是什么呢，我们需要把所有的public方法都实现一遍。
+整个上传流程包含三个步骤：创建 bucket（你可以简单理解为存储目录）、生成 access token 访问凭证、携带 access token 上传图片到指定的 bucket 中。代码实现非常简单，类中的几个方法定义得都很干净，用起来也很清晰，乍看起来没有太大问题，完全能满足我们将图片存储在阿里云的业务需求。
 
-- 函数的命名不能暴露任何实现细节。uploadToAliyun() 就不符合要求，应该改为去掉 aliyun 这样的字眼，改为更加抽象的命名方式，比如：upload()。
-- 封装具体的实现细节。比如，跟阿里云相关的特殊上传（或下载）流程不应该暴露给调用者。我们对上传（或下载）流程进行封装，对外提供一个包裹所有上传（或下载）细节的方法，给调用者使用。
-- 为实现类定义抽象的接口。具体的实现类都依赖统一的接口定义，遵从一致的上传功能协议。使用者依赖接口，而不是具体的实现类来编程。
+不过，软件开发中唯一不变的就是变化。过了一段时间后，我们自建了私有云，不再将图片存储到阿里云了，而是将图片存储到自建私有云上。为了满足这样一个需求的变化，我们该如何修改代码呢？
+
+我们需要重新设计实现一个存储图片到私有云的 PrivateImageStore 类，并用它替换掉项目中所有的 AliyunImageStore 类对象。这样的修改听起来并不复杂，只是简单替换而已，对整个代码的改动并不大。不过，我们经常说，“细节是魔鬼”。这句话在软件开发中特别适用。实际上，刚刚的设计实现方式，就隐藏了很多容易出问题的“魔鬼细节”，我们一块来看看都有哪些。
+
+新的 PrivateImageStore 类需要设计实现哪些方法，才能在尽量最小化代码修改的情况下，替换掉 AliyunImageStore 类呢？这就要求我们必须将 AliyunImageStore 类中所定义的所有 public 方法，在 PrivateImageStore 类中都逐一定义并重新实现一遍。而这样做就会存在一些问题，我总结了下面两点。
+
+首先，AliyunImageStore 类中有些函数命名暴露了实现细节，比如，uploadToAliyun() 和 downloadFromAliyun()。如果开发这个功能的同事没有接口意识、抽象思维，那这种暴露实现细节的命名方式就不足为奇了，毕竟最初我们只考虑将图片存储在阿里云上。而我们把这种包含“aliyun”字眼的方法，照抄到 PrivateImageStore 类中，显然是不合适的。如果我们在新类中重新命名 uploadToAliyun()、downloadFromAliyun() 这些方法，那就意味着，我们要修改项目中所有使用到这两个方法的代码，代码修改量可能就会很大。
+
+其次，将图片存储到阿里云的流程，跟存储到私有云的流程，可能并不是完全一致的。比如，阿里云的图片上传和下载的过程中，需要生产 access token，而私有云不需要 access token。一方面，AliyunImageStore 中定义的 generateAccessToken() 方法不能照抄到 PrivateImageStore 中；另一方面，我们在使用 AliyunImageStore 上传、下载图片的时候，代码中用到了 generateAccessToken() 方法，如果要改为私有云的上传下载流程，这些代码都需要做调整。
+
+那这两个问题该如何解决呢？解决这个问题的根本方法就是，在编写代码的时候，要遵从“基于接口而非实现编程”的原则，具体来讲，我们需要做到下面这 3 点。
+
+1. 函数的命名不能暴露任何实现细节。比如，前面提到的 uploadToAliyun() 就不符合要求，应该改为去掉 aliyun 这样的字眼，改为更加抽象的命名方式，比如：upload()。
+2. 封装具体的实现细节。比如，跟阿里云相关的特殊上传（或下载）流程不应该暴露给调用者。我们对上传（或下载）流程进行封装，对外提供一个包裹所有上传（或下载）细节的方法，给调用者使用。
+3. 为实现类定义抽象的接口。具体的实现类都依赖统一的接口定义，遵从一致的上传功能协议。使用者依赖接口，而不是具体的实现类来编程。
+
+我们按照这个思路，把代码重构一下。重构后的代码如下所示：
 
 ```java
 
@@ -603,19 +1306,73 @@ public class ImageProcessingJob {
 }
 ```
 
+除此之外，很多人在定义接口的时候，希望通过实现类来反推接口的定义。先把实现类写好，然后看实现类中有哪些方法，照抄到接口定义中。如果按照这种思考方式，就有可能导致接口定义不够抽象，依赖具体的实现。这样的接口设计就没有意义了。不过，如果你觉得这种思考方式更加顺畅，那也没问题，只是将实现类的方法搬移到接口定义中的时候，要有选择性的搬移，不要将跟具体实现相关的方法搬移到接口中，比如 AliyunImageStore 中的 generateAccessToken() 方法。
+
+总结一下，我们在做软件开发的时候，一定要有抽象意识、封装意识、接口意识。在定义接口的时候，不要暴露任何实现细节。接口的定义只表明做什么，而不是怎么做。而且，在设计接口的时候，我们要多思考一下，这样的接口设计是否足够通用，是否能够做到在替换具体的接口实现的时候，不需要任何接口定义的改动。
+
+### 是否需要为每个类定义接口？
+
+看了刚刚的讲解，你可能会有这样的疑问：为了满足这条原则，我是不是需要给每个实现类都定义对应的接口呢？在开发的时候，是不是任何代码都要只依赖接口，完全不依赖实现编程呢？
+
+做任何事情都要讲求一个“度”，过度使用这条原则，非得给每个类都定义接口，接口满天飞，也会导致不必要的开发负担。至于什么时候，该为某个类定义接口，实现基于接口的编程，什么时候不需要定义接口，直接使用实现类编程，我们做权衡的根本依据，还是要回归到设计原则诞生的初衷上来。只要搞清楚了这条原则是为了解决什么样的问题而产生的，你就会发现，很多之前模棱两可的问题，都会变得豁然开朗。
+
+前面我们也提到，这条原则的设计初衷是，将接口和实现相分离，封装不稳定的实现，暴露稳定的接口。上游系统面向接口而非实现编程，不依赖不稳定的实现细节，这样当实现发生变化的时候，上游系统的代码基本上不需要做改动，以此来降低代码间的耦合性，提高代码的扩展性。
+
+从这个设计初衷上来看，如果在我们的业务场景中，某个功能只有一种实现方式，未来也不可能被其他实现方式替换，那我们就没有必要为其设计接口，也没有必要基于接口编程，直接使用实现类就可以了。
+
+除此之外，越是不稳定的系统，我们越是要在代码的扩展性、维护性上下功夫。相反，如果某个系统特别稳定，在开发完之后，基本上不需要做维护，那我们就没有必要为其扩展性，投入不必要的开发时间。
+
+### 总结
+
+1. “基于接口而非实现编程”，这条原则的另一个表述方式，是“基于抽象而非实现编程”。后者的表述方式其实更能体现这条原则的设计初衷。我们在做软件开发的时候，一定要有抽象意识、封装意识、接口意识。越抽象、越顶层、越脱离具体某一实现的设计，越能提高代码的灵活性、扩展性、可维护性。
+2. 我们在定义接口的时候，一方面，命名要足够通用，不能包含跟具体实现相关的字眼；另一方面，与特定实现有关的方法不要定义在接口中。
+3. “基于接口而非实现编程”这条原则，不仅仅可以指导非常细节的编程开发，还能指导更加上层的架构设计、系统设计等。比如，服务端与客户端之间的“接口”设计、类库的“接口”设计。
+
 ## 10 | 理论七：为何说要多用组合少用继承？如何决定该用组合还是继承？
 
-1. 为什么不推荐使用继承？
+### 为什么不推荐使用继承？
 
-继承是面向对象的四大特性之一，用来表示类之间的 is-a 关系，可以解决代码复用的问题。虽然继承有诸多作用，但继承层次过深、过复杂，也会影响到代码的可维护性。在这种情况下，我们应该尽量少用，甚至不用继承。
+继承是面向对象的四大特性之一，用来表示类之间的 is-a 关系，可以解决代码复用的问题。虽然继承有诸多作用，但继承层次过深、过复杂，也会影响到代码的可维护性。所以，对于是否应该在项目中使用继承，网上有很多争议。很多人觉得继承是一种反模式，应该尽量少用，甚至不用。为什么会有这样的争议？我们通过一个例子来解释一下。
 
-如：
+假设我们要设计一个关于鸟的类。我们将“鸟类”这样一个抽象的事物概念，定义为一个抽象类 AbstractBird。所有更细分的鸟，比如麻雀、鸽子、乌鸦等，都继承这个抽象类。
+
+我们知道，大部分鸟都会飞，那我们可不可以在 AbstractBird 抽象类中，定义一个 fly() 方法呢？答案是否定的。尽管大部分鸟都会飞，但也有特例，比如鸵鸟就不会飞。鸵鸟继承具有 fly() 方法的父类，那鸵鸟就具有“飞”这样的行为，这显然不符合我们对现实世界中事物的认识。当然，你可能会说，我在鸵鸟这个子类中重写（override）fly() 方法，让它抛出 UnSupportedMethodException 异常不就可以了吗？具体的代码实现如下所示：
+
+```java
+public class AbstractBird {
+  //...省略其他属性和方法...
+  public void fly() { //... }
+}
+
+public class Ostrich extends AbstractBird { //鸵鸟
+  //...省略其他属性和方法...
+  public void fly() {
+    throw new UnSupportedMethodException("I can't fly.'");
+  }
+}
+```
+
+这种设计思路虽然可以解决问题，但不够优美。因为除了鸵鸟之外，不会飞的鸟还有很多，比如企鹅。对于这些不会飞的鸟来说，我们都需要重写 fly() 方法，抛出异常。这样的设计，一方面，徒增了编码的工作量；另一方面，也违背了我们之后要讲的最小知识原则（Least Knowledge Principle，也叫最少知识原则或者迪米特法则），暴露不该暴露的接口给外部，增加了类使用过程中被误用的概率。
+
+你可能又会说，那我们再通过 AbstractBird 类派生出两个更加细分的抽象类：会飞的鸟类 AbstractFlyableBird 和不会飞的鸟类 AbstractUnFlyableBird，让麻雀、乌鸦这些会飞的鸟都继承 AbstractFlyableBird，让鸵鸟、企鹅这些不会飞的鸟，都继承 AbstractUnFlyableBird 类，不就可以了吗？具体的继承关系如下图所示：
 
 ![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201117132604.jpg)
 
-2. 组合相比继承有哪些优势？
+从图中我们可以看出，继承关系变成了三层。不过，整体上来讲，目前的继承关系还比较简单，层次比较浅，也算是一种可以接受的设计思路。我们再继续加点难度。在刚刚这个场景中，我们只关注“鸟会不会飞”，但如果我们还关注“鸟会不会叫”，那这个时候，我们又该如何设计类之间的继承关系呢？
 
-继承主要有三个作用：表示 is-a 关系，支持多态特性，代码复用。而这三个作用都可以通过组合、接口、委托三个技术手段来达成。除此之外，利用组合还能解决层次过深、过复杂的继承关系影响代码可维护性的问题。
+是否会飞？是否会叫？两个行为搭配起来会产生四种情况：会飞会叫、不会飞会叫、会飞不会叫、不会飞不会叫。如果我们继续沿用刚才的设计思路，那就需要再定义四个抽象类（AbstractFlyableTweetableBird、AbstractFlyableUnTweetableBird、AbstractUnFlyableTweetableBird、AbstractUnFlyableUnTweetableBird）。
+
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201215172507.jpg)
+
+如果我们还需要考虑“是否会下蛋”这样一个行为，那估计就要组合爆炸了。类的继承层次会越来越深、继承关系会越来越复杂。而这种层次很深、很复杂的继承关系，一方面，会导致代码的可读性变差。因为我们要搞清楚某个类具有哪些方法、属性，必须阅读父类的代码、父类的父类的代码……一直追溯到最顶层父类的代码。另一方面，这也破坏了类的封装特性，将父类的实现细节暴露给了子类。子类的实现依赖父类的实现，两者高度耦合，一旦父类代码修改，就会影响所有子类的逻辑。
+
+总之，继承最大的问题就在于：继承层次过深、继承关系过于复杂会影响到代码的可读性和可维护性。这也是为什么我们不推荐使用继承。那刚刚例子中继承存在的问题，我们又该如何来解决呢？你可以先自己思考一下，再听我下面的讲解。
+
+### 组合相比继承有哪些优势？
+
+实际上，我们可以利用组合（composition）、接口、委托（delegation）三个技术手段，一块儿来解决刚刚继承存在的问题。
+
+我们前面讲到接口的时候说过，接口表示具有某种行为特性。针对“会飞”这样一个行为特性，我们可以定义一个 Flyable 接口，只让会飞的鸟去实现这个接口。对于会叫、会下蛋这些行为特性，我们可以类似地定义 Tweetable 接口、EggLayable 接口。我们将这个设计思路翻译成 Java 代码的话，就是下面这个样子：
 
 ```java
 public interface Flyable {
@@ -648,15 +1405,124 @@ public class Ostrich implements Tweetable, EggLayable {//鸵鸟
 }
 ```
 
+不过，我们知道，接口只声明方法，不定义实现。也就是说，每个会下蛋的鸟都要实现一遍 layEgg() 方法，并且实现逻辑是一样的，这就会导致代码重复的问题。那这个问题又该如何解决呢？
+
+我们可以针对三个接口再定义三个实现类，它们分别是：实现了 fly() 方法的 FlyAbility 类、实现了 tweet() 方法的 TweetAbility 类、实现了 layEgg() 方法的 EggLayAbility 类。然后，通过组合和委托技术来消除代码重复。具体的代码实现如下所示：
+
+```java
+public interface Flyable {
+  void fly()；
+}
+public class FlyAbility implements Flyable {
+  @Override
+  public void fly() { //... }
+}
+//省略Tweetable/TweetAbility/EggLayable/EggLayAbility
+
+public class Ostrich implements Tweetable, EggLayable {//鸵鸟
+  private TweetAbility tweetAbility = new TweetAbility(); //组合
+  private EggLayAbility eggLayAbility = new EggLayAbility(); //组合
+  //... 省略其他属性和方法...
+  @Override
+  public void tweet() {
+    tweetAbility.tweet(); // 委托
+  }
+  @Override
+  public void layEgg() {
+    eggLayAbility.layEgg(); // 委托
+  }
+}
+```
+
+我们知道继承主要有三个作用：表示 is-a 关系，支持多态特性，代码复用。而这三个作用都可以通过其他技术手段来达成。比如 is-a 关系，我们可以通过组合和接口的 has-a 关系来替代；多态特性我们可以利用接口来实现；代码复用我们可以通过组合和委托来实现。所以，从理论上讲，通过组合、接口、委托三个技术手段，我们完全可以替换掉继承，在项目中不用或者少用继承关系，特别是一些复杂的继承关系。
+
+### 如何判断该用组合还是继承？
+
+尽管我们鼓励多用组合少用继承，但组合也并不是完美的，继承也并非一无是处。在实际的项目开发中，我们还是要根据具体的情况，来选择该用继承还是组合。如果类之间的继承结构稳定，层次比较浅，关系不复杂，我们就可以大胆地使用继承。反之，我们就尽量使用组合来替代继承。除此之外，还有一些设计模式、特殊的应用场景，会固定使用继承或者组合。
+
+如果类之间的继承结构稳定（不会轻易改变），继承层次比较浅（比如，最多有两层继承关系），继承关系不复杂，我们就可以大胆地使用继承。反之，系统越不稳定，继承层次很深，继承关系复杂，我们就尽量使用组合来替代继承。
+
+除此之外，还有一些设计模式会固定使用继承或者组合。比如，装饰者模式（decorator pattern）、策略模式（strategy pattern）、组合模式（composite pattern）等都使用了组合关系，而模板模式（template pattern）使用了继承关系。
+
+前面我们讲到继承可以实现代码复用。利用继承特性，我们把相同的属性和方法，抽取出来，定义到父类中。子类复用父类中的属性和方法，达到代码复用的目的。但是，有的时候，从业务含义上，A 类和 B 类并不一定具有继承关系。比如，Crawler 类和 PageAnalyzer 类，它们都用到了 URL 拼接和分割的功能，但并不具有继承关系（既不是父子关系，也不是兄弟关系）。仅仅为了代码复用，生硬地抽象出一个父类出来，会影响到代码的可读性。如果不熟悉背后设计思路的同事，发现 Crawler 类和 PageAnalyzer 类继承同一个父类，而父类中定义的却只是 URL 相关的操作，会觉得这个代码写得莫名其妙，理解不了。这个时候，使用组合就更加合理、更加灵活。具体的代码实现如下所示：
+
+```java
+public class Url {
+  //...省略属性和方法
+}
+
+public class Crawler {
+  private Url url; // 组合
+  public Crawler() {
+    this.url = new Url();
+  }
+  //...
+}
+
+public class PageAnalyzer {
+  private Url url; // 组合
+  public PageAnalyzer() {
+    this.url = new Url();
+  }
+  //..
+}
+```
+
+还有一些特殊的场景要求我们必须使用继承。如果你不能改变一个函数的入参类型，而入参又非接口，为了支持多态，只能采用继承来实现。比如下面这样一段代码，其中 FeignClient 是一个外部类，我们没有权限去修改这部分代码，但是我们希望能重写这个类在运行时执行的 encode() 函数。这个时候，我们只能采用继承来实现了。
+
+```java
+public class FeignClient { // Feign Client框架代码
+  //...省略其他代码...
+  public void encode(String url) { //... }
+}
+
+public void demofunction(FeignClient feignClient) {
+  //...
+  feignClient.encode(url);
+  //...
+}
+
+public class CustomizedFeignClient extends FeignClient {
+  @Override
+  public void encode(String url) { //...重写encode的实现...}
+}
+
+// 调用
+FeignClient client = new CustomizedFeignClient();
+demofunction(client);
+```
+
+尽管有些人说，要杜绝继承，100% 用组合代替继承，但是我的观点没那么极端！之所以“多用组合少用继承”这个口号喊得这么响，只是因为，长期以来，我们过度使用继承。还是那句话，组合并不完美，继承也不是一无是处。只要我们控制好它们的副作用、发挥它们各自的优势，在不同的场合下，恰当地选择使用继承还是组合，这才是我们所追求的境界。
+
+### 总结
+
+1. 为什么不推荐使用继承？
+
+继承是面向对象的四大特性之一，用来表示类之间的 is-a 关系，可以解决代码复用的问题。虽然继承有诸多作用，但继承层次过深、过复杂，也会影响到代码的可维护性。在这种情况下，我们应该尽量少用，甚至不用继承。
+
+2. 组合相比继承有哪些优势？
+
+继承主要有三个作用：表示 is-a 关系，支持多态特性，代码复用。而这三个作用都可以通过组合、接口、委托三个技术手段来达成。除此之外，利用组合还能解决层次过深、过复杂的继承关系影响代码可维护性的问题。
+
 3. 如何判断该用组合还是继承？
 
 尽管我们鼓励多用组合少用继承，但组合也并不是完美的，继承也并非一无是处。在实际的项目开发中，我们还是要根据具体的情况，来选择该用继承还是组合。如果类之间的继承结构稳定，层次比较浅，关系不复杂，我们就可以大胆地使用继承。反之，我们就尽量使用组合来替代继承。除此之外，还有一些设计模式、特殊的应用场景，会固定使用继承或者组合。
 
 ## 11. 实战一（上）：业务开发常用的基于贫血模型的MVC架构违背OOP吗？
 
-领域驱动设计（Domain Driven Design，简称 DDD）：贫血模型和充血模型。
+据我了解，大部分工程师都是做业务开发的，所以，今天我们讲的这个实战项目也是一个典型的业务系统开发案例。我们都知道，很多业务系统都是基于 MVC 三层架构来开发的。实际上，更确切点讲，这是一种基于贫血模型的 MVC 三层架构开发模式。
 
-1. 先来看下贫血模型的MVC架构：
+虽然这种开发模式已经成为标准的 Web 项目的开发模式，但它却违反了面向对象编程风格，是一种彻彻底底的面向过程的编程风格，因此而被有些人称为反模式（anti-pattern）。特别是领域驱动设计（Domain Driven Design，简称 DDD）盛行之后，这种基于贫血模型的传统的开发模式就更加被人诟病。而基于充血模型的 DDD 开发模式越来越被人提倡。所以，我打算用两节课的时间，结合一个虚拟钱包系统的开发案例，带你彻底弄清楚这两种开发模式。
+
+### 什么是基于贫血模型的传统开发模式？
+
+我相信，对于大部分的后端开发工程师来说，MVC 三层架构都不会陌生。不过，为了统一我们之间对 MVC 的认识，我还是带你一块来回顾一下，什么是 MVC 三层架构。
+
+MVC 三层架构中的 M 表示 Model，V 表示 View，C 表示 Controller。它将整个项目分为三层：展示层、逻辑层、数据层。MVC 三层开发架构是一个比较笼统的分层方式，落实到具体的开发层面，很多项目也并不会 100% 遵从 MVC 固定的分层方式，而是会根据具体的项目需求，做适当的调整。
+
+比如，现在很多 Web 或者 App 项目都是前后端分离的，后端负责暴露接口给前端调用。这种情况下，我们一般就将后端项目分为 Repository 层、Service 层、Controller 层。其中，Repository 层负责数据访问，Service 层负责业务逻辑，Controller 层负责暴露接口。当然，这只是其中一种分层和命名方式。不同的项目、不同的团队，可能会对此有所调整。不过，万变不离其宗，只要是依赖数据库开发的 Web 项目，基本的分层思路都大差不差。
+
+刚刚我们回顾了 MVC 三层开发架构。现在，我们再来看一下，什么是贫血模型？实际上，你可能一直都在用贫血模型做开发，只是自己不知道而已。不夸张地讲，据我了解，目前几乎所有的业务后端系统，都是基于贫血模型的。我举一个简单的例子来给你解释一下。
 
 ```java
 ////////// Controller+VO(View Object) //////////
@@ -705,53 +1571,79 @@ public class UserEntity {//省略其他属性、get/set/construct方法
 }
 ```
 
-其中，UserEntity 和 UserRepository 组成了数据访问层，UserBo 和 UserService 组成了业务逻辑层，UserVo 和 UserController 在这里属于接口层。UserBo 是一个纯粹的数据结构，只包含数据，不包含任何业务逻辑。业务逻辑集中在 UserService 中。我们通过 UserService 来操作 UserBo。换句话说，Service 层的数据和业务逻辑，被分割为 BO 和 Service 两个类中。像 UserBo 这样，只包含数据，不包含业务逻辑的类，就叫作贫血模型（Anemic Domain Model）。同理，UserEntity、UserVo 都是基于贫血模型设计的。这种贫血模型将数据与操作分离，破坏了面向对象的封装特性，是一种典型的面向过程的编程风格。
+我们平时开发 Web 后端项目的时候，基本上都是这么组织代码的。其中，UserEntity 和 UserRepository 组成了数据访问层，UserBo 和 UserService 组成了业务逻辑层，UserVo 和 UserController 在这里属于接口层。
 
-2. 什么是基于充血模型的 DDD 开发模式？
+从代码中，我们可以发现，UserBo 是一个纯粹的数据结构，只包含数据，不包含任何业务逻辑。业务逻辑集中在 UserService 中。我们通过 UserService 来操作 UserBo。换句话说，Service 层的数据和业务逻辑，被分割为 BO 和 Service 两个类中。像 UserBo 这样，只包含数据，不包含业务逻辑的类，就叫作贫血模型（Anemic Domain Model）。同理，UserEntity、UserVo 都是基于贫血模型设计的。这种贫血模型将数据与操作分离，破坏了面向对象的封装特性，是一种典型的面向过程的编程风格。
 
-**什么是充血模型**？在贫血模型中，数据和业务逻辑被分割到不同的类中。充血模型（Rich Domain Model）正好相反，数据和对应的业务逻辑被封装到同一个类中。因此，这种充血模型满足面向对象的封装特性，是典型的面向对象编程风格。
+### 什么是基于充血模型的 DDD 开发模式？
 
-**什么是领域驱动设计**？领域驱动设计，即 DDD，主要是用来指导如何解耦业务系统，划分业务模块，定义业务领域模型及其交互。实际上，基于充血模型的 DDD 开发模式实现的代码，也是按照 MVC 三层架构分层的。Controller 层还是负责暴露接口，Repository 层还是负责数据存取，Service 层负责核心业务逻辑。它跟基于贫血模型的传统开发模式的区别主要在 Service 层。
+刚刚我们讲了基于贫血模型的传统的开发模式。现在我们再讲一下，另外一种最近更加被推崇的开发模式：基于充血模型的 DDD 开发模式。
+
+首先，我们先来看一下，什么是充血模型？
+
+在贫血模型中，数据和业务逻辑被分割到不同的类中。充血模型（Rich Domain Model）正好相反，数据和对应的业务逻辑被封装到同一个类中。因此，这种充血模型满足面向对象的封装特性，是典型的面向对象编程风格。
+
+接下来，我们再来看一下，什么是领域驱动设计？
+
+领域驱动设计，即 DDD，主要是用来指导如何解耦业务系统，划分业务模块，定义业务领域模型及其交互。领域驱动设计这个概念并不新颖，早在 2004 年就被提出了，到现在已经有十几年的历史了。不过，它被大众熟知，还是基于另一个概念的兴起，那就是微服务。
+
+我们知道，除了监控、调用链追踪、API 网关等服务治理系统的开发之外，微服务还有另外一个更加重要的工作，那就是针对公司的业务，合理地做微服务拆分。而领域驱动设计恰好就是用来指导划分服务的。所以，微服务加速了领域驱动设计的盛行。
+
+不过，我个人觉得，领域驱动设计有点儿类似敏捷开发、SOA、PAAS 等概念，听起来很高大上，但实际上只值“五分钱”。即便你没有听说过领域驱动设计，对这个概念一无所知，只要你是在开发业务系统，也或多或少都在使用它。做好领域驱动设计的关键是，看你对自己所做业务的熟悉程度，而并不是对领域驱动设计这个概念本身的掌握程度。即便你对领域驱动搞得再清楚，但是对业务不熟悉，也并不一定能做出合理的领域设计。所以，不要把领域驱动设计当银弹，不要花太多的时间去过度地研究它。
+
+实际上，基于充血模型的 DDD 开发模式实现的代码，也是按照 MVC 三层架构分层的。Controller 层还是负责暴露接口，Repository 层还是负责数据存取，Service 层负责核心业务逻辑。它跟基于贫血模型的传统开发模式的区别主要在 Service 层。
 
 在基于贫血模型的传统开发模式中，Service 层包含 Service 类和 BO 类两部分，BO 是贫血模型，只包含数据，不包含具体的业务逻辑。业务逻辑集中在 Service 类中。在基于充血模型的 DDD 开发模式中，Service 层包含 Service 类和 Domain 类两部分。Domain 就相当于贫血模型中的 BO。不过，Domain 与 BO 的区别在于它是基于充血模型开发的，既包含数据，也包含业务逻辑。而 Service 类变得非常单薄。总结一下的话就是，基于贫血模型的传统的开发模式，重 Service 轻 BO；基于充血模型的 DDD 开发模式，轻 Service 重 Domain。
 
+基于充血模型的 DDD 设计模式的概念，今天我们只是简单地介绍了一下。在下一节课中，我会结合具体的项目，通过代码来给你展示，如何基于这种开发模式来开发一个系统。
 
+### 为什么基于贫血模型的传统开发模式如此受欢迎？
 
+前面我们讲过，基于贫血模型的传统开发模式，将数据与业务逻辑分离，违反了 OOP 的封装特性，实际上是一种面向过程的编程风格。但是，现在几乎所有的 Web 项目，都是基于这种贫血模型的开发模式，甚至连 Java Spring 框架的官方 demo，都是按照这种开发模式来编写的。
 
+我们前面也讲过，面向过程编程风格有种种弊端，比如，数据和操作分离之后，数据本身的操作就不受限制了。任何代码都可以随意修改数据。既然基于贫血模型的这种传统开发模式是面向过程编程风格的，那它又为什么会被广大程序员所接受呢？关于这个问题，我总结了下面三点原因。
 
+第一点原因是，大部分情况下，我们开发的系统业务可能都比较简单，简单到就是基于 SQL 的 CRUD 操作，所以，我们根本不需要动脑子精心设计充血模型，贫血模型就足以应付这种简单业务的开发工作。除此之外，因为业务比较简单，即便我们使用充血模型，那模型本身包含的业务逻辑也并不会很多，设计出来的领域模型也会比较单薄，跟贫血模型差不多，没有太大意义。
 
+第二点原因是，充血模型的设计要比贫血模型更加有难度。因为充血模型是一种面向对象的编程风格。我们从一开始就要设计好针对数据要暴露哪些操作，定义哪些业务逻辑。而不是像贫血模型那样，我们只需要定义数据，之后有什么功能开发需求，我们就在 Service 层定义什么操作，不需要事先做太多设计。
 
+第三点原因是，思维已固化，转型有成本。基于贫血模型的传统开发模式经历了这么多年，已经深得人心、习以为常。你随便问一个旁边的大龄同事，基本上他过往参与的所有 Web 项目应该都是基于这个开发模式的，而且也没有出过啥大问题。如果转向用充血模型、领域驱动设计，那势必有一定的学习成本、转型成本。很多人在没有遇到开发痛点的情况下，是不愿意做这件事情的。
 
+### 什么项目应该考虑使用基于充血模型的 DDD 开发模式？
 
+既然基于贫血模型的开发模式已经成为了一种约定俗成的开发习惯，那什么样的项目应该考虑使用基于充血模型的 DDD 开发模式呢？
 
+刚刚我们讲到，基于贫血模型的传统的开发模式，比较适合业务比较简单的系统开发。相对应的，基于充血模型的 DDD 开发模式，更适合业务复杂的系统开发。比如，包含各种利息计算模型、还款模型等复杂业务的金融系统。
 
+你可能会有一些疑问，这两种开发模式，落实到代码层面，区别不就是一个将业务逻辑放到 Service 类中，一个将业务逻辑放到 Domain 领域模型中吗？为什么基于贫血模型的传统开发模式，就不能应对复杂业务系统的开发？而基于充血模型的 DDD 开发模式就可以呢？
 
+实际上，除了我们能看到的代码层面的区别之外（一个业务逻辑放到 Service 层，一个放到领域模型中），还有一个非常重要的区别，那就是两种不同的开发模式会导致不同的开发流程。基于充血模型的 DDD 开发模式的开发流程，在应对复杂业务系统的开发的时候更加有优势。为什么这么说呢？我们先来回忆一下，我们平时基于贫血模型的传统的开发模式，都是怎么实现一个功能需求的。
 
+不夸张地讲，我们平时的开发，大部分都是 SQL 驱动（SQL-Driven）的开发模式。我们接到一个后端接口的开发需求的时候，就去看接口需要的数据对应到数据库中，需要哪张表或者哪几张表，然后思考如何编写 SQL 语句来获取数据。之后就是定义 Entity、BO、VO，然后模板式地往对应的 Repository、Service、Controller 类中添加代码。
 
+业务逻辑包裹在一个大的 SQL 语句中，而 Service 层可以做的事情很少。SQL 都是针对特定的业务功能编写的，复用性差。当我要开发另一个业务功能的时候，只能重新写个满足新需求的 SQL 语句，这就可能导致各种长得差不多、区别很小的 SQL 语句满天飞。
 
+所以，在这个过程中，很少有人会应用领域模型、OOP 的概念，也很少有代码复用意识。对于简单业务系统来说，这种开发方式问题不大。但对于复杂业务系统的开发来说，这样的开发方式会让代码越来越混乱，最终导致无法维护。
 
+如果我们在项目中，应用基于充血模型的 DDD 的开发模式，那对应的开发流程就完全不一样了。在这种开发模式下，我们需要事先理清楚所有的业务，定义领域模型所包含的属性和方法。领域模型相当于可复用的业务中间层。新功能需求的开发，都基于之前定义好的这些领域模型来完成。
 
+我们知道，越复杂的系统，对代码的复用性、易维护性要求就越高，我们就越应该花更多的时间和精力在前期设计上。而基于充血模型的 DDD 开发模式，正好需要我们前期做大量的业务调研、领域模型设计，所以它更加适合这种复杂系统的开发。
 
+### 总结
 
+我们平时做 Web 项目的业务开发，大部分都是基于贫血模型的 MVC 三层架构，在专栏中我把它称为传统的开发模式。之所以称之为“传统”，是相对于新兴的基于充血模型的 DDD 开发模式来说的。基于贫血模型的传统开发模式，是典型的面向过程的编程风格。相反，基于充血模型的 DDD 开发模式，是典型的面向对象的编程风格。
 
-
-
-
-
-
-
-
-
-
-
+不过，DDD 也并非银弹。对于业务不复杂的系统开发来说，基于贫血模型的传统开发模式简单够用，基于充血模型的 DDD 开发模式有点大材小用，无法发挥作用。相反，对于业务复杂的系统开发来说，基于充血模型的 DDD 开发模式，因为前期需要在设计上投入更多时间和精力，来提高代码的复用性和可维护性，所以相比基于贫血模型的开发模式，更加有优势。
 
 ## 12 | 实战一（下）：如何利用基于充血模型的DDD开发一个虚拟钱包系统？
 
-**业务背景**：
+### 钱包业务背景介绍
 
 很多具有支付、购买功能的应用（比如淘宝、滴滴出行、极客时间等）都支持钱包的功能。应用为每个用户开设一个系统内的虚拟钱包账户，支持用户充值、提现、支付、冻结、透支、转赠、查询账户余额、查询交易流水等操作。下图是一张典型的钱包功能界面，你可以直观地感受一下。
 
-![img](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201118221158.jpg)
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201215211943.jpg)
+
+一般来讲，每个虚拟钱包账户都会对应用户的一个真实的支付账户，有可能是银行卡账户，也有可能是三方支付账户（比如支付宝、微信钱包）。为了方便后续的讲解，我们限定钱包暂时只支持充值、提现、支付、查询余额、查询交易流水这五个核心的功能，其他比如冻结、透支、转赠等不常用的功能，我们暂不考虑。为了让你理解这五个核心功能是如何工作的，接下来，我们来一块儿看下它们的业务实现流程。
 
 1. 充值
 
@@ -785,9 +1677,15 @@ public class UserEntity {//省略其他属性、get/set/construct方法
 
 **钱包系统的设计思路**：
 
+根据刚刚讲的业务实现流程和数据流转图，我们可以把整个钱包系统的业务划分为两部分，其中一部分单纯跟应用内的虚拟钱包账户打交道，另一部分单纯跟银行账户打交道。我们基于这样一个业务划分，给系统解耦，将整个钱包系统拆分为两个子系统：虚拟钱包系统和三方支付系统。
+
+现在我们来看下，如果要支持钱包的这五个核心功能，虚拟钱包系统需要对应实现哪些操作。我画了一张图，列出了这五个功能都会对应虚拟钱包的哪些操作。注意，交易流水的记录和查询，我暂时在图中打了个问号，那是因为这块比较特殊，我们待会再讲。
+
 <img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201119232852.jpg" alt="img" style="zoom:33%;" />
 
-   那么交易流水应该怎么设计呢？
+从图中我们可以看出，虚拟钱包系统要支持的操作非常简单，就是余额的加加减减。其中，充值、提现、查询余额三个功能，只涉及一个账户余额的加减操作，而支付功能涉及两个账户的余额加减操作：一个账户减余额，另一个账户加余额。
+
+现在，我们再来看一下图中问号的那部分，也就是交易流水该如何记录和查询？我们先来看一下，交易流水都需要包含哪些信息。我觉得下面这几个信息是必须包含的。   
 
 <img src="https://gitee.com/haojunsheng/ImageHost/raw/master/img/20201119233415.jpg" alt="img" style="zoom: 33%;" />
 
@@ -799,7 +1697,11 @@ public class UserEntity {//省略其他属性、get/set/construct方法
 
 那么哪个好一点呢？
 
-答案是第一种设计思路更好些。因为交易流水有两个功能：一个是业务功能，比如，提供用户查询交易流水信息；另一个是非业务功能，保证数据的一致性。这里主要是指支付操作数据的一致性。支付实际上就是一个转账的操作，在一个账户上加上一定的金额，在另一个账户上减去相应的金额。我们需要保证加金额和减金额这两个操作，要么都成功，要么都失败。如果一个成功，一个失败，就会导致数据的不一致，一个账户明明减掉了钱，另一个账户却没有收到钱。
+答案是第一种设计思路更好些。因为交易流水有两个功能：一个是业务功能，比如，提供用户查询交易流水信息；另一个是非业务功能，保证数据的一致性。这里主要是指支付操作数据的一致性。
+
+支付实际上就是一个转账的操作，在一个账户上加上一定的金额，在另一个账户上减去相应的金额。我们需要保证加金额和减金额这两个操作，要么都成功，要么都失败。如果一个成功，一个失败，就会导致数据的不一致，一个账户明明减掉了钱，另一个账户却没有收到钱。
+
+保证数据一致性的方法有很多，比如依赖数据库事务的原子性，将两个操作放在同一个事务中执行。但是，这样的做法不够灵活，因为我们的有可能做了分库分表，支付涉及的两个账户可能存储在不同的库中，无法直接利用数据库本身的事务特性，在一个事务中执行两个账户的操作。当然，我们还有一些支持分布式事务的开源框架，但是，为了保证数据的强一致性，它们的实现逻辑一般都比较复杂、本身的性能也不高，会影响业务的执行时间。所以，更加权衡的一种做法就是，不保证数据的强一致性，只实现数据的最终一致性，也就是我们刚刚提到的交易流水要实现的非业务功能。
 
 对于支付这样的类似转账的操作，我们在操作两个钱包账户余额之前，先记录交易流水，并且标记为“待执行”，当两个钱包的加减金额都完成之后，我们再回过头来，将交易流水标记为“成功”。在给两个钱包加减金额的过程中，如果有任意一个操作失败，我们就将交易记录的状态标记为“失败”。我们通过后台补漏 Job，拉取状态为“失败”或者长时间处于“待执行”状态的交易记录，重新执行或者人工介入处理。
 
@@ -815,7 +1717,7 @@ public class UserEntity {//省略其他属性、get/set/construct方法
 
 我们通过查询上层钱包系统的交易流水信息，去满足用户查询交易流水的功能需求，而虚拟钱包中的交易流水就只是用来解决数据一致性问题。实际上，它的作用还有很多，比如用来对账等。
 
-1. 基于贫血模型的传统开发模式
+### 基于贫血模型的传统开发模式
 
 这是一个典型的 Web 后端项目的三层结构。其中，Controller 和 VO 负责暴露接口，具体的代码实现如下所示。注意，Controller 中，接口实现比较简单，主要就是调用 Service 的方法，所以，我省略了具体的代码实现。
 
@@ -893,7 +1795,11 @@ public class VirtualWalletService {
 }
 ```
 
-2. 基于充血模型的 DDD 开发模式
+以上便是利用基于贫血模型的传统开发模式来实现的虚拟钱包系统。尽管我们对代码稍微做了简化，但整体的业务逻辑就是上面这样子。其中大部分代码逻辑都非常简单，最复杂的是 Service 中的 transfer() 转账函数。我们为了保证转账操作的数据一致性，添加了一些跟 transaction 相关的记录和状态更新的代码，理解起来稍微有点难度，你可以对照着之前讲的设计思路，自己多思考一下。
+
+### 基于充血模型的 DDD 开发模式
+
+在上一节课中，我们讲到，基于充血模型的 DDD 开发模式，跟基于贫血模型的传统开发模式的主要区别就在 Service 层，Controller 层和 Repository 层的代码基本上相同。所以，我们重点看一下，Service 层按照基于充血模型的 DDD 开发模式该如何来实现。
 
 在这种开发模式下，我们把虚拟钱包 VirtualWallet 类设计成一个充血的 Domain 领域模型，并且将原来在 Service 类中的部分业务逻辑移动到 VirtualWallet 类中，让 Service 类的实现依赖 VirtualWallet 类。具体的代码实现如下所示：
 
@@ -961,7 +1867,7 @@ public class VirtualWalletService {
 }
 ```
 
-如果虚拟钱包需要支持更多的功能。
+看了上面的代码，你可能会说，领域模型 VirtualWallet 类很单薄，包含的业务逻辑很简单。相对于原来的贫血模型的设计思路，这种充血模型的设计思路，貌似并没有太大优势。你说得没错！这也是大部分业务系统都使用基于贫血模型开发的原因。不过，如果虚拟钱包系统需要支持更复杂的业务逻辑，那充血模型的优势就显现出来了。比如，我们要支持透支一定额度和冻结部分余额的功能。这个时候，我们重新来看一下 VirtualWallet 类的实现代码。
 
 ```java
 public class VirtualWallet {
@@ -1014,9 +1920,35 @@ public class VirtualWallet {
 
 领域模型 VirtualWallet 类添加了简单的冻结和透支逻辑之后，功能看起来就丰富了很多，代码也没那么单薄了。如果功能继续演进，我们可以增加更加细化的冻结策略、透支策略、支持钱包账号（VirtualWallet id 字段）自动生成的逻辑（不是通过构造函数经外部传入 ID，而是通过分布式 ID 生成算法来自动生成 ID）等等。VirtualWallet 类的业务逻辑会变得越来越复杂，也就很值得设计成充血模型了。
 
+### 思考
 
+对于虚拟钱包系统的设计与两种开发模式的代码实现，我想你应该有个比较清晰的了解了。不过，我觉得还有两个问题值得讨论一下。
 
-TODO
+第一个要讨论的问题是：在基于充血模型的 DDD 开发模式中，将业务逻辑移动到 Domain 中，Service 类变得很薄，但在我们的代码设计与实现中，并没有完全将 Service 类去掉，这是为什么？或者说，Service 类在这种情况下担当的职责是什么？哪些功能逻辑会放到 Service 类中？
+
+区别于 Domain 的职责，Service 类主要有下面这样几个职责。
+
+1. Service 类负责与 Repository 交流。在我的设计与代码实现中，VirtualWalletService 类负责与 Repository 层打交道，调用 Respository 类的方法，获取数据库中的数据，转化成领域模型 VirtualWallet，然后由领域模型 VirtualWallet 来完成业务逻辑，最后调用 Repository 类的方法，将数据存回数据库。这里我再稍微解释一下，之所以让 VirtualWalletService 类与 Repository 打交道，而不是让领域模型 VirtualWallet 与 Repository 打交道，那是因为我们想保持领域模型的独立性，不与任何其他层的代码（Repository 层的代码）或开发框架（比如 Spring、MyBatis）耦合在一起，将流程性的代码逻辑（比如从 DB 中取数据、映射数据）与领域模型的业务逻辑解耦，让领域模型更加可复用。
+2. Service 类负责跨领域模型的业务聚合功能。VirtualWalletService 类中的 transfer() 转账函数会涉及两个钱包的操作，因此这部分业务逻辑无法放到 VirtualWallet 类中，所以，我们暂且把转账业务放到 VirtualWalletService 类中了。当然，虽然功能演进，使得转账业务变得复杂起来之后，我们也可以将转账业务抽取出来，设计成一个独立的领域模型。
+3.  Service 类负责一些非功能性及与三方系统交互的工作。比如幂等、事务、发邮件、发消息、记录日志、调用其他系统的 RPC 接口等，都可以放到 Service 类中。
+
+第二个要讨论问题是：在基于充血模型的 DDD 开发模式中，尽管 Service 层被改造成了充血模型，但是Controller 层和 Repository 层还是贫血模型，是否有必要也进行充血领域建模呢？
+
+答案是没有必要。Controller 层主要负责接口的暴露，Repository 层主要负责与数据库打交道，这两层包含的业务逻辑并不多，前面我们也提到了，如果业务逻辑比较简单，就没必要做充血建模，即便设计成充血模型，类也非常单薄，看起来也很奇怪。
+
+尽管这样的设计是一种面向过程的编程风格，但我们只要控制好面向过程编程风格的副作用，照样可以开发出优秀的软件。那这里的副作用怎么控制呢？
+
+就拿 Repository 的 Entity 来说，即便它被设计成贫血模型，违反面向对象编程的封装特性，有被任意代码修改数据的风险，但 Entity 的生命周期是有限的。一般来讲，我们把它传递到 Service 层之后，就会转化成 BO 或者 Domain 来继续后面的业务逻辑。Entity 的生命周期到此就结束了，所以也并不会被到处任意修改。
+
+我们再来说说 Controller 层的 VO。实际上 VO 是一种 DTO（Data Transfer Object，数据传输对象）。它主要是作为接口的数据传输承载体，将数据发送给其他系统。从功能上来讲，它理应不包含业务逻辑、只包含数据。所以，我们将它设计成贫血模型也是比较合理的。
+
+### 总结
+
+基于充血模型的 DDD 开发模式跟基于贫血模型的传统开发模式相比，主要区别在 Service 层。在基于充血模型的开发模式下，我们将部分原来在 Service 类中的业务逻辑移动到了一个充血的 Domain 领域模型中，让 Service 类的实现依赖这个 Domain 类。
+
+在基于充血模型的 DDD 开发模式下，Service 类并不会完全移除，而是负责一些不适合放在 Domain 类中的功能。比如，负责与 Repository 层打交道、跨领域模型的业务聚合功能、幂等事务等非功能性的工作。
+
+基于充血模型的 DDD 开发模式跟基于贫血模型的传统开发模式相比，Controller 层和 Repository 层的代码基本上相同。这是因为，Repository 层的 Entity 生命周期有限，Controller 层的 VO 只是单纯作为一种 DTO。两部分的业务逻辑都不会太复杂。业务逻辑主要集中在 Service 层。所以，Repository 层和 Controller 层继续沿用贫血模型的设计思路是没有问题的。
 
 ## 13 | 实战二（上）：如何对接口鉴权这样一个功能开发做面向对象分析？
 
