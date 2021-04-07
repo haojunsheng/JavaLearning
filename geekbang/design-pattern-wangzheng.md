@@ -4070,6 +4070,415 @@ VO、BO、Entity 都是基于贫血模型的，而且为了兼容框架或开发
 
 ## 25 | 实战二（上）：针对非业务的通用框架开发，如何做需求分析和设计？
 
+### 2. 非功能性需求分析
+
+### 框架设计
+
+对于性能计数器这个框架的开发来说，我们可以先聚焦于一个非常具体、简单的应用场景，比如统计用户注册、登录这两个接口的响应时间的最大值和平均值、接口调用次数，并且将统计结果以 JSON 的格式输出到命令行中。现在这个需求简单、具体、明确，设计实现起来难度降低了很多。
+
+```java
+//应用场景：统计下面两个接口(注册和登录）的响应时间和访问次数
+public class UserController {
+  public void register(UserVo user) {
+    //...
+  }
+  
+  public UserVo login(String telephone, String password) {
+    //...
+  }
+}
+```
+
+要输出接口的响应时间的最大值、平均值和接口调用次数，我们首先要采集每次接口请求的响应时间，并且存储起来，然后按照某个时间间隔做聚合统计，最后才是将结果输出。在原型系统的代码实现中，我们可以把所有代码都塞到一个类中，暂时不用考虑任何代码质量、线程安全、性能、扩展性等等问题，怎么简单怎么来就行。
+
+最小原型的代码实现如下所示。其中，recordResponseTime() 和 recordTimestamp() 两个函数分别用来记录接口请求的响应时间和访问时间。startRepeatedReport() 函数以指定的频率统计数据并输出结果。
+
+```java
+public class Metrics {
+  // Map的key是接口名称，value对应接口请求的响应时间或时间戳；
+  private Map<String, List<Double>> responseTimes = new HashMap<>();
+  private Map<String, List<Double>> timestamps = new HashMap<>();
+  private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+
+  public void recordResponseTime(String apiName, double responseTime) {
+    responseTimes.putIfAbsent(apiName, new ArrayList<>());
+    responseTimes.get(apiName).add(responseTime);
+  }
+
+  public void recordTimestamp(String apiName, double timestamp) {
+    timestamps.putIfAbsent(apiName, new ArrayList<>());
+    timestamps.get(apiName).add(timestamp);
+  }
+
+  public void startRepeatedReport(long period, TimeUnit unit){
+    executor.scheduleAtFixedRate(new Runnable() {
+      @Override
+      public void run() {
+        Gson gson = new Gson();
+        Map<String, Map<String, Double>> stats = new HashMap<>();
+        for (Map.Entry<String, List<Double>> entry : responseTimes.entrySet()) {
+          String apiName = entry.getKey();
+          List<Double> apiRespTimes = entry.getValue();
+          stats.putIfAbsent(apiName, new HashMap<>());
+          stats.get(apiName).put("max", max(apiRespTimes));
+          stats.get(apiName).put("avg", avg(apiRespTimes));
+        }
+  
+        for (Map.Entry<String, List<Double>> entry : timestamps.entrySet()) {
+          String apiName = entry.getKey();
+          List<Double> apiTimestamps = entry.getValue();
+          stats.putIfAbsent(apiName, new HashMap<>());
+          stats.get(apiName).put("count", (double)apiTimestamps.size());
+        }
+        System.out.println(gson.toJson(stats));
+      }
+    }, 0, period, unit);
+  }
+
+  private double max(List<Double> dataset) {//省略代码实现}
+  private double avg(List<Double> dataset) {//省略代码实现}
+}
+```
+
+我们通过不到 50 行代码就实现了最小原型。接下来，我们再来看，如何用它来统计注册、登录接口的响应时间和访问次数。具体的代码如下所示：
+
+```java
+//应用场景：统计下面两个接口(注册和登录）的响应时间和访问次数
+public class UserController {
+  private Metrics metrics = new Metrics();
+  
+  public UserController() {
+    metrics.startRepeatedReport(60, TimeUnit.SECONDS);
+  }
+
+  public void register(UserVo user) {
+    long startTimestamp = System.currentTimeMillis();
+    metrics.recordTimestamp("regsiter", startTimestamp);
+    //...
+    long respTime = System.currentTimeMillis() - startTimestamp;
+    metrics.recordResponseTime("register", respTime);
+  }
+
+  public UserVo login(String telephone, String password) {
+    long startTimestamp = System.currentTimeMillis();
+    metrics.recordTimestamp("login", startTimestamp);
+    //...
+    long respTime = System.currentTimeMillis() - startTimestamp;
+    metrics.recordResponseTime("login", respTime);
+  }
+}
+```
+
+最小原型的代码实现虽然简陋，但它却帮我们将思路理顺了很多，我们现在就基于它做最终的框架设计。下面是我针对性能计数器框架画的一个粗略的系统设计图。图可以非常直观地体现设计思想，并且能有效地帮助我们释放更多的脑空间，来思考其他细节问题。
+
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20210407194028.jpg)
+
+如图所示，我们把整个框架分为四个模块：数据采集、存储、聚合统计、显示。每个模块负责的工作简单罗列如下。
+
+- 数据采集：负责打点采集原始数据，包括记录每次接口请求的响应时间和请求时间。数据采集过程要高度容错，不能影响到接口本身的可用性。除此之外，因为这部分功能是暴露给框架的使用者的，所以在设计数据采集 API 的时候，我们也要尽量考虑其易用性。
+- 存储：负责将采集的原始数据保存下来，以便后面做聚合统计。数据的存储方式有多种，比如：Redis、MySQL、HBase、日志、文件、内存等。数据存储比较耗时，为了尽量地减少对接口性能（比如响应时间）的影响，采集和存储的过程异步完成。
+- 聚合统计：负责将原始数据聚合为统计数据，比如：max、min、avg、pencentile、count、tps 等。为了支持更多的聚合统计规则，代码希望尽可能灵活、可扩展。
+- 显示：负责将统计数据以某种格式显示到终端，比如：输出到命令行、邮件、网页、自定义显示终端等。
+
+## 26 | 实战二（下）：如何实现一个支持各种统计规则的性能计数器？
+
+### 面向对象设计与实现
+
+#### 1. 划分职责进而识别出有哪些类
+
+根据需求描述，我们先大致识别出下面几个接口或类。这一步不难，完全就是翻译需求。
+
+- MetricsCollector 类负责提供 API，来采集接口请求的原始数据。我们可以为 MetricsCollector 抽象出一个接口，但这并不是必须的，因为暂时我们只能想到一个 MetricsCollector 的实现方式。
+- MetricsStorage 接口负责原始数据存储，RedisMetricsStorage 类实现 MetricsStorage 接口。这样做是为了今后灵活地扩展新的存储方法，比如用 HBase 来存储。
+- Aggregator 类负责根据原始数据计算统计数据。
+- ConsoleReporter 类、EmailReporter 类分别负责以一定频率统计并发送统计数据到命令行和邮件。至于 ConsoleReporter 和 EmailReporter 是否可以抽象出可复用的抽象类，或者抽象出一个公共的接口，我们暂时还不能确定。
+
+#### 2. 定义类及类与类之间的关系
+
+接下来就是定义类及属性和方法，定义类与类之间的关系。这两步没法分得很开，所以，我们今天将它们合在一起来讲解。
+
+大致地识别出几个核心的类之后，我的习惯性做法是，先在 IDE 中创建好这几个类，然后开始试着定义它们的属性和方法。在设计类、类与类之间交互的时候，我会不断地用之前学过的设计原则和思想来审视设计是否合理，比如，是否满足单一职责原则、开闭原则、依赖注入、KISS 原则、DRY 原则、迪米特法则，是否符合基于接口而非实现编程思想，代码是否高内聚、低耦合，是否可以抽象出可复用代码等等。
+
+MetricsCollector 类的定义非常简单，具体代码如下所示。对比上一节课中最小原型的代码，MetricsCollector 通过引入 RequestInfo 类来封装原始数据信息，用一个采集函数代替了之前的两个函数。
+
+```java
+public class MetricsCollector {
+  private MetricsStorage metricsStorage;//基于接口而非实现编程
+
+  //依赖注入
+  public MetricsCollector(MetricsStorage metricsStorage) {
+    this.metricsStorage = metricsStorage;
+  }
+
+  //用一个函数代替了最小原型中的两个函数
+  public void recordRequest(RequestInfo requestInfo) {
+    if (requestInfo == null || StringUtils.isBlank(requestInfo.getApiName())) {
+      return;
+    }
+    metricsStorage.saveRequestInfo(requestInfo);
+  }
+}
+
+public class RequestInfo {
+  private String apiName;
+  private double responseTime;
+  private long timestamp;
+  //...省略constructor/getter/setter方法...
+}
+```
+
+MetricsStorage 类和 RedisMetricsStorage 类的属性和方法也比较明确。具体的代码实现如下所示。注意，一次性取太长时间区间的数据，可能会导致拉取太多的数据到内存中，有可能会撑爆内存。对于 Java 来说，就有可能会触发 OOM（Out Of Memory）。而且，即便不出现 OOM，内存还够用，但也会因为内存吃紧，导致频繁的 Full GC，进而导致系统接口请求处理变慢，甚至超时。这个问题解决起来并不难，先留给你自己思考一下。我会在第 40 节课中解答。
+
+```java
+public interface MetricsStorage {
+  void saveRequestInfo(RequestInfo requestInfo);
+
+  List<RequestInfo> getRequestInfos(String apiName, long startTimeInMillis, long endTimeInMillis);
+
+  Map<String, List<RequestInfo>> getRequestInfos(long startTimeInMillis, long endTimeInMillis);
+}
+
+public class RedisMetricsStorage implements MetricsStorage {
+  //...省略属性和构造函数等...
+  @Override
+  public void saveRequestInfo(RequestInfo requestInfo) {
+    //...
+  }
+
+  @Override
+  public List<RequestInfo> getRequestInfos(String apiName, long startTimestamp, long endTimestamp) {
+    //...
+  }
+
+  @Override
+  public Map<String, List<RequestInfo>> getRequestInfos(long startTimestamp, long endTimestamp) {
+    //...
+  }
+}
+```
+
+MetricsCollector 类和 MetricsStorage 类的设计思路比较简单，不同的人给出的设计结果应该大差不差。但是，统计和显示这两个功能就不一样了，可以有多种设计思路。实际上，如果我们把统计显示所要完成的功能逻辑细分一下的话，主要包含下面 4 点：
+
+1. 根据给定的时间区间，从数据库中拉取数据；
+2. 根据原始数据，计算得到统计数据；
+3. 将统计数据显示到终端（命令行或邮件）；
+4. 定时触发以上 3 个过程的执行。
+
+实际上，如果用一句话总结一下的话，面向对象设计和实现要做的事情，就是把合适的代码放到合适的类中。所以，我们现在要做的工作就是，把以上的 4 个功能逻辑划分到几个类中。划分的方法有很多种，比如，我们可以把前两个逻辑放到一个类中，第 3 个逻辑放到另外一个类中，第 4 个逻辑作为上帝类（God Class）组合前面两个类来触发前 3 个逻辑的执行。当然，我们也可以把第 2 个逻辑单独放到一个类中，第 1、3、4 都放到另外一个类中。
+
+至于到底选择哪种排列组合方式，判定的标准是，让代码尽量地满足低耦合、高内聚、单一职责、对扩展开放对修改关闭等之前讲到的各种设计原则和思想，尽量地让设计满足代码易复用、易读、易扩展、易维护。
+
+我们暂时选择把第 1、3、4 逻辑放到 ConsoleReporter 或 EmailReporter 类中，把第 2 个逻辑放到 Aggregator 类中。其中，Aggregator 类负责的逻辑比较简单，我们把它设计成只包含静态方法的工具类。具体的代码实现如下所示：
+
+```java
+public class Aggregator {
+  public static RequestStat aggregate(List<RequestInfo> requestInfos, long durationInMillis) {
+    double maxRespTime = Double.MIN_VALUE;
+    double minRespTime = Double.MAX_VALUE;
+    double avgRespTime = -1;
+    double p999RespTime = -1;
+    double p99RespTime = -1;
+    double sumRespTime = 0;
+    long count = 0;
+    for (RequestInfo requestInfo : requestInfos) {
+      ++count;
+      double respTime = requestInfo.getResponseTime();
+      if (maxRespTime < respTime) {
+        maxRespTime = respTime;
+      }
+      if (minRespTime > respTime) {
+        minRespTime = respTime;
+      }
+      sumRespTime += respTime;
+    }
+    if (count != 0) {
+      avgRespTime = sumRespTime / count;
+    }
+    long tps = (long)(count / durationInMillis * 1000);
+    Collections.sort(requestInfos, new Comparator<RequestInfo>() {
+      @Override
+      public int compare(RequestInfo o1, RequestInfo o2) {
+        double diff = o1.getResponseTime() - o2.getResponseTime();
+        if (diff < 0.0) {
+          return -1;
+        } else if (diff > 0.0) {
+          return 1;
+        } else {
+          return 0;
+        }
+      }
+    });
+    int idx999 = (int)(count * 0.999);
+    int idx99 = (int)(count * 0.99);
+    if (count != 0) {
+      p999RespTime = requestInfos.get(idx999).getResponseTime();
+      p99RespTime = requestInfos.get(idx99).getResponseTime();
+    }
+    RequestStat requestStat = new RequestStat();
+    requestStat.setMaxResponseTime(maxRespTime);
+    requestStat.setMinResponseTime(minRespTime);
+    requestStat.setAvgResponseTime(avgRespTime);
+    requestStat.setP999ResponseTime(p999RespTime);
+    requestStat.setP99ResponseTime(p99RespTime);
+    requestStat.setCount(count);
+    requestStat.setTps(tps);
+    return requestStat;
+  }
+}
+
+public class RequestStat {
+  private double maxResponseTime;
+  private double minResponseTime;
+  private double avgResponseTime;
+  private double p999ResponseTime;
+  private double p99ResponseTime;
+  private long count;
+  private long tps;
+  //...省略getter/setter方法...
+}
+```
+
+ConsoleReporter 类相当于一个上帝类，定时根据给定的时间区间，从数据库中取出数据，借助 Aggregator 类完成统计工作，并将统计结果输出到命令行。具体的代码实现如下所示：
+
+```java
+public class ConsoleReporter {
+  private MetricsStorage metricsStorage;
+  private ScheduledExecutorService executor;
+
+  public ConsoleReporter(MetricsStorage metricsStorage) {
+    this.metricsStorage = metricsStorage;
+    this.executor = Executors.newSingleThreadScheduledExecutor();
+  }
+  
+  // 第4个代码逻辑：定时触发第1、2、3代码逻辑的执行；
+  public void startRepeatedReport(long periodInSeconds, long durationInSeconds) {
+    executor.scheduleAtFixedRate(new Runnable() {
+      @Override
+      public void run() {
+        // 第1个代码逻辑：根据给定的时间区间，从数据库中拉取数据；
+        long durationInMillis = durationInSeconds * 1000;
+        long endTimeInMillis = System.currentTimeMillis();
+        long startTimeInMillis = endTimeInMillis - durationInMillis;
+        Map<String, List<RequestInfo>> requestInfos =
+                metricsStorage.getRequestInfos(startTimeInMillis, endTimeInMillis);
+        Map<String, RequestStat> stats = new HashMap<>();
+        for (Map.Entry<String, List<RequestInfo>> entry : requestInfos.entrySet()) {
+          String apiName = entry.getKey();
+          List<RequestInfo> requestInfosPerApi = entry.getValue();
+          // 第2个代码逻辑：根据原始数据，计算得到统计数据；
+          RequestStat requestStat = Aggregator.aggregate(requestInfosPerApi, durationInMillis);
+          stats.put(apiName, requestStat);
+        }
+        // 第3个代码逻辑：将统计数据显示到终端（命令行或邮件）；
+        System.out.println("Time Span: [" + startTimeInMillis + ", " + endTimeInMillis + "]");
+        Gson gson = new Gson();
+        System.out.println(gson.toJson(stats));
+      }
+    }, 0, periodInSeconds, TimeUnit.SECONDS);
+  }
+}
+
+public class EmailReporter {
+  private static final Long DAY_HOURS_IN_SECONDS = 86400L;
+
+  private MetricsStorage metricsStorage;
+  private EmailSender emailSender;
+  private List<String> toAddresses = new ArrayList<>();
+
+  public EmailReporter(MetricsStorage metricsStorage) {
+    this(metricsStorage, new EmailSender(/*省略参数*/));
+  }
+
+  public EmailReporter(MetricsStorage metricsStorage, EmailSender emailSender) {
+    this.metricsStorage = metricsStorage;
+    this.emailSender = emailSender;
+  }
+
+  public void addToAddress(String address) {
+    toAddresses.add(address);
+  }
+
+  public void startDailyReport() {
+    Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.DATE, 1);
+    calendar.set(Calendar.HOUR_OF_DAY, 0);
+    calendar.set(Calendar.MINUTE, 0);
+    calendar.set(Calendar.SECOND, 0);
+    calendar.set(Calendar.MILLISECOND, 0);
+    Date firstTime = calendar.getTime();
+    Timer timer = new Timer();
+    timer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        long durationInMillis = DAY_HOURS_IN_SECONDS * 1000;
+        long endTimeInMillis = System.currentTimeMillis();
+        long startTimeInMillis = endTimeInMillis - durationInMillis;
+        Map<String, List<RequestInfo>> requestInfos =
+                metricsStorage.getRequestInfos(startTimeInMillis, endTimeInMillis);
+        Map<String, RequestStat> stats = new HashMap<>();
+        for (Map.Entry<String, List<RequestInfo>> entry : requestInfos.entrySet()) {
+          String apiName = entry.getKey();
+          List<RequestInfo> requestInfosPerApi = entry.getValue();
+          RequestStat requestStat = Aggregator.aggregate(requestInfosPerApi, durationInMillis);
+          stats.put(apiName, requestStat);
+        }
+        // TODO: 格式化为html格式，并且发送邮件
+      }
+    }, firstTime, DAY_HOURS_IN_SECONDS * 1000);
+  }
+}
+```
+
+#### 3. 将类组装起来并提供执行入口
+
+因为这个框架稍微有些特殊，有两个执行入口：一个是 MetricsCollector 类，提供了一组 API 来采集原始数据；另一个是 ConsoleReporter 类和 EmailReporter 类，用来触发统计显示。框架具体的使用方式如下所示：
+
+```java
+public class Demo {
+  public static void main(String[] args) {
+    MetricsStorage storage = new RedisMetricsStorage();
+    ConsoleReporter consoleReporter = new ConsoleReporter(storage);
+    consoleReporter.startRepeatedReport(60, 60);
+
+    EmailReporter emailReporter = new EmailReporter(storage);
+    emailReporter.addToAddress("wangzheng@xzg.com");
+    emailReporter.startDailyReport();
+
+    MetricsCollector collector = new MetricsCollector(storage);
+    collector.recordRequest(new RequestInfo("register", 123, 10234));
+    collector.recordRequest(new RequestInfo("register", 223, 11234));
+    collector.recordRequest(new RequestInfo("register", 323, 12334));
+    collector.recordRequest(new RequestInfo("login", 23, 12434));
+    collector.recordRequest(new RequestInfo("login", 1223, 14234));
+
+    try {
+      Thread.sleep(100000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+}
+```
+
+### Review 设计与实现
+
+我们前面讲到了 SOLID、KISS、DRY、YAGNI、LOD 等设计原则，基于接口而非实现编程、多用组合少用继承、高内聚低耦合等设计思想。我们现在就来看下，上面的代码实现是否符合这些设计原则和思想。
+
+- MetricsCollector。MetricsCollector 负责采集和存储数据，职责相对来说还算比较单一。它基于接口而非实现编程，通过依赖注入的方式来传递 MetricsStorage 对象，可以在不需要修改代码的情况下，灵活地替换不同的存储方式，满足开闭原则。
+- MetricsStorage、RedisMetricsStorage。MetricsStorage 和 RedisMetricsStorage 的设计比较简单。当我们需要实现新的存储方式的时候，只需要实现 MetricsStorage 接口即可。因为所有用到 MetricsStorage 和 RedisMetricsStorage 的地方，都是基于相同的接口函数来编程的，所以，除了在组装类的地方有所改动（从 RedisMetricsStorage 改为新的存储实现类），其他接口函数调用的地方都不需要改动，满足开闭原则。
+- Aggregator。Aggregator 类是一个工具类，里面只有一个静态函数，有 50 行左右的代码量，负责各种统计数据的计算。当需要扩展新的统计功能的时候，需要修改 aggregate() 函数代码，并且一旦越来越多的统计功能添加进来之后，这个函数的代码量会持续增加，可读性、可维护性就变差了。所以，从刚刚的分析来看，这个类的设计可能存在职责不够单一、不易扩展等问题，需要在之后的版本中，对其结构做优化。
+- ConsoleReporter、EmailReporter。ConsoleReporter 和 EmailReporter 中存在代码重复问题。在这两个类中，从数据库中取数据、做统计的逻辑都是相同的，可以抽取出来复用，否则就违反了 DRY 原则。而且整个类负责的事情比较多，职责不是太单一。特别是显示部分的代码，可能会比较复杂（比如 Email 的展示方式），最好是将显示部分的代码逻辑拆分成独立的类。除此之外，因为代码中涉及线程操作，并且调用了 Aggregator 的静态函数，所以代码的可测试性不好。
+
+# 设计原则与思想：规范与重构（11讲）
+
+## 27 | 理论一：什么情况下要重构？到底重构什么？又该如何重构？
+
+
+
+## 34 | 实战一（上）：通过一段ID生成器代码，学习如何发现代码质量问题
+
+
+
 
 
 # 设计模式与范式：创建型 (7讲)
