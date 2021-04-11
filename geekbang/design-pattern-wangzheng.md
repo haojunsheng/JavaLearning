@@ -4674,7 +4674,7 @@ public class OrderController {
 
 那如何来解决这个问题呢？我们最先想到的就是通过加锁的方式：给 log() 函数加互斥锁（Java 中可以通过 synchronized 的关键字），同一时刻只允许一个线程调用执行 log() 函数。具体的代码实现如下所示：
 
-```
+```java
 public class Logger {
   private FileWriter writer;
 
@@ -4763,7 +4763,7 @@ public class OrderController {
 
 比如，配置信息类。在系统中，我们只有一个配置文件，当配置文件被加载到内存之后，以对象的形式存在，也理所应当只有一份。再比如，唯一递增 ID 号码生成器（第 34 讲中我们讲的是唯一 ID 生成器，这里讲的是唯一递增 ID 生成器），如果程序中有两个对象，那就会存在生成重复 ID 的情况，所以，我们应该将 ID 生成器类设计为单例。
 
-```
+```java
 import java.util.concurrent.atomic.AtomicLong;
 public class IdGenerator {
   // AtomicLong是一个Java并发库中提供的一个原子变量类型,
@@ -4888,11 +4888,11 @@ public class IdGenerator {
 }
 ```
 
-SingletonHolder 是一个静态内部类，当外部类 IdGenerator 被加载的时候，并不会创建 SingletonHolder 实例对象。只有当调用 getInstance() 方法时，SingletonHolder 才会被加载，这个时候才会创建 instance。instance 的唯一性、创建过程的线程安全性，都由 JVM 来保证。所以，这种实现方法既保证了线程安全，又能做到延迟加载。
+SingletonHolder 是一个静态内部类，当外部类 IdGenerator 被加载的时候，并不会创建 SingletonHolder 实例对象。只有当调用 getInstance() 方法时，SingletonHolder 才会被加载，这个时候才会创建 instance。**instance 的唯一性、创建过程的线程安全性，都由 JVM 来保证**。所以，这种实现方法既保证了线程安全，又能做到延迟加载。
 
 5. 枚举
 
-```
+```java
 public enum IdGenerator {
   INSTANCE;
   private AtomicLong id = new AtomicLong(0);
@@ -4913,7 +4913,7 @@ public enum IdGenerator {
 
 我们知道，OOP 的四大特性是封装、抽象、继承、多态。单例这种设计模式对于其中的抽象、继承、多态都支持得不好。为什么这么说呢？我们还是通过 IdGenerator 这个例子来讲解。
 
-```
+```java
 public class Order {
   public void create(...) {
     //...
@@ -4933,7 +4933,7 @@ public class User {
 
 IdGenerator 的使用方式违背了基于接口而非实现的设计原则，也就违背了广义上理解的 OOP 的抽象特性。如果未来某一天，我们希望针对不同的业务采用不同的 ID 生成算法。比如，订单 ID 和用户 ID 采用不同的 ID 生成器来生成。为了应对这个需求变化，我们需要修改所有用到 IdGenerator 类的地方，这样代码的改动就会比较大。
 
-```
+```java
 public class Order {
   public void create(...) {
     //...
