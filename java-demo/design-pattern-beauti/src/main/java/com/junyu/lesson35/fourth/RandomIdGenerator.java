@@ -1,12 +1,8 @@
 package com.junyu.lesson35.fourth;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.junyu.lesson35.LogTraceIdGenerator;
 import com.sun.org.slf4j.internal.Logger;
 import com.sun.org.slf4j.internal.LoggerFactory;
-
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * 第四轮重构
