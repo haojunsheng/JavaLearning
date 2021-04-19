@@ -6737,6 +6737,1610 @@ public class BeansFactory {
 }
 ```
 
+效果如下：
+
+![image-20210415190639061](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20210415190640.png)
+
+### 重点回顾
+
+DI 容器在一些软件开发中已经成为了标配，比如 Spring IOC、Google Guice。但是，大部分人可能只是把它当作一个黑盒子来使用，并未真正去了解它的底层是如何实现的。当然，如果只是做一些简单的小项目，简单会用就足够了，但是，如果我们面对的是非常复杂的系统，当系统出现问题的时候，对底层原理的掌握程度，决定了我们排查问题的能力，直接影响到我们排查问题的效率。
+
+今天，我们讲解了一个简单的 DI 容器的实现原理，其核心逻辑主要包括：配置文件解析，以及根据配置文件通过“反射”语法来创建对象。其中，创建对象的过程就应用到了我们在学的工厂模式。对象创建、组装、管理完全有 DI 容器来负责，跟具体业务代码解耦，让程序员聚焦在业务代码的开发上。
+
+### 课后问题
+
+BeansFactory 类中的 createBean() 函数是一个递归函数。当构造函数的参数是 ref 类型时，会递归地创建 ref 属性指向的对象。如果我们在配置文件中错误地配置了对象之间的依赖关系，导致存在循环依赖，那 BeansFactory 的 createBean() 函数是否会出现堆栈溢出？又该如何解决这个问题呢？
+
+## 46 | 建造者模式：详解构造函数、set方法、建造者模式三种对象创建方式
+
+上两节课中，我们学习了工厂模式，讲了工厂模式的应用场景，并带你实现了一个简单的 DI 容器。今天，我们再来学习另外一个比较常用的创建型设计模式，Builder 模式，中文翻译为建造者模式或者构建者模式，也有人叫它生成器模式。
+
+实际上，建造者模式的原理和代码实现非常简单，掌握起来并不难，难点在于应用场景。比如，你有没有考虑过这样几个问题：直接使用构造函数或者配合 set 方法就能创建对象，为什么还需要建造者模式来创建呢？建造者模式和工厂模式都可以创建对象，那它们两个的区别在哪里呢？
+
+### 为什么需要建造者模式？
+
+在平时的开发中，创建一个对象最常用的方式是，使用 new 关键字调用类的构造函数来完成。我的问题是，什么情况下这种方式就不适用了，就需要采用建造者模式来创建对象呢？你可以先思考一下，下面我通过一个例子来带你看一下。
+
+假设有这样一道设计面试题：我们需要定义一个资源池配置类 ResourcePoolConfig。这里的资源池，你可以简单理解为线程池、连接池、对象池等。在这个资源池配置类中，有以下几个成员变量，也就是可配置项。现在，请你编写代码实现这个 ResourcePoolConfig 类。
+
+<img src="https://gitee.com/haojunsheng/ImageHost/raw/master/img/20210415220957.jpg" alt="img" style="zoom:50%;" />
+
+只要你稍微有点开发经验，那实现这样一个类对你来说并不是件难事。最常见、最容易想到的实现思路如下代码所示。因为 maxTotal、maxIdle、minIdle 不是必填变量，所以在创建 ResourcePoolConfig 对象的时候，我们通过往构造函数中，给这几个参数传递 null 值，来表示使用默认值。
+
+```java
+public class ResourcePoolConfig {
+  private static final int DEFAULT_MAX_TOTAL = 8;
+  private static final int DEFAULT_MAX_IDLE = 8;
+  private static final int DEFAULT_MIN_IDLE = 0;
+
+  private String name;
+  private int maxTotal = DEFAULT_MAX_TOTAL;
+  private int maxIdle = DEFAULT_MAX_IDLE;
+  private int minIdle = DEFAULT_MIN_IDLE;
+
+  public ResourcePoolConfig(String name, Integer maxTotal, Integer maxIdle, Integer minIdle) {
+    if (StringUtils.isBlank(name)) {
+      throw new IllegalArgumentException("name should not be empty.");
+    }
+    this.name = name;
+
+    if (maxTotal != null) {
+      if (maxTotal <= 0) {
+        throw new IllegalArgumentException("maxTotal should be positive.");
+      }
+      this.maxTotal = maxTotal;
+    }
+
+    if (maxIdle != null) {
+      if (maxIdle < 0) {
+        throw new IllegalArgumentException("maxIdle should not be negative.");
+      }
+      this.maxIdle = maxIdle;
+    }
+
+    if (minIdle != null) {
+      if (minIdle < 0) {
+        throw new IllegalArgumentException("minIdle should not be negative.");
+      }
+      this.minIdle = minIdle;
+    }
+  }
+  //...省略getter方法...
+}
+```
+
+现在，ResourcePoolConfig 只有 4 个可配置项，对应到构造函数中，也只有 4 个参数，参数的个数不多。但是，如果可配置项逐渐增多，变成了 8 个、10 个，甚至更多，那继续沿用现在的设计思路，构造函数的参数列表会变得很长，代码在可读性和易用性上都会变差。在使用构造函数的时候，我们就容易搞错各参数的顺序，传递进错误的参数值，导致非常隐蔽的 bug。
+
+```java
+// 参数太多，导致可读性差、参数可能传递错误
+ResourcePoolConfig config = new ResourcePoolConfig("dbconnectionpool", 16, null, 8, null, false , true, 10, 20，false， true);
+```
+
+解决这个问题的办法你应该也已经想到了，那就是用 set() 函数来给成员变量赋值，以替代冗长的构造函数。我们直接看代码，具体如下所示。其中，配置项 name 是必填的，所以我们把它放到构造函数中设置，强制创建类对象的时候就要填写。其他配置项 maxTotal、maxIdle、minIdle 都不是必填的，所以我们通过 set() 函数来设置，让使用者自主选择填写或者不填写。
+
+```java
+public class ResourcePoolConfig {
+  private static final int DEFAULT_MAX_TOTAL = 8;
+  private static final int DEFAULT_MAX_IDLE = 8;
+  private static final int DEFAULT_MIN_IDLE = 0;
+
+  private String name;
+  private int maxTotal = DEFAULT_MAX_TOTAL;
+  private int maxIdle = DEFAULT_MAX_IDLE;
+  private int minIdle = DEFAULT_MIN_IDLE;
+  
+  public ResourcePoolConfig(String name) {
+    if (StringUtils.isBlank(name)) {
+      throw new IllegalArgumentException("name should not be empty.");
+    }
+    this.name = name;
+  }
+
+  public void setMaxTotal(int maxTotal) {
+    if (maxTotal <= 0) {
+      throw new IllegalArgumentException("maxTotal should be positive.");
+    }
+    this.maxTotal = maxTotal;
+  }
+
+  public void setMaxIdle(int maxIdle) {
+    if (maxIdle < 0) {
+      throw new IllegalArgumentException("maxIdle should not be negative.");
+    }
+    this.maxIdle = maxIdle;
+  }
+
+  public void setMinIdle(int minIdle) {
+    if (minIdle < 0) {
+      throw new IllegalArgumentException("minIdle should not be negative.");
+    }
+    this.minIdle = minIdle;
+  }
+  //...省略getter方法...
+}
+```
+
+接下来，我们来看新的 ResourcePoolConfig 类该如何使用。我写了一个示例代码，如下所示。没有了冗长的函数调用和参数列表，代码在可读性和易用性上提高了很多。
+
+```
+// ResourcePoolConfig使用举例
+ResourcePoolConfig config = new ResourcePoolConfig("dbconnectionpool");
+config.setMaxTotal(16);
+config.setMaxIdle(8);
+```
+
+至此，我们仍然没有用到建造者模式，通过构造函数设置必填项，通过 set() 方法设置可选配置项，就能实现我们的设计需求。如果我们把问题的难度再加大点，比如，还需要解决下面这三个问题，那现在的设计思路就不能满足了。
+
+- 我们刚刚讲到，name 是必填的，所以，我们把它放到构造函数中，强制创建对象的时候就设置。如果**必填的配置项有很多**，把这些必填配置项都放到构造函数中设置，那构造函数就又会出现参数列表很长的问题。如果我们把必填项也通过 set() 方法设置，那校验这些必填项是否已经填写的逻辑就无处安放了。
+- 除此之外，假设**配置项之间有一定的依赖关系**，比如，如果用户设置了 maxTotal、maxIdle、minIdle 其中一个，就必须显式地设置另外两个；或者配置项之间有一定的约束条件，比如，maxIdle 和 minIdle 要小于等于 maxTotal。如果我们继续使用现在的设计思路，那这些配置项之间的依赖关系或者约束条件的校验逻辑就无处安放了。
+- 如果我们希望 ResourcePoolConfig 类对象是不可变对象，也就是说，对象在创建好之后，就不能再修改内部的属性值。要实现这个功能，我们就不能在 ResourcePoolConfig 类中暴露 set() 方法。
+
+为了解决这些问题，建造者模式就派上用场了。
+
+我们可以把校验逻辑放置到 Builder 类中，先创建建造者，并且通过 set() 方法设置建造者的变量值，然后在使用 build() 方法真正创建对象之前，做集中的校验，校验通过之后才会创建对象。除此之外，我们把 ResourcePoolConfig 的构造函数改为 private 私有权限。这样我们就只能通过建造者来创建 ResourcePoolConfig 类对象。并且，ResourcePoolConfig 没有提供任何 set() 方法，这样我们创建出来的对象就是不可变对象了。
+
+我们用建造者模式重新实现了上面的需求，具体的代码如下所示：
+
+```java
+public class ResourcePoolConfig {
+  private String name;
+  private int maxTotal;
+  private int maxIdle;
+  private int minIdle;
+
+  private ResourcePoolConfig(Builder builder) {
+    this.name = builder.name;
+    this.maxTotal = builder.maxTotal;
+    this.maxIdle = builder.maxIdle;
+    this.minIdle = builder.minIdle;
+  }
+  //...省略getter方法...
+
+  //我们将Builder类设计成了ResourcePoolConfig的内部类。
+  //我们也可以将Builder类设计成独立的非内部类ResourcePoolConfigBuilder。
+  public static class Builder {
+    private static final int DEFAULT_MAX_TOTAL = 8;
+    private static final int DEFAULT_MAX_IDLE = 8;
+    private static final int DEFAULT_MIN_IDLE = 0;
+
+    private String name;
+    private int maxTotal = DEFAULT_MAX_TOTAL;
+    private int maxIdle = DEFAULT_MAX_IDLE;
+    private int minIdle = DEFAULT_MIN_IDLE;
+
+    public ResourcePoolConfig build() {
+      // 校验逻辑放到这里来做，包括必填项校验、依赖关系校验、约束条件校验等
+      if (StringUtils.isBlank(name)) {
+        throw new IllegalArgumentException("...");
+      }
+      if (maxIdle > maxTotal) {
+        throw new IllegalArgumentException("...");
+      }
+      if (minIdle > maxTotal || minIdle > maxIdle) {
+        throw new IllegalArgumentException("...");
+      }
+
+      return new ResourcePoolConfig(this);
+    }
+
+    public Builder setName(String name) {
+      if (StringUtils.isBlank(name)) {
+        throw new IllegalArgumentException("...");
+      }
+      this.name = name;
+      return this;
+    }
+
+    public Builder setMaxTotal(int maxTotal) {
+      if (maxTotal <= 0) {
+        throw new IllegalArgumentException("...");
+      }
+      this.maxTotal = maxTotal;
+      return this;
+    }
+
+    public Builder setMaxIdle(int maxIdle) {
+      if (maxIdle < 0) {
+        throw new IllegalArgumentException("...");
+      }
+      this.maxIdle = maxIdle;
+      return this;
+    }
+
+    public Builder setMinIdle(int minIdle) {
+      if (minIdle < 0) {
+        throw new IllegalArgumentException("...");
+      }
+      this.minIdle = minIdle;
+      return this;
+    }
+  }
+}
+
+// 这段代码会抛出IllegalArgumentException，因为minIdle>maxIdle
+ResourcePoolConfig config = new ResourcePoolConfig.Builder()
+        .setName("dbconnectionpool")
+        .setMaxTotal(16)
+        .setMaxIdle(10)
+        .setMinIdle(12)
+        .build();
+```
+
+实际上，使用建造者模式创建对象，还能避免对象存在无效状态。我再举个例子解释一下。比如我们定义了一个长方形类，如果不使用建造者模式，采用先创建后 set 的方式，那就会导致在第一个 set 之后，对象处于无效状态。具体代码如下所示：
+
+```java
+Rectangle r = new Rectange(); // r is invalid
+r.setWidth(2); // r is invalid
+r.setHeight(3); // r is valid
+```
+
+为了避免这种无效状态的存在，我们就需要使用构造函数一次性初始化好所有的成员变量。如果构造函数参数过多，我们就需要考虑使用建造者模式，先设置建造者的变量，然后再一次性地创建对象，让对象一直处于有效状态。
+
+实际上，如果我们并不是很关心对象是否有短暂的无效状态，也不是太在意对象是否是可变的。比如，对象只是用来映射数据库读出来的数据，那我们直接暴露 set() 方法来设置类的成员变量值是完全没问题的。而且，使用建造者模式来构建对象，代码实际上是有点重复的，ResourcePoolConfig 类中的成员变量，要在 Builder 类中重新再定义一遍。
+
+### 与工厂模式有何区别？
+
+从上面的讲解中，我们可以看出，建造者模式是让建造者类来负责对象的创建工作。上一节课中讲到的工厂模式，是由工厂类来负责对象创建的工作。那它们之间有什么区别呢？
+
+实际上，工厂模式是用来创建不同但是相关类型的对象（继承同一父类或者接口的一组子类），由给定的参数来决定创建哪种类型的对象。建造者模式是用来创建一种类型的复杂对象，通过设置不同的可选参数，“定制化”地创建不同的对象。
+
+网上有一个经典的例子很好地解释了两者的区别。
+
+顾客走进一家餐馆点餐，我们利用工厂模式，根据用户不同的选择，来制作不同的食物，比如披萨、汉堡、沙拉。对于披萨来说，用户又有各种配料可以定制，比如奶酪、西红柿、起司，我们通过建造者模式根据用户选择的不同配料来制作披萨。
+
+实际上，我们也不要太学院派，非得把工厂模式、建造者模式分得那么清楚，我们需要知道的是，每个模式为什么这么设计，能解决什么问题。只有了解了这些最本质的东西，我们才能不生搬硬套，才能灵活应用，甚至可以混用各种模式创造出新的模式，来解决特定场景的问题。
+
+### 重点回顾
+
+建造者模式的原理和实现比较简单，重点是掌握应用场景，避免过度使用。
+
+如果一个类中有很多属性，为了避免构造函数的参数列表过长，影响代码的可读性和易用性，我们可以通过构造函数配合 set() 方法来解决。但是，如果存在下面情况中的任意一种，我们就要考虑使用建造者模式了。
+
+- 我们把类的必填属性放到构造函数中，强制创建对象的时候就设置。如果必填的属性有很多，把这些必填属性都放到构造函数中设置，那构造函数就又会出现参数列表很长的问题。如果我们把必填属性通过 set() 方法设置，那校验这些必填属性是否已经填写的逻辑就无处安放了。
+- 如果类的属性之间有一定的依赖关系或者约束条件，我们继续使用构造函数配合 set() 方法的设计思路，那这些依赖关系或约束条件的校验逻辑就无处安放了。
+- 如果我们希望创建不可变对象，也就是说，对象在创建好之后，就不能再修改内部的属性值，要实现这个功能，我们就不能在类中暴露 set() 方法。构造函数配合 set() 方法来设置属性值的方式就不适用了。
+
+除此之外，在今天的讲解中，我们还对比了工厂模式和建造者模式的区别。工厂模式是用来创建**不同但是相关类型的对象**（继承同一父类或者接口的一组子类），由给定的参数来决定创建哪种类型的对象。建造者模式是用来创建一种类型的复杂对象，可以通过设置不同的可选参数，“定制化”地创建不同的对象。
+
+### 课堂讨论
+
+在下面的 ConstructorArg 类中，当 isRef 为 true 的时候，arg 表示 String 类型的 refBeanId，type 不需要设置；当 isRef 为 false 的时候，arg、type 都需要设置。请根据这个需求，完善 ConstructorArg 类。
+
+```
+public class ConstructorArg {
+    private boolean isRef;
+    private Class type;
+    private Object arg;
+    // TODO: 待完善...
+  }
+```
+
+答案：
+
+```java
+public class ConstructorArg {
+    private boolean isRef;
+    private Class type;
+    private Object arg;
+
+    public boolean isRef() {
+        return isRef;
+    }
+
+    public Class getType() {
+        return type;
+    }
+
+    public Object getArg() {
+        return arg;
+    }
+
+    private ConstructorArg(Builder builder) {
+        this.isRef = builder.isRef;
+        this.arg = builder.arg;
+        this.type = builder.type;
+    }
+
+    @Override
+    public String toString() {
+        return "ConstructorArg{" +
+                "isRef=" + isRef +
+                ", type=" + type +
+                ", arg=" + arg +
+                '}';
+    }
+
+    public static class Builder {
+        private boolean isRef;
+        private Class type;
+        private Object arg;
+
+        public ConstructorArg build() {
+            if (isRef && type != null) {
+                throw new IllegalArgumentException("...");
+            }
+
+            if (!isRef && type == null) {
+                throw new IllegalArgumentException("...");
+            }
+
+            if (this.isRef && (arg != null && arg.getClass() != String.class)) {
+                throw new IllegalArgumentException("...");
+            }
+
+            if (!this.isRef && arg == null) {
+                throw new IllegalArgumentException("...");
+            }
+            return new ConstructorArg(this);
+        }
+
+        public Builder setRef(boolean ref) {
+            this.isRef = ref;
+            return this;
+        }
+
+        public Builder setType(Class type) {
+            if (type == null) {
+                throw new IllegalArgumentException("...");
+            }
+            this.type = type;
+            return this;
+        }
+
+        public Builder setArg(Object arg) {
+            if (arg == null) {
+                throw new IllegalArgumentException("...");
+            }
+            this.arg = arg;
+            return this;
+        }
+    }
+}
+```
+
+测试：
+
+```java
+public class ConstructorArgTest {
+    public static void main(String[] args) {
+        ConstructorArg constructorArg = new ConstructorArg.Builder()
+                .setArg("123")
+                .setRef(false)
+                .setType(Integer.class).build();
+        System.out.println(constructorArg);
+    }
+}
+```
+
+![image-20210415234354361](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20210415234358.png)
+
+## 47 | 原型模式：如何最快速地clone一个HashMap散列表？
+
+对于创建型模式，前面我们已经讲了单例模式、工厂模式、建造者模式，今天我们来讲最后一个：原型模式。
+
+对于熟悉 JavaScript 语言的前端程序员来说，原型模式是一种比较常用的开发模式。这是因为，有别于 Java、C++ 等基于类的面向对象编程语言，JavaScript 是一种基于原型的面向对象编程语言。即便 JavaScript 现在也引入了类的概念，但它也只是基于原型的语法糖而已。不过，如果你熟悉的是 Java、C++ 等这些编程语言，那在实际的开发中，就很少用到原型模式了。
+
+今天的讲解跟具体某一语言的语法机制无关，而是通过一个 clone 散列表的例子带你搞清楚：原型模式的应用场景，以及它的两种实现方式：深拷贝和浅拷贝。虽然原型模式的原理和代码实现非常简单，但今天举的例子还是稍微有点复杂的，你要跟上我的思路，多动脑思考一下。
+
+### 原型模式的原理与应用
+
+如果对象的创建成本比较大，而同一个类的不同对象之间差别不大（大部分字段都相同），在这种情况下，我们可以利用对已有对象（原型）进行复制（或者叫拷贝）的方式来创建新对象，以达到节省创建时间的目的。这种基于原型来创建对象的方式就叫作原型设计模式（Prototype Design Pattern），简称原型模式。
+
+那何为“对象的创建成本比较大”？
+
+实际上，创建对象包含的申请内存、给成员变量赋值这一过程，本身并不会花费太多时间，或者说对于大部分业务系统来说，这点时间完全是可以忽略的。应用一个复杂的模式，只得到一点点的性能提升，这就是所谓的过度设计，得不偿失。
+
+但是，如果对象中的数据需要经过复杂的计算才能得到（比如排序、计算哈希值），或者需要从 RPC、网络、数据库、文件系统等非常慢速的 IO 中读取，这种情况下，我们就可以利用原型模式，从其他已有对象中直接拷贝得到，而不用每次在创建新对象的时候，都重复执行这些耗时的操作。
+
+这么说还是比较理论，接下来，我们通过一个例子来解释一下刚刚这段话。
+
+假设数据库中存储了大约 10 万条“搜索关键词”信息，每条信息包含关键词、关键词被搜索的次数、信息最近被更新的时间等。系统 A 在启动的时候会加载这份数据到内存中，用于处理某些其他的业务需求。为了方便快速地查找某个关键词对应的信息，我们给关键词建立一个散列表索引。
+
+如果你熟悉的是 Java 语言，可以直接使用语言中提供的 HashMap 容器来实现。其中，HashMap 的 key 为搜索关键词，value 为关键词详细信息（比如搜索次数）。我们只需要将数据从数据库中读取出来，放入 HashMap 就可以了。
+
+不过，我们还有另外一个系统 B，专门用来分析搜索日志，定期（比如间隔 10 分钟）批量地更新数据库中的数据，并且标记为新的数据版本。比如，在下面的示例图中，我们对 v2 版本的数据进行更新，得到 v3 版本的数据。这里我们假设只有更新和新添关键词，没有删除关键词的行为。
+
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20210416000259.jpg)
+
+为了保证系统 A 中数据的实时性（不一定非常实时，但数据也不能太旧），系统 A 需要定期根据数据库中的数据，更新内存中的索引和数据。
+
+我们该如何实现这个需求呢？
+
+实际上，也不难。我们只需要在系统 A 中，记录当前数据的版本 Va 对应的更新时间 Ta，从数据库中捞出更新时间大于 Ta 的所有搜索关键词，也就是找出 Va 版本与最新版本数据的“差集”，然后针对差集中的每个关键词进行处理。如果它已经在散列表中存在了，我们就更新相应的搜索次数、更新时间等信息；如果它在散列表中不存在，我们就将它插入到散列表中。
+
+按照这个设计思路，我给出的示例代码如下所示：
+
+```java
+public class Demo {
+  private ConcurrentHashMap<String, SearchWord> currentKeywords = new ConcurrentHashMap<>();
+  private long lastUpdateTime = -1;
+
+  public void refresh() {
+    // 从数据库中取出更新时间>lastUpdateTime的数据，放入到currentKeywords中
+    List<SearchWord> toBeUpdatedSearchWords = getSearchWords(lastUpdateTime);
+    long maxNewUpdatedTime = lastUpdateTime;
+    for (SearchWord searchWord : toBeUpdatedSearchWords) {
+      if (searchWord.getLastUpdateTime() > maxNewUpdatedTime) {
+        maxNewUpdatedTime = searchWord.getLastUpdateTime();
+      }
+      if (currentKeywords.containsKey(searchWord.getKeyword())) {
+        currentKeywords.replace(searchWord.getKeyword(), searchWord);
+      } else {
+        currentKeywords.put(searchWord.getKeyword(), searchWord);
+      }
+    }
+
+    lastUpdateTime = maxNewUpdatedTime;
+  }
+
+  private List<SearchWord> getSearchWords(long lastUpdateTime) {
+    // TODO: 从数据库中取出更新时间>lastUpdateTime的数据
+    return null;
+  }
+}
+```
+
+不过，现在，我们有一个特殊的要求：任何时刻，系统 A 中的所有数据都必须是同一个版本的，要么都是版本 a，要么都是版本 b，不能有的是版本 a，有的是版本 b。那刚刚的更新方式就不能满足这个要求了。除此之外，我们还要求：在更新内存数据的时候，系统 A 不能处于不可用状态，也就是不能停机更新数据。
+
+那我们该如何实现现在这个需求呢？
+
+实际上，也不难。我们把正在使用的数据的版本定义为“服务版本”，当我们要更新内存中的数据的时候，我们并不是直接在服务版本（假设是版本 a 数据）上更新，而是重新创建另一个版本数据（假设是版本 b 数据），等新的版本数据建好之后，再一次性地将服务版本从版本 a 切换到版本 b。这样既保证了数据一直可用，又避免了中间状态的存在。
+
+```java
+public class Demo {
+  private HashMap<String, SearchWord> currentKeywords=new HashMap<>();
+
+  public void refresh() {
+    HashMap<String, SearchWord> newKeywords = new LinkedHashMap<>();
+
+    // 从数据库中取出所有的数据，放入到newKeywords中
+    List<SearchWord> toBeUpdatedSearchWords = getSearchWords();
+    for (SearchWord searchWord : toBeUpdatedSearchWords) {
+      newKeywords.put(searchWord.getKeyword(), searchWord);
+    }
+
+    currentKeywords = newKeywords;
+  }
+
+  private List<SearchWord> getSearchWords() {
+    // TODO: 从数据库中取出所有的数据
+    return null;
+  }
+}
+```
+
+不过，在上面的代码实现中，newKeywords 构建的成本比较高。我们需要将这 10 万条数据从数据库中读出，然后计算哈希值，构建 newKeywords。这个过程显然是比较耗时。为了提高效率，原型模式就派上用场了。
+
+我们拷贝 currentKeywords 数据到 newKeywords 中，然后从数据库中只捞出新增或者有更新的关键词，更新到 newKeywords 中。而相对于 10 万条数据来说，每次新增或者更新的关键词个数是比较少的，所以，这种策略大大提高了数据更新的效率。
+
+按照这个设计思路，我给出的示例代码如下所示：
+
+```java
+public class Demo {
+  private HashMap<String, SearchWord> currentKeywords=new HashMap<>();
+  private long lastUpdateTime = -1;
+
+  public void refresh() {
+    // 原型模式就这么简单，拷贝已有对象的数据，更新少量差值
+    HashMap<String, SearchWord> newKeywords = (HashMap<String, SearchWord>) currentKeywords.clone();
+
+    // 从数据库中取出更新时间>lastUpdateTime的数据，放入到newKeywords中
+    List<SearchWord> toBeUpdatedSearchWords = getSearchWords(lastUpdateTime);
+    long maxNewUpdatedTime = lastUpdateTime;
+    for (SearchWord searchWord : toBeUpdatedSearchWords) {
+      if (searchWord.getLastUpdateTime() > maxNewUpdatedTime) {
+        maxNewUpdatedTime = searchWord.getLastUpdateTime();
+      }
+      if (newKeywords.containsKey(searchWord.getKeyword())) {
+        SearchWord oldSearchWord = newKeywords.get(searchWord.getKeyword());
+        oldSearchWord.setCount(searchWord.getCount());
+        oldSearchWord.setLastUpdateTime(searchWord.getLastUpdateTime());
+      } else {
+        newKeywords.put(searchWord.getKeyword(), searchWord);
+      }
+    }
+
+    lastUpdateTime = maxNewUpdatedTime;
+    currentKeywords = newKeywords;
+  }
+
+  private List<SearchWord> getSearchWords(long lastUpdateTime) {
+    // TODO: 从数据库中取出更新时间>lastUpdateTime的数据
+    return null;
+  }
+}
+```
+
+这里我们利用了 Java 中的 clone() 语法来复制一个对象。如果你熟悉的语言没有这个语法，那把数据从 currentKeywords 中一个个取出来，然后再重新计算哈希值，放入到 newKeywords 中也是可以接受的。毕竟，最耗时的还是从数据库中取数据的操作。相对于数据库的 IO 操作来说，内存操作和 CPU 计算的耗时都是可以忽略的。
+
+不过，不知道你有没有发现，实际上，刚刚的代码实现是有问题的。要弄明白到底有什么问题，我们需要先了解另外两个概念：深拷贝（Deep Copy）和浅拷贝（Shallow Copy）。
+
+### 原型模式的实现方式：深拷贝和浅拷贝
+
+我们来看，在内存中，用散列表组织的搜索关键词信息是如何存储的。我画了一张示意图，大致结构如下所示。从图中我们可以发现，散列表索引中，每个结点存储的 key 是搜索关键词，value 是 SearchWord 对象的内存地址。SearchWord 对象本身存储在散列表之外的内存空间中。
+
+<img src="https://gitee.com/haojunsheng/ImageHost/raw/master/img/20210416175051.jpg" alt="img" style="zoom:25%;" />
+
+浅拷贝和深拷贝的区别在于，浅拷贝只会复制图中的索引（散列表），不会复制数据（SearchWord 对象）本身。相反，深拷贝不仅仅会复制索引，还会复制数据本身。浅拷贝得到的对象（newKeywords）跟原始对象（currentKeywords）共享数据（SearchWord 对象），而深拷贝得到的是一份完完全全独立的对象。具体的对比如下图所示：
+
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20210416175905.jpg)
+
+在 Java 语言中，Object 类的 clone() 方法执行的就是我们刚刚说的浅拷贝。它只会拷贝对象中的基本数据类型的数据（比如，int、long），以及引用对象（SearchWord）的内存地址，不会递归地拷贝引用对象本身。
+
+在上面的代码中，我们通过调用 HashMap 上的 clone() 浅拷贝方法来实现原型模式。当我们通过 newKeywords 更新 SearchWord 对象的时候（比如，更新“设计模式”这个搜索关键词的访问次数），newKeywords 和 currentKeywords 因为指向相同的一组 SearchWord 对象，就会导致 currentKeywords 中指向的 SearchWord，有的是老版本的，有的是新版本的，就没法满足我们之前的需求：currentKeywords 中的数据在任何时刻都是同一个版本的，不存在介于老版本与新版本之间的中间状态。
+
+现在，我们又该如何来解决这个问题呢？
+
+我们可以将浅拷贝替换为深拷贝。newKeywords 不仅仅复制 currentKeywords 的索引，还把 SearchWord 对象也复制一份出来，这样 newKeywords 和 currentKeywords 就指向不同的 SearchWord 对象，也就不存在更新 newKeywords 的数据会导致 currentKeywords 的数据也被更新的问题了。
+
+那如何实现深拷贝呢？总结一下的话，有下面两种方法。
+
+第一种方法：递归拷贝对象、对象的引用对象以及引用对象的引用对象……直到要拷贝的对象只包含基本数据类型数据，没有引用对象为止。根据这个思路对之前的代码进行重构。重构之后的代码如下所示：
+
+```java
+public class Demo {
+  private HashMap<String, SearchWord> currentKeywords=new HashMap<>();
+  private long lastUpdateTime = -1;
+
+  public void refresh() {
+    // Deep copy
+    HashMap<String, SearchWord> newKeywords = new HashMap<>();
+    for (HashMap.Entry<String, SearchWord> e : currentKeywords.entrySet()) {
+      SearchWord searchWord = e.getValue();
+      SearchWord newSearchWord = new SearchWord(
+              searchWord.getKeyword(), searchWord.getCount(), searchWord.getLastUpdateTime());
+      newKeywords.put(e.getKey(), newSearchWord);
+    }
+
+    // 从数据库中取出更新时间>lastUpdateTime的数据，放入到newKeywords中
+    List<SearchWord> toBeUpdatedSearchWords = getSearchWords(lastUpdateTime);
+    long maxNewUpdatedTime = lastUpdateTime;
+    for (SearchWord searchWord : toBeUpdatedSearchWords) {
+      if (searchWord.getLastUpdateTime() > maxNewUpdatedTime) {
+        maxNewUpdatedTime = searchWord.getLastUpdateTime();
+      }
+      if (newKeywords.containsKey(searchWord.getKeyword())) {
+        SearchWord oldSearchWord = newKeywords.get(searchWord.getKeyword());
+        oldSearchWord.setCount(searchWord.getCount());
+        oldSearchWord.setLastUpdateTime(searchWord.getLastUpdateTime());
+      } else {
+        newKeywords.put(searchWord.getKeyword(), searchWord);
+      }
+    }
+
+    lastUpdateTime = maxNewUpdatedTime;
+    currentKeywords = newKeywords;
+  }
+
+  private List<SearchWord> getSearchWords(long lastUpdateTime) {
+    // TODO: 从数据库中取出更新时间>lastUpdateTime的数据
+    return null;
+  }
+
+}
+```
+
+第二种方法：先将对象序列化，然后再反序列化成新的对象。具体的示例代码如下所示：
+
+```java
+public Object deepCopy(Object object) {
+  ByteArrayOutputStream bo = new ByteArrayOutputStream();
+  ObjectOutputStream oo = new ObjectOutputStream(bo);
+  oo.writeObject(object);
+  
+  ByteArrayInputStream bi = new ByteArrayInputStream(bo.toByteArray());
+  ObjectInputStream oi = new ObjectInputStream(bi);
+  
+  return oi.readObject();
+}
+```
+
+刚刚的两种实现方法，不管采用哪种，深拷贝都要比浅拷贝耗时、耗内存空间。针对我们这个应用场景，有没有更快、更省内存的实现方式呢？
+
+我们可以先采用浅拷贝的方式创建 newKeywords。对于需要更新的 SearchWord 对象，我们再使用深度拷贝的方式创建一份新的对象，替换 newKeywords 中的老对象。毕竟需要更新的数据是很少的。这种方式即利用了浅拷贝节省时间、空间的优点，又能保证 currentKeywords 中的中数据都是老版本的数据。具体的代码实现如下所示。这也是标题中讲到的，在我们这个应用场景下，最快速 clone 散列表的方式。
+
+```java
+public class Demo {
+  private HashMap<String, SearchWord> currentKeywords=new HashMap<>();
+  private long lastUpdateTime = -1;
+
+  public void refresh() {
+    // Shallow copy
+    HashMap<String, SearchWord> newKeywords = (HashMap<String, SearchWord>) currentKeywords.clone();
+
+    // 从数据库中取出更新时间>lastUpdateTime的数据，放入到newKeywords中
+    List<SearchWord> toBeUpdatedSearchWords = getSearchWords(lastUpdateTime);
+    long maxNewUpdatedTime = lastUpdateTime;
+    for (SearchWord searchWord : toBeUpdatedSearchWords) {
+      if (searchWord.getLastUpdateTime() > maxNewUpdatedTime) {
+        maxNewUpdatedTime = searchWord.getLastUpdateTime();
+      }
+      if (newKeywords.containsKey(searchWord.getKeyword())) {
+        newKeywords.remove(searchWord.getKeyword());
+      }
+      newKeywords.put(searchWord.getKeyword(), searchWord);
+    }
+
+    lastUpdateTime = maxNewUpdatedTime;
+    currentKeywords = newKeywords;
+  }
+
+  private List<SearchWord> getSearchWords(long lastUpdateTime) {
+    // TODO: 从数据库中取出更新时间>lastUpdateTime的数据
+    return null;
+  }
+}
+```
+
+### 重点回顾
+
+1. 什么是原型模式？
+
+如果对象的创建成本比较大，而同一个类的不同对象之间差别不大（大部分字段都相同），在这种情况下，我们可以利用对已有对象（原型）进行复制（或者叫拷贝）的方式，来创建新对象，以达到节省创建时间的目的。这种基于原型来创建对象的方式就叫作原型设计模式，简称原型模式。
+
+2. 原型模式的两种实现方法
+
+原型模式有两种实现方法，深拷贝和浅拷贝。浅拷贝只会复制对象中基本数据类型数据和引用对象的内存地址，不会递归地复制引用对象，以及引用对象的引用对象……而深拷贝得到的是一份完完全全独立的对象。所以，深拷贝比起浅拷贝来说，更加耗时，更加耗内存空间。
+
+如果要拷贝的对象是不可变对象，浅拷贝共享不可变对象是没问题的，但对于可变对象来说，浅拷贝得到的对象和原始对象会共享部分数据，就有可能出现数据被修改的风险，也就变得复杂多了。除非像我们今天实战中举的那个例子，需要从数据库中加载 10 万条数据并构建散列表索引，操作非常耗时，这种情况下比较推荐使用浅拷贝，否则，没有充分的理由，不要为了一点点的性能提升而使用浅拷贝。
+
+# 设计模式与范式：结构型
+
+## 48 | 代理模式：代理在RPC、缓存、监控等场景中的应用
+
+前面几节，我们学习了设计模式中的创建型模式。**创建型模式主要解决对象的创建问题，封装复杂的创建过程，解耦对象的创建代码和使用代码。**
+
+**其中，单例模式用来创建全局唯一的对象。工厂模式用来创建不同但是相关类型的对象（继承同一父类或者接口的一组子类），由给定的参数来决定创建哪种类型的对象。建造者模式是用来创建复杂对象，可以通过设置不同的可选参数，“定制化”地创建不同的对象。原型模式针对创建成本比较大的对象，利用对已有对象进行复制的方式进行创建，以达到节省创建时间的目的。**
+
+从今天起，我们开始学习另外一种类型的设计模式：结构型模式。**结构型模式主要总结了一些类或对象组合在一起的经典结构**，这些经典的结构可以解决特定应用场景的问题。结构型模式包括：代理模式、桥接模式、装饰器模式、适配器模式、门面模式、组合模式、享元模式。今天我们要讲其中的代理模式。它也是在实际开发中经常被用到的一种设计模式。
+
+### 代理模式的原理解析
+
+代理模式（Proxy Design Pattern）的原理和代码实现都不难掌握。它在不改变原始类（或叫被代理类）代码的情况下，通过引入代理类来给原始类附加功能。我们通过一个简单的例子来解释一下这段话。
+
+这个例子来自我们在第 25、26、39、40 节中讲的性能计数器。当时我们开发了一个 MetricsCollector 类，用来收集接口请求的原始数据，比如访问时间、处理时长等。在业务系统中，我们采用如下方式来使用这个 MetricsCollector 类：
+
+```java
+public class UserController {
+  //...省略其他属性和方法...
+  private MetricsCollector metricsCollector; // 依赖注入
+
+  public UserVo login(String telephone, String password) {
+    long startTimestamp = System.currentTimeMillis();
+
+    // ... 省略login逻辑...
+
+    long endTimeStamp = System.currentTimeMillis();
+    long responseTime = endTimeStamp - startTimestamp;
+    RequestInfo requestInfo = new RequestInfo("login", responseTime, startTimestamp);
+    metricsCollector.recordRequest(requestInfo);
+
+    //...返回UserVo数据...
+  }
+
+  public UserVo register(String telephone, String password) {
+    long startTimestamp = System.currentTimeMillis();
+
+    // ... 省略register逻辑...
+
+    long endTimeStamp = System.currentTimeMillis();
+    long responseTime = endTimeStamp - startTimestamp;
+    RequestInfo requestInfo = new RequestInfo("register", responseTime, startTimestamp);
+    metricsCollector.recordRequest(requestInfo);
+
+    //...返回UserVo数据...
+  }
+}
+```
+
+很明显，上面的写法有两个问题。第一，性能计数器框架代码侵入到业务代码中，跟业务代码高度耦合。如果未来需要替换这个框架，那替换的成本会比较大。第二，收集接口请求的代码跟业务代码无关，本就不应该放到一个类中。业务类最好职责更加单一，只聚焦业务处理。
+
+为了将框架代码和业务代码解耦，代理模式就派上用场了。代理类 UserControllerProxy 和原始类 UserController 实现相同的接口 IUserController。UserController 类只负责业务功能。代理类 UserControllerProxy 负责在业务代码执行前后附加其他逻辑代码，并通过委托的方式调用原始类来执行业务代码。具体的代码实现如下所示：
+
+```java
+public interface IUserController {
+  UserVo login(String telephone, String password);
+  UserVo register(String telephone, String password);
+}
+
+public class UserController implements IUserController {
+  //...省略其他属性和方法...
+
+  @Override
+  public UserVo login(String telephone, String password) {
+    //...省略login逻辑...
+    //...返回UserVo数据...
+  }
+
+  @Override
+  public UserVo register(String telephone, String password) {
+    //...省略register逻辑...
+    //...返回UserVo数据...
+  }
+}
+
+public class UserControllerProxy implements IUserController {
+  private MetricsCollector metricsCollector;
+  private UserController userController;
+
+  public UserControllerProxy(UserController userController) {
+    this.userController = userController;
+    this.metricsCollector = new MetricsCollector();
+  }
+
+  @Override
+  public UserVo login(String telephone, String password) {
+    long startTimestamp = System.currentTimeMillis();
+
+    // 委托
+    UserVo userVo = userController.login(telephone, password);
+
+    long endTimeStamp = System.currentTimeMillis();
+    long responseTime = endTimeStamp - startTimestamp;
+    RequestInfo requestInfo = new RequestInfo("login", responseTime, startTimestamp);
+    metricsCollector.recordRequest(requestInfo);
+
+    return userVo;
+  }
+
+  @Override
+  public UserVo register(String telephone, String password) {
+    long startTimestamp = System.currentTimeMillis();
+
+    UserVo userVo = userController.register(telephone, password);
+
+    long endTimeStamp = System.currentTimeMillis();
+    long responseTime = endTimeStamp - startTimestamp;
+    RequestInfo requestInfo = new RequestInfo("register", responseTime, startTimestamp);
+    metricsCollector.recordRequest(requestInfo);
+
+    return userVo;
+  }
+}
+
+//UserControllerProxy使用举例
+//因为原始类和代理类实现相同的接口，是基于接口而非实现编程
+//将UserController类对象替换为UserControllerProxy类对象，不需要改动太多代码
+IUserController userController = new UserControllerProxy(new UserController());
+```
+
+参照基于接口而非实现编程的设计思想，将原始类对象替换为代理类对象的时候，为了让代码改动尽量少，在刚刚的代理模式的代码实现中，**代理类和原始类需要实现相同的接口**。但是，如果原始类并没有定义接口，并且原始类代码并不是我们开发维护的（比如它来自一个第三方的类库），我们也没办法直接修改原始类，给它重新定义一个接口。在这种情况下，我们该如何实现代理模式呢？
+
+对于这种外部类的扩展，我们一般都是采用继承的方式。这里也不例外。我们让代理类继承原始类，然后扩展附加功能。原理很简单，不需要过多解释，你直接看代码就能明白。具体代码如下所示：
+
+```java
+public class UserControllerProxy extends UserController {
+  private MetricsCollector metricsCollector;
+
+  public UserControllerProxy() {
+    this.metricsCollector = new MetricsCollector();
+  }
+
+  public UserVo login(String telephone, String password) {
+    long startTimestamp = System.currentTimeMillis();
+
+    UserVo userVo = super.login(telephone, password);
+
+    long endTimeStamp = System.currentTimeMillis();
+    long responseTime = endTimeStamp - startTimestamp;
+    RequestInfo requestInfo = new RequestInfo("login", responseTime, startTimestamp);
+    metricsCollector.recordRequest(requestInfo);
+
+    return userVo;
+  }
+
+  public UserVo register(String telephone, String password) {
+    long startTimestamp = System.currentTimeMillis();
+
+    UserVo userVo = super.register(telephone, password);
+
+    long endTimeStamp = System.currentTimeMillis();
+    long responseTime = endTimeStamp - startTimestamp;
+    RequestInfo requestInfo = new RequestInfo("register", responseTime, startTimestamp);
+    metricsCollector.recordRequest(requestInfo);
+
+    return userVo;
+  }
+}
+//UserControllerProxy使用举例
+UserController userController = new UserControllerProxy();
+```
+
+### 动态代理的原理解析
+
+不过，刚刚的代码实现还是有点问题。一方面，我们需要在代理类中，将原始类中的所有的方法，都重新实现一遍，并且为每个方法都附加相似的代码逻辑。另一方面，如果要添加的附加功能的类有不止一个，我们需要针对每个类都创建一个代理类。
+
+如果有 50 个要添加附加功能的原始类，那我们就要创建 50 个对应的代理类。这会导致项目中类的个数成倍增加，增加了代码维护成本。并且，每个代理类中的代码都有点像模板式的“重复”代码，也增加了不必要的开发成本。那这个问题怎么解决呢？
+
+我们可以使用动态代理来解决这个问题。所谓动态代理（Dynamic Proxy），就是我们不事先为每个原始类编写代理类，而是在运行的时候，动态地创建原始类对应的代理类，然后在系统中用代理类替换掉原始类。那如何实现动态代理呢？
+
+如果你熟悉的是 Java 语言，实现动态代理就是件很简单的事情。因为 Java 语言本身就已经提供了动态代理的语法（实际上，动态代理底层依赖的就是 Java 的反射语法）。我们来看一下，如何用 Java 的动态代理来实现刚刚的功能。具体的代码如下所示。其中，MetricsCollectorProxy 作为一个动态代理类，动态地给每个需要收集接口请求信息的类创建代理类。
+
+```java
+public class MetricsCollectorProxy {
+  private MetricsCollector metricsCollector;
+
+  public MetricsCollectorProxy() {
+    this.metricsCollector = new MetricsCollector();
+  }
+
+  public Object createProxy(Object proxiedObject) {
+    Class<?>[] interfaces = proxiedObject.getClass().getInterfaces();
+    DynamicProxyHandler handler = new DynamicProxyHandler(proxiedObject);
+    return Proxy.newProxyInstance(proxiedObject.getClass().getClassLoader(), interfaces, handler);
+  }
+
+  private class DynamicProxyHandler implements InvocationHandler {
+    private Object proxiedObject;
+
+    public DynamicProxyHandler(Object proxiedObject) {
+      this.proxiedObject = proxiedObject;
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+      long startTimestamp = System.currentTimeMillis();
+      Object result = method.invoke(proxiedObject, args);
+      long endTimeStamp = System.currentTimeMillis();
+      long responseTime = endTimeStamp - startTimestamp;
+      String apiName = proxiedObject.getClass().getName() + ":" + method.getName();
+      RequestInfo requestInfo = new RequestInfo(apiName, responseTime, startTimestamp);
+      metricsCollector.recordRequest(requestInfo);
+      return result;
+    }
+  }
+}
+
+//MetricsCollectorProxy使用举例
+MetricsCollectorProxy proxy = new MetricsCollectorProxy();
+IUserController userController = (IUserController) proxy.createProxy(new UserController());
+```
+
+实际上，Spring AOP 底层的实现原理就是基于动态代理。用户配置好需要给哪些类创建代理，并定义好在执行原始类的业务代码前后执行哪些附加功能。Spring 为这些类创建动态代理对象，并在 JVM 中替代原始类对象。原本在代码中执行的原始类的方法，被换作执行代理类的方法，也就实现了**给原始类添加附加功能**的目的。
+
+### 代理模式的应用场景
+
+代理模式的应用场景非常多，我这里列举一些比较常见的用法，希望你能举一反三地应用在你的项目开发中。
+
+1. 业务系统的非功能性需求开发
+
+代理模式最常用的一个应用场景就是，在业务系统中开发一些非功能性需求，比如：监控、统计、鉴权、限流、事务、幂等、日志。我们将这些附加功能与业务功能解耦，放到代理类中统一处理，让程序员只需要关注业务方面的开发。实际上，前面举的搜集接口请求信息的例子，就是这个应用场景的一个典型例子。
+
+2. 代理模式在 RPC、缓存中的应用
+
+实际上，RPC 框架也可以看作一种代理模式，GoF 的《设计模式》一书中把它称作远程代理。通过远程代理，将网络通信、数据编解码等细节隐藏起来。客户端在使用 RPC 服务的时候，就像使用本地函数一样，无需了解跟服务器交互的细节。除此之外，RPC 服务的开发者也只需要开发业务逻辑，就像开发本地使用的函数一样，不需要关注跟客户端的交互细节。
+
+我们再来看代理模式在缓存中的应用。假设我们要开发一个接口请求的缓存功能，对于某些接口请求，如果入参相同，在设定的过期时间内，直接返回缓存结果，而不用重新进行逻辑处理。比如，针对获取用户个人信息的需求，我们可以开发两个接口，一个支持缓存，一个支持实时查询。对于需要实时数据的需求，我们让其调用实时查询接口，对于不需要实时数据的需求，我们让其调用支持缓存的接口。那如何来实现接口请求的缓存功能呢？
+
+最简单的实现方法就是刚刚我们讲到的，给每个需要支持缓存的查询需求都开发两个不同的接口，一个支持缓存，一个支持实时查询。但是，这样做显然增加了开发成本，而且会让代码看起来非常臃肿（接口个数成倍增加），也不方便缓存接口的集中管理（增加、删除缓存接口）、集中配置（比如配置每个接口缓存过期时间）。
+
+针对这些问题，代理模式就能派上用场了，确切地说，应该是动态代理。如果是基于 Spring 框架来开发的话，那就可以在 AOP 切面中完成接口缓存的功能。在应用启动的时候，我们从配置文件中加载需要支持缓存的接口，以及相应的缓存策略（比如过期时间）等。当请求到来的时候，我们在 AOP 切面中拦截请求，如果请求中带有支持缓存的字段（比如 http://…?..&cached=true），我们便从缓存（内存缓存或者 Redis 缓存等）中获取数据直接返回。
+
+### 重点回顾
+
+1. 代理模式的原理与实现
+
+在不改变原始类（或叫被代理类）的情况下，通过引入代理类来给原始类附加功能。一般情况下，我们让代理类和原始类实现同样的接口。但是，如果原始类并没有定义接口，并且原始类代码并不是我们开发维护的。在这种情况下，我们可以通过让代理类继承原始类的方法来实现代理模式。
+
+2. 动态代理的原理与实现
+
+静态代理需要针对每个类都创建一个代理类，并且每个代理类中的代码都有点像模板式的“重复”代码，增加了维护成本和开发成本。对于静态代理存在的问题，我们可以通过动态代理来解决。我们不事先为每个原始类编写代理类，而是在运行的时候动态地创建原始类对应的代理类，然后在系统中用代理类替换掉原始类。
+
+3. 代理模式的应用场景代理
+
+模式常用在业务系统中开发一些非功能性需求，比如：监控、统计、鉴权、限流、事务、幂等、日志。我们将这些附加功能与业务功能解耦，放到代理类统一处理，让程序员只需要关注业务方面的开发。除此之外，代理模式还可以用在 RPC、缓存等应用场景中。
+
+### 课堂讨论
+
+1. 除了 Java 语言之外，在你熟悉的其他语言中，如何实现动态代理呢？
+2. 我们今天讲了两种代理模式的实现方法，一种是基于组合，一种基于继承，请对比一下两者的优缺点。
+
+## 49 | 桥接模式：如何实现支持不同类型和渠道的消息推送系统？
+
+上一节课我们学习了第一种结构型模式：代理模式。它在不改变原始类（或者叫被代理类）代码的情况下，通过引入代理类来给原始类附加功能。代理模式在平时的开发经常被用到，常用在业务系统中开发一些非功能性需求，比如：监控、统计、鉴权、限流、事务、幂等、日志。
+
+今天，我们再学习另外一种结构型模式：桥接模式。桥接模式的代码实现非常简单，但是理解起来稍微有点难度，并且应用场景也比较局限，所以，相当于代理模式来说，桥接模式在实际的项目中并没有那么常用，你只需要简单了解，见到能认识就可以，并不是我们学习的重点。
+
+### 桥接模式的原理解析
+
+## 50 | 装饰器模式：通过剖析Java IO类库源码学习装饰器模式
+
+### Java IO 类的“奇怪”用法
+
+Java IO 类库非常庞大和复杂，有几十个类，负责 IO 数据的读取和写入。如果对 Java IO 类做一下分类，我们可以从下面两个维度将它划分为四类。具体如下所示：
+
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20210417160415.jpg)
+
+针对不同的读取和写入场景，Java IO 又在这四个父类基础之上，扩展出了很多子类。具体如下所示：
+
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20210417160441.jpg)
+
+在我初学 Java 的时候，曾经对 Java IO 的一些用法产生过很大疑惑，比如下面这样一段代码。我们打开文件 test.txt，从中读取数据。其中，InputStream 是一个抽象类，FileInputStream 是专门用来读取文件流的子类。BufferedInputStream 是一个支持带缓存功能的数据读取类，可以提高数据读取的效率。
+
+```java
+InputStream in = new FileInputStream("/user/wangzheng/test.txt");
+InputStream bin = new BufferedInputStream(in);
+byte[] data = new byte[128];
+while (bin.read(data) != -1) {
+  //...
+}
+```
+
+初看上面的代码，我们会觉得 Java IO 的用法比较麻烦，需要先创建一个 FileInputStream 对象，然后再传递给 BufferedInputStream 对象来使用。我在想，Java IO 为什么不设计一个继承 FileInputStream 并且支持缓存的 BufferedFileInputStream 类呢？这样我们就可以像下面的代码中这样，直接创建一个 BufferedFileInputStream 类对象，打开文件读取数据，用起来岂不是更加简单？
+
+```
+InputStream bin = new BufferedFileInputStream("/user/wangzheng/test.txt");
+byte[] data = new byte[128];
+while (bin.read(data) != -1) {
+  //...
+}
+```
+
+### 基于继承的设计方案
+
+如果 InputStream 只有一个子类 FileInputStream 的话，那我们在 FileInputStream 基础之上，再设计一个孙子类 BufferedFileInputStream，也算是可以接受的，毕竟继承结构还算简单。但实际上，继承 InputStream 的子类有很多。我们需要给每一个 InputStream 的子类，再继续派生支持缓存读取的子类。
+
+除了支持缓存读取之外，如果我们还需要对功能进行其他方面的增强，比如下面的 DataInputStream 类，支持按照基本数据类型（int、boolean、long 等）来读取数据。
+
+```
+FileInputStream in = new FileInputStream("/user/wangzheng/test.txt");
+DataInputStream din = new DataInputStream(in);
+int data = din.readInt();
+```
+
+在这种情况下，如果我们继续按照继承的方式来实现的话，就需要再继续派生出 DataFileInputStream、DataPipedInputStream 等类。如果我们还需要既支持缓存、又支持按照基本类型读取数据的类，那就要再继续派生出 BufferedDataFileInputStream、BufferedDataPipedInputStream 等 n 多类。这还只是附加了两个增强功能，如果我们需要附加更多的增强功能，那就会导致组合爆炸，类继承结构变得无比复杂，代码既不好扩展，也不好维护。这也是我们在第 10 节中讲的不推荐使用继承的原因。
+
+### 基于装饰器模式的设计方案
+
+在第 10 节中，我们还讲到“组合优于继承”，可以“使用组合来替代继承”。针对刚刚的继承结构过于复杂的问题，我们可以通过将继承关系改为组合关系来解决。下面的代码展示了 Java IO 的这种设计思路。不过，我对代码做了简化，只抽象出了必要的代码结构，如果你感兴趣的话，可以直接去查看 JDK 源码。
+
+```java
+public abstract class InputStream {
+  //...
+  public int read(byte b[]) throws IOException {
+    return read(b, 0, b.length);
+  }
+  
+  public int read(byte b[], int off, int len) throws IOException {
+    //...
+  }
+  
+  public long skip(long n) throws IOException {
+    //...
+  }
+
+  public int available() throws IOException {
+    return 0;
+  }
+  
+  public void close() throws IOException {}
+
+  public synchronized void mark(int readlimit) {}
+    
+  public synchronized void reset() throws IOException {
+    throw new IOException("mark/reset not supported");
+  }
+
+  public boolean markSupported() {
+    return false;
+  }
+}
+
+public class BufferedInputStream extends InputStream {
+  protected volatile InputStream in;
+
+  protected BufferedInputStream(InputStream in) {
+    this.in = in;
+  }
+  
+  //...实现基于缓存的读数据接口...  
+}
+
+public class DataInputStream extends InputStream {
+  protected volatile InputStream in;
+
+  protected DataInputStream(InputStream in) {
+    this.in = in;
+  }
+  
+  //...实现读取基本类型数据的接口
+}
+```
+
+看了上面的代码，你可能会问，那装饰器模式就是简单的“用组合替代继承”吗？当然不是。从 Java IO 的设计来看，装饰器模式相对于简单的组合关系，还有两个比较特殊的地方。
+
+第一个比较特殊的地方是：装饰器类和原始类继承同样的父类，这样我们可以对原始类“嵌套”多个装饰器类。比如，下面这样一段代码，我们对 FileInputStream 嵌套了两个装饰器类：BufferedInputStream 和 DataInputStream，让它既支持缓存读取，又支持按照基本数据类型来读取数据。
+
+## 51 | 适配器模式：代理、适配器、桥接、装饰，这四个模式有何区别？
+
+前面几节课我们学习了代理模式、桥接模式、装饰器模式，今天，我们再来学习一个比较常用的结构型模式：适配器模式。这个模式相对来说还是比较简单、好理解的，应用场景也很具体，总体上来讲比较好掌握。
+
+关于适配器模式，今天我们主要学习它的两种实现方式，类适配器和对象适配器，以及 5 种常见的应用场景。同时，我还会通过剖析 slf4j 日志框架，来给你展示这个模式在真实项目中的应用。除此之外，在文章的最后，我还对代理、桥接、装饰器、适配器，这 4 种代码结构非常相似的设计模式做简单的对比，对这几节内容做一个简单的总结。
+
+### **适配器模式的原理与实现**
+
+适配器模式的英文翻译是 Adapter Design Pattern。顾名思义，这个模式就是用来做适配的，它将不兼容的接口转换为可兼容的接口，让原本由于接口不兼容而不能一起工作的类可以一起工作。对于这个模式，有一个经常被拿来解释它的例子，就是 USB 转接头充当适配器，把两种不兼容的接口，通过转接变得可以一起工作。
+
+原理很简单，我们再来看下它的代码实现。适配器模式有两种实现方式：类适配器和对象适配器。其中，类适配器使用继承关系来实现，对象适配器使用组合关系来实现。具体的代码实现如下所示。其中，ITarget 表示要转化成的接口定义。Adaptee 是一组不兼容 ITarget 接口定义的接口，Adaptor 将 Adaptee 转化成一组符合 ITarget 接口定义的接口。
+
+```java
+// 类适配器: 基于继承
+public interface ITarget {
+  void f1();
+  void f2();
+  void fc();
+}
+
+public class Adaptee {
+  public void fa() { //... }
+  public void fb() { //... }
+  public void fc() { //... }
+}
+
+public class Adaptor extends Adaptee implements ITarget {
+  public void f1() {
+    super.fa();
+  }
+  
+  public void f2() {
+    //...重新实现f2()...
+  }
+  
+  // 这里fc()不需要实现，直接继承自Adaptee，这是跟对象适配器最大的不同点
+}
+
+// 对象适配器：基于组合
+public interface ITarget {
+  void f1();
+  void f2();
+  void fc();
+}
+
+public class Adaptee {
+  public void fa() { //... }
+  public void fb() { //... }
+  public void fc() { //... }
+}
+
+public class Adaptor implements ITarget {
+  private Adaptee adaptee;
+  
+  public Adaptor(Adaptee adaptee) {
+    this.adaptee = adaptee;
+  }
+  
+  public void f1() {
+    adaptee.fa(); //委托给Adaptee
+  }
+  
+  public void f2() {
+    //...重新实现f2()...
+  }
+  
+  public void fc() {
+    adaptee.fc();
+  }
+}
+```
+
+针对这两种实现方式，在实际的开发中，到底该如何选择使用哪一种呢？判断的标准主要有两个，一个是 Adaptee 接口的个数，另一个是 Adaptee 和 ITarget 的契合程度。
+
+- 如果 Adaptee 接口并不多，那两种实现方式都可以。
+- 如果 Adaptee 接口很多，而且 Adaptee 和 ITarget 接口定义大部分都相同，那我们推荐使用类适配器，因为 Adaptor 复用父类 Adaptee 的接口，比起对象适配器的实现方式，Adaptor 的代码量要少一些。如果 Adaptee 接口很多，而且 Adaptee 和 ITarget 接口定义大部分都不相同，那我们推荐使用对象适配器，因为组合结构相对于继承更加灵活。
+- 如果 Adaptee 接口很多，而且 Adaptee 和 ITarget 接口定义大部分都不相同，那我们推荐使用对象适配器，因为组合结构相对于继承更加灵活。
+
+### 适配器模式应用场景总结
+
+原理和实现讲完了，都不复杂。我们再来看，到底什么时候会用到适配器模式呢？
+
+一般来说，适配器模式可以看作一种“补偿模式”，用来补救设计上的缺陷。应用这种模式算是“无奈之举”。如果在设计初期，我们就能协调规避接口不兼容的问题，那这种模式就没有应用的机会了。
+
+前面我们反复提到，适配器模式的应用场景是“接口不兼容”。那在实际的开发中，什么情况下才会出现接口不兼容呢？我建议你先自己思考一下这个问题，然后再来看我下面的总结 。
+
+1. 封装有缺陷的接口设计
+
+假设我们依赖的外部系统在接口设计方面有缺陷（比如包含大量静态方法），引入之后会影响到我们自身代码的可测试性。为了隔离设计上的缺陷，我们希望对外部系统提供的接口进行二次封装，抽象出更好的接口设计，这个时候就可以使用适配器模式了。
+
+具体我还是举个例子来解释一下，你直接看代码应该会更清晰。具体代码如下所示：
+
+```java
+public class CD { //这个类来自外部sdk，我们无权修改它的代码
+  //...
+  public static void staticFunction1() { //... }
+  
+  public void uglyNamingFunction2() { //... }
+
+  public void tooManyParamsFunction3(int paramA, int paramB, ...) { //... }
+  
+   public void lowPerformanceFunction4() { //... }
+}
+
+// 使用适配器模式进行重构
+public class ITarget {
+  void function1();
+  void function2();
+  void fucntion3(ParamsWrapperDefinition paramsWrapper);
+  void function4();
+  //...
+}
+// 注意：适配器类的命名不一定非得末尾带Adaptor
+public class CDAdaptor extends CD implements ITarget {
+  //...
+  public void function1() {
+     super.staticFunction1();
+  }
+  
+  public void function2() {
+    super.uglyNamingFucntion2();
+  }
+  
+  public void function3(ParamsWrapperDefinition paramsWrapper) {
+     super.tooManyParamsFunction3(paramsWrapper.getParamA(), ...);
+  }
+  
+  public void function4() {
+    //...reimplement it...
+  }
+}
+```
+
+2. 统一多个类的接口设计
+
+某个功能的实现依赖多个外部系统（或者说类）。通过适配器模式，将它们的接口适配为统一的接口定义，然后我们就可以使用多态的特性来复用代码逻辑。具体我还是举个例子来解释一下。
+
+假设我们的系统要对用户输入的文本内容做敏感词过滤，为了提高过滤的召回率，我们引入了多款第三方敏感词过滤系统，依次对用户输入的内容进行过滤，过滤掉尽可能多的敏感词。但是，每个系统提供的过滤接口都是不同的。这就意味着我们没法复用一套逻辑来调用各个系统。这个时候，我们就可以使用适配器模式，将所有系统的接口适配为统一的接口定义，这样我们可以复用调用敏感词过滤的代码。
+
+你可以配合着下面的代码示例，来理解我刚才举的这个例子。
+
+```java
+public class ASensitiveWordsFilter { // A敏感词过滤系统提供的接口
+  //text是原始文本，函数输出用***替换敏感词之后的文本
+  public String filterSexyWords(String text) {
+    // ...
+  }
+  
+  public String filterPoliticalWords(String text) {
+    // ...
+  } 
+}
+
+public class BSensitiveWordsFilter  { // B敏感词过滤系统提供的接口
+  public String filter(String text) {
+    //...
+  }
+}
+
+public class CSensitiveWordsFilter { // C敏感词过滤系统提供的接口
+  public String filter(String text, String mask) {
+    //...
+  }
+}
+
+// 未使用适配器模式之前的代码：代码的可测试性、扩展性不好
+public class RiskManagement {
+  private ASensitiveWordsFilter aFilter = new ASensitiveWordsFilter();
+  private BSensitiveWordsFilter bFilter = new BSensitiveWordsFilter();
+  private CSensitiveWordsFilter cFilter = new CSensitiveWordsFilter();
+  
+  public String filterSensitiveWords(String text) {
+    String maskedText = aFilter.filterSexyWords(text);
+    maskedText = aFilter.filterPoliticalWords(maskedText);
+    maskedText = bFilter.filter(maskedText);
+    maskedText = cFilter.filter(maskedText, "***");
+    return maskedText;
+  }
+}
+
+// 使用适配器模式进行改造
+public interface ISensitiveWordsFilter { // 统一接口定义
+  String filter(String text);
+}
+
+public class ASensitiveWordsFilterAdaptor implements ISensitiveWordsFilter {
+  private ASensitiveWordsFilter aFilter;
+  public String filter(String text) {
+    String maskedText = aFilter.filterSexyWords(text);
+    maskedText = aFilter.filterPoliticalWords(maskedText);
+    return maskedText;
+  }
+}
+//...省略BSensitiveWordsFilterAdaptor、CSensitiveWordsFilterAdaptor...
+
+// 扩展性更好，更加符合开闭原则，如果添加一个新的敏感词过滤系统，
+// 这个类完全不需要改动；而且基于接口而非实现编程，代码的可测试性更好。
+public class RiskManagement { 
+  private List<ISensitiveWordsFilter> filters = new ArrayList<>();
+ 
+  public void addSensitiveWordsFilter(ISensitiveWordsFilter filter) {
+    filters.add(filter);
+  }
+  
+  public String filterSensitiveWords(String text) {
+    String maskedText = text;
+    for (ISensitiveWordsFilter filter : filters) {
+      maskedText = filter.filter(maskedText);
+    }
+    return maskedText;
+  }
+}
+```
+
+3. 替换依赖的外部系统
+
+当我们把项目中依赖的一个外部系统替换为另一个外部系统的时候，利用适配器模式，可以减少对代码的改动。具体的代码示例如下所示：
+
+```java
+// 外部系统A
+public interface IA {
+  //...
+  void fa();
+}
+public class A implements IA {
+  //...
+  public void fa() { //... }
+}
+// 在我们的项目中，外部系统A的使用示例
+public class Demo {
+  private IA a;
+  public Demo(IA a) {
+    this.a = a;
+  }
+  //...
+}
+Demo d = new Demo(new A());
+
+// 将外部系统A替换成外部系统B
+public class BAdaptor implemnts IA {
+  private B b;
+  public BAdaptor(B b) {
+    this.b= b;
+  }
+  public void fa() {
+    //...
+    b.fb();
+  }
+}
+// 借助BAdaptor，Demo的代码中，调用IA接口的地方都无需改动，
+// 只需要将BAdaptor如下注入到Demo即可。
+Demo d = new Demo(new BAdaptor(new B()));
+```
+
+4. 兼容老版本接口
+
+在做版本升级的时候，对于一些要废弃的接口，我们不直接将其删除，而是暂时保留，并且标注为 deprecated，并将内部实现逻辑委托为新的接口实现。这样做的好处是，让使用它的项目有个过渡期，而不是强制进行代码修改。这也可以粗略地看作适配器模式的一个应用场景。同样，我还是通过一个例子，来进一步解释一下。
+
+JDK1.0 中包含一个遍历集合容器的类 Enumeration。JDK2.0 对这个类进行了重构，将它改名为 Iterator 类，并且对它的代码实现做了优化。但是考虑到如果将 Enumeration 直接从 JDK2.0 中删除，那使用 JDK1.0 的项目如果切换到 JDK2.0，代码就会编译不通过。为了避免这种情况的发生，我们必须把项目中所有使用到 Enumeration 的地方，都修改为使用 Iterator 才行。
+
+单独一个项目做 Enumeration 到 Iterator 的替换，勉强还能接受。但是，使用 Java 开发的项目太多了，一次 JDK 的升级，导致所有的项目不做代码修改就会编译报错，这显然是不合理的。这就是我们经常所说的不兼容升级。为了做到兼容使用低版本 JDK 的老代码，我们可以暂时保留 Enumeration 类，并将其实现替换为直接调用 Itertor。代码示例如下所示：
+
+```java
+public class Collections {
+  public static Emueration emumeration(final Collection c) {
+    return new Enumeration() {
+      Iterator i = c.iterator();
+      
+      public boolean hasMoreElments() {
+        return i.hashNext();
+      }
+      
+      public Object nextElement() {
+        return i.next():
+      }
+    }
+  }
+}
+```
+
+5. 适配不同格式的数据
+
+前面我们讲到，适配器模式主要用于接口的适配，实际上，它还可以用在不同格式的数据之间的适配。比如，把从不同征信系统拉取的不同格式的征信数据，统一为相同的格式，以方便存储和使用。再比如，Java 中的 Arrays.asList() 也可以看作一种数据适配器，将数组类型的数据转化为集合容器类型。
+
+```
+List<String> stooges = Arrays.asList("Larry", "Moe", "Curly");
+```
+
+### 剖析适配器模式在 Java 日志中的应用
+
+Java 中有很多日志框架，在项目开发中，我们常常用它们来打印日志信息。其中，比较常用的有 log4j、logback，以及 JDK 提供的 JUL(java.util.logging) 和 Apache 的 JCL(Jakarta Commons Logging) 等。
+
+大部分日志框架都提供了相似的功能，比如按照不同级别（debug、info、warn、erro……）打印日志等，但它们却并没有实现统一的接口。这主要可能是历史的原因，它不像 JDBC 那样，一开始就制定了数据库操作的接口规范。
+
+如果我们只是开发一个自己用的项目，那用什么日志框架都可以，log4j、logback 随便选一个就好。但是，如果我们开发的是一个集成到其他系统的组件、框架、类库等，那日志框架的选择就没那么随意了。
+
+比如，项目中用到的某个组件使用 log4j 来打印日志，而我们项目本身使用的是 logback。将组件引入到项目之后，我们的项目就相当于有了两套日志打印框架。每种日志框架都有自己特有的配置方式。所以，我们要针对每种日志框架编写不同的配置文件（比如，日志存储的文件地址、打印日志的格式）。如果引入多个组件，每个组件使用的日志框架都不一样，那日志本身的管理工作就变得非常复杂。所以，为了解决这个问题，我们需要统一日志打印框架。
+
+如果你是做 Java 开发的，那 Slf4j 这个日志框架你肯定不陌生，它相当于 JDBC 规范，提供了一套打印日志的统一接口规范。不过，它只定义了接口，并没有提供具体的实现，需要配合其他日志框架（log4j、logback……）来使用。
+
+不仅如此，Slf4j 的出现晚于 JUL、JCL、log4j 等日志框架，所以，这些日志框架也不可能牺牲掉版本兼容性，将接口改造成符合 Slf4j 接口规范。Slf4j 也事先考虑到了这个问题，所以，它不仅仅提供了统一的接口定义，还提供了针对不同日志框架的适配器。对不同日志框架的接口进行二次封装，适配成统一的 Slf4j 接口定义。具体的代码示例如下所示：
+
+```java
+// slf4j统一的接口定义
+package org.slf4j;
+public interface Logger {
+  public boolean isTraceEnabled();
+  public void trace(String msg);
+  public void trace(String format, Object arg);
+  public void trace(String format, Object arg1, Object arg2);
+  public void trace(String format, Object[] argArray);
+  public void trace(String msg, Throwable t);
+ 
+  public boolean isDebugEnabled();
+  public void debug(String msg);
+  public void debug(String format, Object arg);
+  public void debug(String format, Object arg1, Object arg2)
+  public void debug(String format, Object[] argArray)
+  public void debug(String msg, Throwable t);
+
+  //...省略info、warn、error等一堆接口
+}
+
+// log4j日志框架的适配器
+// Log4jLoggerAdapter实现了LocationAwareLogger接口，
+// 其中LocationAwareLogger继承自Logger接口，
+// 也就相当于Log4jLoggerAdapter实现了Logger接口。
+package org.slf4j.impl;
+public final class Log4jLoggerAdapter extends MarkerIgnoringBase
+  implements LocationAwareLogger, Serializable {
+  final transient org.apache.log4j.Logger logger; // log4j
+ 
+  public boolean isDebugEnabled() {
+    return logger.isDebugEnabled();
+  }
+ 
+  public void debug(String msg) {
+    logger.log(FQCN, Level.DEBUG, msg, null);
+  }
+ 
+  public void debug(String format, Object arg) {
+    if (logger.isDebugEnabled()) {
+      FormattingTuple ft = MessageFormatter.format(format, arg);
+      logger.log(FQCN, Level.DEBUG, ft.getMessage(), ft.getThrowable());
+    }
+  }
+ 
+  public void debug(String format, Object arg1, Object arg2) {
+    if (logger.isDebugEnabled()) {
+      FormattingTuple ft = MessageFormatter.format(format, arg1, arg2);
+      logger.log(FQCN, Level.DEBUG, ft.getMessage(), ft.getThrowable());
+    }
+  }
+ 
+  public void debug(String format, Object[] argArray) {
+    if (logger.isDebugEnabled()) {
+      FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);
+      logger.log(FQCN, Level.DEBUG, ft.getMessage(), ft.getThrowable());
+    }
+  }
+ 
+  public void debug(String msg, Throwable t) {
+    logger.log(FQCN, Level.DEBUG, msg, t);
+  }
+  //...省略一堆接口的实现...
+}
+```
+
+所以，在开发业务系统或者开发框架、组件的时候，我们统一使用 Slf4j 提供的接口来编写打印日志的代码，具体使用哪种日志框架实现（log4j、logback……），是可以动态地指定的（使用 Java 的 SPI 技术，这里我不多解释，你自行研究吧），只需要将相应的 SDK 导入到项目中即可。
+
+不过，你可能会说，如果一些老的项目没有使用 Slf4j，而是直接使用比如 JCL 来打印日志，那如果想要替换成其他日志框架，比如 log4j，该怎么办呢？实际上，Slf4j 不仅仅提供了从其他日志框架到 Slf4j 的适配器，还提供了反向适配器，也就是从 Slf4j 到其他日志框架的适配。我们可以先将 JCL 切换为 Slf4j，然后再将 Slf4j 切换为 log4j。经过两次适配器的转换，我们就能成功将 log4j 切换为了 logback。
+
+### 代理、桥接、装饰器、适配器 4 种设计模式的区别
+
+代理、桥接、装饰器、适配器，这 4 种模式是比较常用的结构型设计模式。它们的代码结构非常相似。笼统来说，它们都可以称为 Wrapper 模式，也就是通过 Wrapper 类二次封装原始类。
+
+尽管代码结构相似，但这 4 种设计模式的用意完全不同，也就是说要解决的问题、应用场景不同，这也是它们的主要区别。这里我就简单说一下它们之间的区别。
+
+- 代理模式：代理模式在不改变原始类接口的条件下，为原始类定义一个代理类，主要目的是控制访问，而非加强功能，这是它跟装饰器模式最大的不同。
+
+- 桥接模式：桥接模式的目的是将接口部分和实现部分分离，从而让它们可以较为容易、也相对独立地加以改变。
+
+- 装饰器模式：装饰者模式在不改变原始类接口的情况下，对原始类功能进行增强，并且支持多个装饰器的嵌套使用。
+
+- 适配器模式：适配器模式是一种事后的补救策略。适配器提供跟原始类不同的接口，而代理模式、装饰器模式提供的都是跟原始类相同的接口。
+
+### 重点回顾
+
+适配器模式是用来做适配，它将不兼容的接口转换为可兼容的接口，让原本由于接口不兼容而不能一起工作的类可以一起工作。适配器模式有两种实现方式：类适配器和对象适配器。其中，类适配器使用继承关系来实现，对象适配器使用组合关系来实现。
+
+一般来说，适配器模式可以看作一种“补偿模式”，用来补救设计上的缺陷。应用这种模式算是“无奈之举”，如果在设计初期，我们就能协调规避接口不兼容的问题，那这种模式就没有应用的机会了。
+
+那在实际的开发中，什么情况下才会出现接口不兼容呢？我总结下了下面这样 5 种场景：
+
+- 封装有缺陷的接口设计
+- 统一多个类的接口设计
+- 替换依赖的外部系统
+- 兼容老版本接口
+- 适配不同格式的数据
+
+# 设计模式与范式：行为型
+
+## 56 | 观察者模式（上）：详解各种应用场景下观察者模式的不同实现方式
+
+> 我们常把 23 种经典的设计模式分为三类：创建型、结构型、行为型。前面我们已经学习了创建型和结构型，从今天起，我们开始学习行为型设计模式。我们知道，创建型设计模式主要解决“对象的创建”问题，结构型设计模式主要解决“类或对象的组合或组装”问题，那行为型设计模式主要解决的就是“类或对象之间的交互”问题。
+
+行为型设计模式比较多，有 11 个，几乎占了 23 种经典设计模式的一半。它们分别是：观察者模式、模板模式、策略模式、职责链模式、状态模式、迭代器模式、访问者模式、备忘录模式、命令模式、解释器模式、中介模式。
+
+### 原理及应用场景剖析
+
+观察者模式（Observer Design Pattern）也被称为发布订阅模式（Publish-Subscribe Design Pattern）。在 GoF 的《设计模式》一书中，它的定义是这样的：
+
+> Define a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically.
+
+翻译成中文就是：在对象之间定义一个一对多的依赖，当一个对象状态改变的时候，所有依赖的对象都会自动收到通知。
+
+一般情况下，被依赖的对象叫作被观察者（Observable），依赖的对象叫作观察者（Observer）。不过，在实际的项目开发中，这两种对象的称呼是比较灵活的，有各种不同的叫法，比如：Subject-Observer、Publisher-Subscriber、Producer-Consumer、EventEmitter-EventListener、Dispatcher-Listener。不管怎么称呼，只要应用场景符合刚刚给出的定义，都可以看作观察者模式。
+
+实际上，观察者模式是一个比较抽象的模式，根据不同的应用场景和需求，有完全不同的实现方式，待会我们会详细地讲到。现在，我们先来看其中最经典的一种实现方式。这也是在讲到这种模式的时候，很多书籍或资料给出的最常见的实现方式。具体的代码如下所示：
+
+```java
+public interface Subject {
+  void registerObserver(Observer observer);
+  void removeObserver(Observer observer);
+  void notifyObservers(Message message);
+}
+
+public interface Observer {
+  void update(Message message);
+}
+
+public class ConcreteSubject implements Subject {
+  private List<Observer> observers = new ArrayList<Observer>();
+
+  @Override
+  public void registerObserver(Observer observer) {
+    observers.add(observer);
+  }
+
+  @Override
+  public void removeObserver(Observer observer) {
+    observers.remove(observer);
+  }
+
+  @Override
+  public void notifyObservers(Message message) {
+    for (Observer observer : observers) {
+      observer.update(message);
+    }
+  }
+
+}
+
+public class ConcreteObserverOne implements Observer {
+  @Override
+  public void update(Message message) {
+    //TODO: 获取消息通知，执行自己的逻辑...
+    System.out.println("ConcreteObserverOne is notified.");
+  }
+}
+
+public class ConcreteObserverTwo implements Observer {
+  @Override
+  public void update(Message message) {
+    //TODO: 获取消息通知，执行自己的逻辑...
+    System.out.println("ConcreteObserverTwo is notified.");
+  }
+}
+
+public class Demo {
+  public static void main(String[] args) {
+    ConcreteSubject subject = new ConcreteSubject();
+    subject.registerObserver(new ConcreteObserverOne());
+    subject.registerObserver(new ConcreteObserverTwo());
+    subject.notifyObservers(new Message());
+  }
+}
+```
+
+实际上，上面的代码算是观察者模式的“模板代码”，只能反映大体的设计思路。在真实的软件开发中，并不需要照搬上面的模板代码。观察者模式的实现方法各式各样，函数、类的命名等会根据业务场景的不同有很大的差别，比如 register 函数还可以叫作 attach，remove 函数还可以叫作 detach 等等。不过，万变不离其宗，设计思路都是差不多的。
+
+原理和代码实现都非常简单，也比较好理解，不需要我过多的解释。我们还是通过一个具体的例子来重点讲一下，什么情况下需要用到这种设计模式？或者说，这种设计模式能解决什么问题呢？
+
+假设我们在开发一个 P2P 投资理财系统，用户注册成功之后，我们会给用户发放投资体验金。代码实现大致是下面这个样子的：
+
+```java
+public class UserController {
+  private UserService userService; // 依赖注入
+  private PromotionService promotionService; // 依赖注入
+
+  public Long register(String telephone, String password) {
+    //省略输入参数的校验代码
+    //省略userService.register()异常的try-catch代码
+    long userId = userService.register(telephone, password);
+    promotionService.issueNewUserExperienceCash(userId);
+    return userId;
+  }
+}
+```
+
+虽然注册接口做了两件事情，注册和发放体验金，违反单一职责原则，但是，如果没有扩展和修改的需求，现在的代码实现是可以接受的。如果非得用观察者模式，就需要引入更多的类和更加复杂的代码结构，反倒是一种过度设计。
+
+相反，如果需求频繁变动，比如，用户注册成功之后，不再发放体验金，而是改为发放优惠券，并且还要给用户发送一封“欢迎注册成功”的站内信。这种情况下，我们就需要频繁地修改 register() 函数中的代码，违反开闭原则。而且，如果注册成功之后需要执行的后续操作越来越多，那 register() 函数的逻辑会变得越来越复杂，也就影响到代码的可读性和可维护性。
+
+这个时候，观察者模式就能派上用场了。利用观察者模式，我对上面的代码进行了重构。重构之后的代码如下所示：
+
+```java
+public interface RegObserver {
+  void handleRegSuccess(long userId);
+}
+
+public class RegPromotionObserver implements RegObserver {
+  private PromotionService promotionService; // 依赖注入
+
+  @Override
+  public void handleRegSuccess(long userId) {
+    promotionService.issueNewUserExperienceCash(userId);
+  }
+}
+
+public class RegNotificationObserver implements RegObserver {
+  private NotificationService notificationService;
+
+  @Override
+  public void handleRegSuccess(long userId) {
+    notificationService.sendInboxMessage(userId, "Welcome...");
+  }
+}
+
+public class UserController {
+  private UserService userService; // 依赖注入
+  private List<RegObserver> regObservers = new ArrayList<>();
+
+  // 一次性设置好，之后也不可能动态的修改
+  public void setRegObservers(List<RegObserver> observers) {
+    regObservers.addAll(observers);
+  }
+
+  public Long register(String telephone, String password) {
+    //省略输入参数的校验代码
+    //省略userService.register()异常的try-catch代码
+    long userId = userService.register(telephone, password);
+
+    for (RegObserver observer : regObservers) {
+      observer.handleRegSuccess(userId);
+    }
+
+    return userId;
+  }
+}
+```
+
+当我们需要添加新的观察者的时候，比如，用户注册成功之后，推送用户注册信息给大数据征信系统，基于观察者模式的代码实现，UserController 类的 register() 函数完全不需要修改，只需要再添加一个实现了 RegObserver 接口的类，并且通过 setRegObservers() 函数将它注册到 UserController 类中即可。
+
+不过，你可能会说，当我们把发送体验金替换为发送优惠券的时候，需要修改 RegPromotionObserver 类中 handleRegSuccess() 函数的代码，这还是违反开闭原则呀？你说得没错，不过，相对于 register() 函数来说，handleRegSuccess() 函数的逻辑要简单很多，修改更不容易出错，引入 bug 的风险更低。
+
+前面我们已经学习了很多设计模式，不知道你有没有发现，实际上，**设计模式要干的事情就是解耦。创建型模式是将创建和使用代码解耦，结构型模式是将不同功能代码解耦，行为型模式是将不同的行为代码解耦，具体到观察者模式，它是将观察者和被观察者代码解耦。**借助设计模式，我们利用更好的代码结构，将一大坨代码拆分成职责更单一的小类，让其满足开闭原则、高内聚松耦合等特性，以此来控制和应对代码的复杂性，提高代码的可扩展性。
+
+### 基于不同应用场景的不同实现方式
+
+观察者模式的应用场景非常广泛，小到代码层面的解耦，大到架构层面的系统解耦，再或者一些产品的设计思路，都有这种模式的影子，比如，邮件订阅、RSS Feeds，本质上都是观察者模式。
+
+不同的应用场景和需求下，这个模式也有截然不同的实现方式，开篇的时候我们也提到，有同步阻塞的实现方式，也有异步非阻塞的实现方式；有进程内的实现方式，也有跨进程的实现方式。
+
+之前讲到的实现方式，从刚刚的分类方式上来看，它是一种同步阻塞的实现方式。观察者和被观察者代码在同一个线程内执行，被观察者一直阻塞，直到所有的观察者代码都执行完成之后，才执行后续的代码。对照上面讲到的用户注册的例子，register() 函数依次调用执行每个观察者的 handleRegSuccess() 函数，等到都执行完成之后，才会返回结果给客户端。
+
+如果注册接口是一个调用比较频繁的接口，对性能非常敏感，希望接口的响应时间尽可能短，那我们可以将同步阻塞的实现方式改为异步非阻塞的实现方式，以此来减少响应时间。具体来讲，当 userService.register() 函数执行完成之后，我们启动一个新的线程来执行观察者的 handleRegSuccess() 函数，这样 userController.register() 函数就不需要等到所有的 handleRegSuccess() 函数都执行完成之后才返回结果给客户端。userController.register() 函数从执行 3 个 SQL 语句才返回，减少到只需要执行 1 个 SQL 语句就返回，响应时间粗略来讲减少为原来的 1/3。
+
+那如何实现一个异步非阻塞的观察者模式呢？简单一点的做法是，在每个 handleRegSuccess() 函数中，创建一个新的线程执行代码。不过，我们还有更加优雅的实现方式，那就是基于 EventBus 来实现。今天，我们就不展开讲解了。在下一讲中，我会用一节课的时间，借鉴 Google Guava EventBus 框架的设计思想，手把手带你开发一个支持异步非阻塞的 EventBus 框架。它可以复用在任何需要异步非阻塞观察者模式的应用场景中。
+
+刚刚讲到的两个场景，不管是同步阻塞实现方式还是异步非阻塞实现方式，都是进程内的实现方式。如果用户注册成功之后，我们需要发送用户信息给大数据征信系统，而大数据征信系统是一个独立的系统，跟它之间的交互是跨不同进程的，那如何实现一个跨进程的观察者模式呢？
+
+如果大数据征信系统提供了发送用户注册信息的 RPC 接口，我们仍然可以沿用之前的实现思路，在 handleRegSuccess() 函数中调用 RPC 接口来发送数据。但是，我们还有更加优雅、更加常用的一种实现方式，那就是基于消息队列（Message Queue，比如 ActiveMQ）来实现。
+
+当然，这种实现方式也有弊端，那就是需要引入一个新的系统（消息队列），增加了维护成本。不过，它的好处也非常明显。在原来的实现方式中，观察者需要注册到被观察者中，被观察者需要依次遍历观察者来发送消息。而基于消息队列的实现方式，被观察者和观察者解耦更加彻底，两部分的耦合更小。被观察者完全不感知观察者，同理，观察者也完全不感知被观察者。被观察者只管发送消息到消息队列，观察者只管从消息队列中读取消息来执行相应的逻辑。
+
+### 重点回顾
+
+设计模式要干的事情就是解耦，创建型模式是将创建和使用代码解耦，结构型模式是将不同功能代码解耦，行为型模式是将不同的行为代码解耦，具体到观察者模式，它将观察者和被观察者代码解耦。借助设计模式，我们利用更好的代码结构，将一大坨代码拆分成职责更单一的小类，让其满足开闭原则、高内聚低耦合等特性，以此来控制和应对代码的复杂性，提高代码的可扩展性。
+
+观察者模式的应用场景非常广泛，小到代码层面的解耦，大到架构层面的系统解耦，再或者一些产品的设计思路，都有这种模式的影子，比如，邮件订阅、RSS Feeds，本质上都是观察者模式。不同的应用场景和需求下，这个模式也有截然不同的实现方式，有同步阻塞的实现方式，也有异步非阻塞的实现方式；有进程内的实现方式，也有跨进程的实现方式。
+
+### 课堂讨论
+
+1. 请对比一下“生产者 - 消费者”模型和观察者模式的区别和联系。
+
+   生产者之间存在竞争关系，消费者之间存在竞争关系。观察者模式不存在竞争关系。
+
+2. 除了今天提到的观察者模式的几个应用场景，比如邮件订阅，你还能想到有哪些其他的应用场景吗？
+
 
 
 # 开源与项目实战：开源实战 (14讲)
@@ -6800,6 +8404,258 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
   //...
 }
 ```
+
+### 建造者模式在 Calendar 类中的应用
+
+还是刚刚的 Calendar 类，它不仅仅用到了工厂模式，还用到了建造者模式。我们知道，建造者模式有两种实现方法，一种是单独定义一个 Builder 类，另一种是将 Builder 实现为原始类的内部类。Calendar 就采用了第二种实现思路。我们先来看代码再讲解，相关代码我贴在了下面。
+
+```java
+public abstract class Calendar implements Serializable, Cloneable, Comparable<Calendar> {
+  //...
+  public static class Builder {
+    private static final int NFIELDS = FIELD_COUNT + 1;
+    private static final int WEEK_YEAR = FIELD_COUNT;
+    private long instant;
+    private int[] fields;
+    private int nextStamp;
+    private int maxFieldIndex;
+    private String type;
+    private TimeZone zone;
+    private boolean lenient = true;
+    private Locale locale;
+    private int firstDayOfWeek, minimalDaysInFirstWeek;
+
+    public Builder() {}
+    
+    public Builder setInstant(long instant) {
+        if (fields != null) {
+            throw new IllegalStateException();
+        }
+        this.instant = instant;
+        nextStamp = COMPUTED;
+        return this;
+    }
+    //...省略n多set()方法
+    
+    public Calendar build() {
+      if (locale == null) {
+        locale = Locale.getDefault();
+      }
+      if (zone == null) {
+        zone = TimeZone.getDefault();
+      }
+      Calendar cal;
+      if (type == null) {
+        type = locale.getUnicodeLocaleType("ca");
+      }
+      if (type == null) {
+        if (locale.getCountry() == "TH" && locale.getLanguage() == "th") {
+          type = "buddhist";
+        } else {
+          type = "gregory";
+        }
+      }
+      switch (type) {
+        case "gregory":
+          cal = new GregorianCalendar(zone, locale, true);
+          break;
+        case "iso8601":
+          GregorianCalendar gcal = new GregorianCalendar(zone, locale, true);
+          // make gcal a proleptic Gregorian
+          gcal.setGregorianChange(new Date(Long.MIN_VALUE));
+          // and week definition to be compatible with ISO 8601
+          setWeekDefinition(MONDAY, 4);
+          cal = gcal;
+          break;
+        case "buddhist":
+          cal = new BuddhistCalendar(zone, locale);
+          cal.clear();
+          break;
+        case "japanese":
+          cal = new JapaneseImperialCalendar(zone, locale, true);
+          break;
+        default:
+          throw new IllegalArgumentException("unknown calendar type: " + type);
+      }
+      cal.setLenient(lenient);
+      if (firstDayOfWeek != 0) {
+        cal.setFirstDayOfWeek(firstDayOfWeek);
+        cal.setMinimalDaysInFirstWeek(minimalDaysInFirstWeek);
+      }
+      if (isInstantSet()) {
+        cal.setTimeInMillis(instant);
+        cal.complete();
+        return cal;
+      }
+
+      if (fields != null) {
+        boolean weekDate = isSet(WEEK_YEAR) && fields[WEEK_YEAR] > fields[YEAR];
+        if (weekDate && !cal.isWeekDateSupported()) {
+          throw new IllegalArgumentException("week date is unsupported by " + type);
+        }
+        for (int stamp = MINIMUM_USER_STAMP; stamp < nextStamp; stamp++) {
+          for (int index = 0; index <= maxFieldIndex; index++) {
+            if (fields[index] == stamp) {
+              cal.set(index, fields[NFIELDS + index]);
+              break;
+             }
+          }
+        }
+
+        if (weekDate) {
+          int weekOfYear = isSet(WEEK_OF_YEAR) ? fields[NFIELDS + WEEK_OF_YEAR] : 1;
+          int dayOfWeek = isSet(DAY_OF_WEEK) ? fields[NFIELDS + DAY_OF_WEEK] : cal.getFirstDayOfWeek();
+          cal.setWeekDate(fields[NFIELDS + WEEK_YEAR], weekOfYear, dayOfWeek);
+        }
+        cal.complete();
+      }
+      return cal;
+    }
+  }
+}
+```
+
+看了上面的代码，我有一个问题请你思考一下：既然已经有了 getInstance() 工厂方法来创建 Calendar 类对象，为什么还要用 Builder 来创建 Calendar 类对象呢？这两者之间的区别在哪里呢？
+
+实际上，在前面讲到这两种模式的时候，我们对它们之间的区别做了详细的对比，现在，我们再来一块回顾一下。**工厂模式是用来创建不同但是相关类型的对象（继承同一父类或者接口的一组子类），由给定的参数来决定创建哪种类型的对象。建造者模式用来创建一种类型的复杂对象，通过设置不同的可选参数，“定制化”地创建不同的对象。**
+
+网上有一个经典的例子很好地解释了两者的区别。
+
+> 顾客走进一家餐馆点餐，我们利用工厂模式，根据用户不同的选择，来制作不同的食物，比如披萨、汉堡、沙拉。对于披萨来说，用户又有各种配料可以定制，比如奶酪、西红柿、起司，我们通过建造者模式根据用户选择的不同配料来制作不同的披萨。
+
+粗看 Calendar 的 Builder 类的 build() 方法，你可能会觉得它有点像工厂模式。你的感觉没错，前面一半代码确实跟 getInstance() 工厂方法类似，根据不同的 type 创建了不同的 Calendar 子类。实际上，后面一半代码才属于标准的建造者模式，根据 setXXX() 方法设置的参数，来定制化刚刚创建的 Calendar 子类对象。
+
+实际上，从 Calendar 这个例子，我们也能学到，不要过于死板地套用各种模式的原理和实现，不要不敢做丝毫的改动。模式是死的，用的人是活的。在实际上的项目开发中，不仅各种模式可以混合在一起使用，而且具体的代码实现，也可以根据具体的功能需求做灵活的调整。
+
+### 装饰器模式在 Collections 类中的应用
+
+我们前面讲到，Java IO 类库是装饰器模式的非常经典的应用。实际上，Java 的 Collections 类也用到了装饰器模式。
+
+Collections 类是一个集合容器的工具类，提供了很多静态方法，用来创建各种集合容器，比如通过 unmodifiableColletion() 静态方法，来创建 UnmodifiableCollection 类对象。而这些容器类中的 UnmodifiableCollection 类、CheckedCollection 和 SynchronizedCollection 类，就是针对 Collection 类的装饰器类。
+
+因为刚刚提到的这三个装饰器类，在代码结构上几乎一样，所以，我们这里只拿其中的 UnmodifiableCollection 类来举例讲解一下。UnmodifiableCollection 类是 Collections 类的一个内部类，相关代码我摘抄到了下面，你可以先看下。
+
+```java
+public class Collections {
+  private Collections() {}
+    
+  public static <T> Collection<T> unmodifiableCollection(Collection<? extends T> c) {
+    return new UnmodifiableCollection<>(c);
+  }
+
+  static class UnmodifiableCollection<E> implements Collection<E>,   Serializable {
+    private static final long serialVersionUID = 1820017752578914078L;
+    final Collection<? extends E> c;
+
+    UnmodifiableCollection(Collection<? extends E> c) {
+      if (c==null)
+        throw new NullPointerException();
+      this.c = c;
+    }
+
+    public int size()                   {return c.size();}
+    public boolean isEmpty()            {return c.isEmpty();}
+    public boolean contains(Object o)   {return c.contains(o);}
+    public Object[] toArray()           {return c.toArray();}
+    public <T> T[] toArray(T[] a)       {return c.toArray(a);}
+    public String toString()            {return c.toString();}
+
+    public Iterator<E> iterator() {
+      return new Iterator<E>() {
+        private final Iterator<? extends E> i = c.iterator();
+
+        public boolean hasNext() {return i.hasNext();}
+        public E next()          {return i.next();}
+        public void remove() {
+          throw new UnsupportedOperationException();
+        }
+        @Override
+        public void forEachRemaining(Consumer<? super E> action) {
+          // Use backing collection version
+          i.forEachRemaining(action);
+        }
+      };
+    }
+
+    public boolean add(E e) {
+      throw new UnsupportedOperationException();
+    }
+    public boolean remove(Object o) {
+       hrow new UnsupportedOperationException();
+    }
+    public boolean containsAll(Collection<?> coll) {
+      return c.containsAll(coll);
+    }
+    public boolean addAll(Collection<? extends E> coll) {
+      throw new UnsupportedOperationException();
+    }
+    public boolean removeAll(Collection<?> coll) {
+      throw new UnsupportedOperationException();
+    }
+    public boolean retainAll(Collection<?> coll) {
+      throw new UnsupportedOperationException();
+    }
+    public void clear() {
+      throw new UnsupportedOperationException();
+    }
+
+    // Override default methods in Collection
+    @Override
+    public void forEach(Consumer<? super E> action) {
+      c.forEach(action);
+    }
+    @Override
+    public boolean removeIf(Predicate<? super E> filter) {
+      throw new UnsupportedOperationException();
+    }
+    @SuppressWarnings("unchecked")
+    @Override
+    public Spliterator<E> spliterator() {
+      return (Spliterator<E>)c.spliterator();
+    }
+    @SuppressWarnings("unchecked")
+    @Override
+    public Stream<E> stream() {
+      return (Stream<E>)c.stream();
+    }
+    @SuppressWarnings("unchecked")
+    @Override
+    public Stream<E> parallelStream() {
+      return (Stream<E>)c.parallelStream();
+    }
+  }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

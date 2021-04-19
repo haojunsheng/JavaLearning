@@ -1,0 +1,10 @@
+<beans>
+    <bean id="rateLimiter" class="com.junyu.lesson45.RateLimiter">
+        <constructor-arg ref="redisCounter"/>
+    </bean>
+
+    <bean id="redisCounter" class="com.junyu.lesson45.RedisCounter" scope="singleton" lazy-init="false">
+        <constructor-arg type="String" value="127.0.0.1" />
+        <constructor-arg type="Integer" value="1234" />
+    </bean>
+</beans>

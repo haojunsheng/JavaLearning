@@ -127,7 +127,7 @@ mysql> show profile for query 3;
 
 # SQL基本操作
 
-## 创建表
+## 创建数据库&表
 
 [sql数据](https://github.com/cystanford/sql_heros_data)
 
@@ -152,28 +152,44 @@ ALTER TABLE player ADD (age int(11));
 # 修改字段名
 ALTER TABLE player RENAME COLUMN age to player_age;
 # 修改字段的数据类型
-ALTER TABLE player MODIFY (player_age float(3,1));
+ALTER TABLE player MODIFY COLUMN player_age float(3,1);
 # 删除字段
 ALTER TABLE player DROP COLUMN player_age;
 ```
 
-常见约束：
+**常见约束**（键约束&字段约束）：
 
-1. 主键约束；作用是唯一标识一条记录，不能重复，不能为空， 即 UNIQUE+NOT NULL。一个数据表的主键只能有一个。 主键可以是一个字段，也可以由多个字段复合组成；
-2. 外键约束：外键确保了表与表之间引用的完整性。一个表中的外键对应另一张表的主键。外键可以是重复的，也可以为空；
-3. 唯一性约束：唯一性约束UNIQUE表明了字段在表中的数值是唯一的；
-4. NOT NULL 约束。对字段定义了 NOT NULL，即表明该字 段不应为空，必须有取值；
-5. DEFAULT，表明了字段的默认值。如果在插入数据的时 候，这个字段没有取值，就设置为默认值；
-6. CHECK 约束，用来检查特定字段取值范围的有效性，CHECK 约束的结果不能为 FALSE，CHECK(height>=0 AND height<3)；
+1. **主键约束**:作用是唯一标识一条记录，不能重复，不能为空， 即 UNIQUE+NOT NULL（唯一&非空）。一个数据表的主键只能有一个。 主键可以是一个字段，也可以由多个字段复合组成；
+2. **外键约束**：外键确保了表与表之间引用的完整性。一个表中的外键对应另一张表的主键。外键可以是重复的，也可以为空；
+3. **唯一性约束**：唯一性约束UNIQUE表明了字段在表中的数值是唯一的；
+4. **NOT NULL 约束**：对字段定义了 NOT NULL，即表明该字 段不应为空，必须有取值；
+5. **DEFAULT**：表明了字段的默认值。如果在插入数据的时 候，这个字段没有取值，就设置为默认值；
+6. **CHECK 约束**：用来检查特定字段取值范围的有效性，CHECK 约束的结果不能为 FALSE，CHECK(height>=0 AND height<3)；
+
+
+
+**设计数据表的原则**：
+
+1. 数据表的个数越少越好
+2. **数据表中的字段个数越少越好**：字段个数越多，数据冗余的可能性越大。设置字段个数少的前提是各个字段相互独立，而不是某个字段的取值可以由其他字段计算出来。当然字段个数少是相对的，我们通常会在数据冗余和检索效率中进行平衡。
+3. **数据表中联合主键的字段个数越少越好**：设置主键是为了确定唯一性，当一个字段无法确定唯一性的时候，就需要采用联合主键的方式（也就是用多个字段来定义一个主键）。联合主键中的字段越多，占用的索引空间越大，不仅会加大理解难度，还会增加运行时间和索引空间，因此联合主键的字段个数越少越好。
+4. **使用主键和外键越多越好**：数据库的设计实际上就是定义各种表，以及各种字段之间的关系。这些关系越多，证明这些实体之间的冗余度越低，利用度越高。这样做的好处在于不仅保证了数据表之间的独立性，还能提升相互之间的关联使用率。
 
 ## 检索数据
 
-SELECT 语句的执行顺序
+起别名：
+
+```mysql
+SELECT name AS n, hp_max AS hm, mp_max AS mm, attack_max AS am, defense_max AS dm FROM heros
+```
+
+**SELECT 语句的执行顺序**
 
 ```mysql
 # 书写顺序
 SELECT ... FROM ... WHERE ... GROUP BY ... HAVING ... ORDER BY ...
 # 执行顺序
+FROM > WHERE > GROUP BY > HAVING > SELECT的字段 > DISTINCT > ORDER BY > LIMIT
 FROM子句组装数据(包括通过ON进行连接) > WHERE子句进行条件筛选 > GROUP BY分组 > 使用聚集函数进行计算 > HAVING筛选分组 > 计算所有的表达式 > SELECT的字段 > DISTINCT > ORDER BY排序 > LIMIT筛选
 
 SELECT DISTINCT player_id, player_name, count(*) as num #顺序5
@@ -191,15 +207,6 @@ LIMIT 2 #顺序7
 1. 首先先通过 CROSS JOIN 求笛卡尔积，相当于得到虚拟表 vt(virtual table)1-1;
 2. 通过 ON 进行筛选，在虚拟表 vt1-1 的基础上进行筛 选，得到虚拟表 vt1-2；
 3. 添加外部行。如果我们使用的是左连接、右链接或者全连 接，就会涉及到外部行，也就是在虚拟表 vt1-2 的基础上 增加外部行，得到虚拟表 vt1-3。
-
-```mysql
-# 查询，书写顺序SELECT ... FROM ... WHERE ... GROUP BY ... HAVING ... ORDER BY ...
-# 执行顺序，FROM > WHERE > GROUP BY > HAVING > SELECT的字段 > DISTINCT > ORDER BY > LIMIT
-# 取别名
-select name as n from heros;
-# 查询常数
-mysql> SELECT '王者荣耀' as platform, name FROM heros;
-```
 
 当我们拿到了查询数据表的原始数据，也就是最终的虚拟表 vt1，就可以在此基础上再进行 WHERE 阶段。在这个阶段中，会根据 vt1 表的结果进行筛选过滤，得到虚拟表 vt2。然后进入第三步和第四步，也就是 GROUP 和 HAVING 阶段。在这个阶段中，实际上是在虚拟表 vt2 的基础上进行分组和分组过滤，得到中间的虚拟表 vt3 和 vt4。当我们完成了条件筛选部分之后，就可以筛选表中提取的字段，也就是进入到 SELECT 和 DISTINCT 阶段。首先在 SELECT 阶段会提取想要的字段，然后在 DISTINCT 阶段过滤掉重复的行，分别得到中间的虚拟表 vt5-1 和 vt5-2。当我们提取了想要的字段数据之后，就可以按照指定的字段进行排序，也就是 ORDER BY 阶段，得到虚拟表 vt6。最后在 vt6 的基础上，取出指定行的记录，也就是 LIMIT 阶段，得到最终的结果，对应的是虚拟表 vt7。
 
@@ -226,7 +233,7 @@ mysql> SELECT attack_range,DISTINCT name FROM heros;
 ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'DISTINCT name FROM heros' at line 1
 ```
 
-2. DISTINCT 其实是对后面所有列名的组合进行去重，你能看到最后的结果是 69 条，因为这 69 个英雄名称不同。
+2. DISTINCT 其实是**对后面所有列名的组合进行去重**，你能看到最后的结果是 69 条，因为这 69 个英雄名称不同。
 
 ```mysql
 SELECT DISTINCT attack_range, name FROM heros;
@@ -241,7 +248,7 @@ SELECT DISTINCT attack_range, name FROM heros;
 
 ```mysql
 # ORDER BY排序,ASC升序，DESC降序。显示英雄名称及最大生命值，按照最大生命值排序;
-mysql> SELECT name, hp_max FROM heros ORDER BY hp_max;
+mysql> SELECT name, hp_max FROM heros ORDER BY hp_max DESC;
 +--------------+--------+
 | name         | hp_max |
 +--------------+--------+
@@ -261,8 +268,10 @@ mysql> SELECT name, hp_max FROM heros ORDER BY hp_max;
 
 1. 排序的列名，如果是多列，则先排序第一个，然后第二个；
 2. ASC 代表递增排序，DESC 代表递减排序；默认升序；
-3. 非选择列排序:ORDER BY 可以使用非选择列进行排序，所以即使在 SELECT 后面没有这个列名，你同样可以放到 ORDER BY后面进行排序。
+3. 非选择列排序:ORDER BY 可以使用非选择列进行排序，所以即使在 SELECT 后面没有这个列名，你同样可以放到 ORDER BY后面进行排序。如SELECT id FROM heros  ORDER BY name;
 4. ORDER BY 的位置:ORDER BY 通常位于 SELECT 语句的最后一条子句，否则会报错。
+
+实战：
 
 ```mysql
 # 显示英雄名称及最大生命值，按照最大生命值从高到低的方式进行排序
@@ -293,7 +302,7 @@ mysql> SELECT name, hp_max FROM heros ORDER BY mp_max, hp_max DESC;
 ### LIMIT约束返回结果的数量
 
 ```mysql
-# LIMIT约束
+# LIMIT约束，可以提高查询效率&减少网络传输
 mysql> SELECT name, hp_max FROM heros ORDER BY hp_max LIMIT 5;
 +-----------+--------+
 | name      | hp_max |
@@ -308,6 +317,8 @@ mysql> SELECT name, hp_max FROM heros ORDER BY hp_max LIMIT 5;
 ```
 
 ### WHERE 过滤
+
+<img src="https://gitee.com/haojunsheng/ImageHost/raw/master/img/20210418214013.jpg" alt="img" style="zoom: 25%;" />
 
 <img src="https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost/img/20201109153530.png" alt="img" style="zoom:50%;" />
 
@@ -394,6 +405,11 @@ SELECT UPPER('abc')
 SELECT REPLACE('fabcd', 'abc', 123)
 ## 截取字符串
 SELECT SUBSTRING('fabcd', 1,3)
+```
+
+<img src="https://gitee.com/haojunsheng/ImageHost/raw/master/img/20210418215548.png" alt="img" style="zoom:25%;" />
+
+```mysql
 # 日期函数
 SELECT CURRENT_DATE()，运行结果为 2019-04-03
 SELECT CURRENT_TIME()，运行结果为 21:26:34
@@ -475,6 +491,7 @@ mysql> SELECT COUNT(*), role_assist FROM heros GROUP BY role_assist;
 +----------+-------------+
 6 rows in set (0.00 sec)
 # 按照英雄的主要定位、次要定位进行分组，查看这些英雄的数量，并按照这些分组的英雄数量从高到低进行排序。
+# 使用多个字段进行分组，这就相当于把这些字段可能出现的所有的取值情况都进行分组。
 mysql> SELECT COUNT(*) as num, role_main, role_assist FROM heros GROUP BY role_main, role_assist ORDER BY num DESC;
 +-----+-----------+-------------+
 | num | role_main | role_assist |
@@ -485,6 +502,8 @@ mysql> SELECT COUNT(*) as num, role_main, role_assist FROM heros GROUP BY role_m
 +-----+-----------+-------------+
 19 rows in set (0.01 sec)
 ```
+
+<img src="https://gitee.com/haojunsheng/ImageHost/raw/master/img/20210418222322.png" alt="img" style="zoom:25%;" />
 
 ### HAVING过滤分组
 
@@ -1209,3 +1228,8 @@ mysql> show profiles;
 Empty set, 1 warning (0.01 sec)
 ```
 
+# 附录
+
+[王者荣耀数据库](https://github.com/cystanford/sql_heros_data)，字段含义：
+
+![img](https://gitee.com/haojunsheng/ImageHost/raw/master/img/20210418112647.png)
