@@ -7747,9 +7747,72 @@ public class DataInputStream extends InputStream {
 }
 ```
 
-看了上面的代码，你可能会问，那装饰器模式就是简单的“用组合替代继承”吗？当然不是。从 Java IO 的设计来看，装饰器模式相对于简单的组合关系，还有两个比较特殊的地方。
+(我没看出来)看了上面的代码，你可能会问，那装饰器模式就是简单的“用组合替代继承”吗？当然不是。从 Java IO 的设计来看，装饰器模式相对于简单的组合关系，还有两个比较特殊的地方。
 
 第一个比较特殊的地方是：装饰器类和原始类继承同样的父类，这样我们可以对原始类“嵌套”多个装饰器类。比如，下面这样一段代码，我们对 FileInputStream 嵌套了两个装饰器类：BufferedInputStream 和 DataInputStream，让它既支持缓存读取，又支持按照基本数据类型来读取数据。
+
+```java
+InputStream in = new FileInputStream("/user/wangzheng/test.txt");
+InputStream bin = new BufferedInputStream(in);
+DataInputStream din = new DataInputStream(bin);
+int data = din.readInt();
+```
+
+第二个比较特殊的地方是：装饰器类是对功能的增强，这也是装饰器模式应用场景的一个重要特点。实际上，符合“组合关系”这种代码结构的设计模式有很多，比如之前讲过的代理模式、桥接模式，还有现在的装饰器模式。尽管它们的代码结构很相似，但是每种设计模式的意图是不同的。就拿比较相似的代理模式和装饰器模式来说吧，**代理模式中，代理类附加的是跟原始类无关的功能，而在装饰器模式中，装饰器类附加的是跟原始类相关的增强功能。**
+
+```java
+// 代理模式的代码结构(下面的接口也可以替换成抽象类)
+public interface IA {
+  void f();
+}
+public class A impelements IA {
+  public void f() { //... }
+}
+public class AProxy implements IA {
+  private IA a;
+  public AProxy(IA a) {
+    this.a = a;
+  }
+  
+  public void f() {
+    // 新添加的代理逻辑
+    a.f();
+    // 新添加的代理逻辑
+  }
+}
+
+// 装饰器模式的代码结构(下面的接口也可以替换成抽象类)
+public interface IA {
+  void f();
+}
+public class A implements IA {
+  public void f() { //... }
+}
+public class ADecorator implements IA {
+  private IA a;
+  public ADecorator(IA a) {
+    this.a = a;
+  }
+  
+  public void f() {
+    // 功能增强代码
+    a.f();
+    // 功能增强代码
+  }
+}
+```
+
+实际上，如果去查看 JDK 的源码，你会发现，BufferedInputStream、DataInputStream 并非继承自 InputStream，而是另外一个叫 FilterInputStream 的类。那这又是出于什么样的设计意图，才引入这样一个类呢？
+
+我们再重新来看一下 BufferedInputStream 类的代码。InputStream 是一个抽象类而非接口，而且它的大部分函数（比如 read()、available()）都有默认实现，按理来说，我们只需要在 BufferedInputStream 类中重新实现那些需要增加缓存功能的函数就可以了，其他函数继承 InputStream 的默认实现。但实际上，这样做是行不通的。
+
+对于即便是不需要增加缓存功能的函数来说，BufferedInputStream 还是必须把它重新实现一遍，简单包裹对 InputStream 对象的函数调用。具体的代码示例如下所示。如果不重新实现，那 BufferedInputStream 类就无法将最终读取数据的任务，委托给传递进来的 InputStream 对象来完成。这一部分稍微有点不好理解，你自己多思考一下。
+
+### 重点回顾
+
+装饰器模式主要解决继承关系过于复杂的问题，通过组合来替代继承。它主要的作用是给原始类添加增强功能。这也是判断是否该用装饰器模式的一个重要的依据。除此之外，装饰器模式还有一个特点，那就是可以对原始类嵌套使用多个装饰器。为了满足这个应用场景，在设计的时候，装饰器类需要跟原始类继承相同的抽象类或者接口。
+
+
 
 ## 51 | 适配器模式：代理、适配器、桥接、装饰，这四个模式有何区别？
 
@@ -8627,7 +8690,11 @@ public class Collections {
 }
 ```
 
+### 适配器模式在 Collections 类中的应用
 
+在第 51 讲中我们讲到，适配器模式可以用来兼容老的版本接口。当时我们举了一个 JDK 的例子，这里我们再重新仔细看一下。
+
+老版本的 JDK 提供了 Enumeration 类来遍历容器。新版本的 JDK 用 Iterator 类替代 Enumeration 类来遍历容器。为了兼容老的客户端代码（使用老版本 JDK 的代码），我们保留了 Enumeration 类，并且在 Collections 类中，仍然保留了 enumaration() 静态方法（因为我们一般都是通过这个静态函数来创建一个容器的 Enumeration 类对象）。
 
 
 
