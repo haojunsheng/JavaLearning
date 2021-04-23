@@ -8,3 +8,9 @@
 
 
 
+git修改remote分支：
+
+```
+git remote set-url origin ***
+```
+
