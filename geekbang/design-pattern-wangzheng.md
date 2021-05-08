@@ -8404,6 +8404,18 @@ public class UserController {
 
 2. 除了今天提到的观察者模式的几个应用场景，比如邮件订阅，你还能想到有哪些其他的应用场景吗？
 
+## 58 | 模板模式（上）：剖析模板模式在JDK、Servlet、JUnit等中的应用
+
+**模板模式主要是用来解决复用和扩展两个问题**。我们今天会结合 Java Servlet、JUnit TestCase、Java InputStream、Java AbstractList 四个例子来具体讲解这两个作用。
+
+### 模板模式的原理与实现
+
+模板模式，全称是模板方法设计模式，英文是 Template Method Design Pattern。在 GoF 的《设计模式》一书中，它是这么定义的：
+
+> Define the skeleton of an algorithm in an operation, deferring some steps to subclasses. Template Method lets subclasses redefine certain steps of an algorithm without changing the algorithm’s structure.
+
+翻译成中文就是：模板方法模式在一个方法中定义一个算法骨架，并将某些步骤推迟到子类中实现。模板方法模式可以让子类在不改变算法整体结构的情况下，重新定义算法中的某些步骤。
+
 
 
 # 开源与项目实战：开源实战 (14讲)
@@ -8696,9 +8708,118 @@ public class Collections {
 
 老版本的 JDK 提供了 Enumeration 类来遍历容器。新版本的 JDK 用 Iterator 类替代 Enumeration 类来遍历容器。为了兼容老的客户端代码（使用老版本 JDK 的代码），我们保留了 Enumeration 类，并且在 Collections 类中，仍然保留了 enumaration() 静态方法（因为我们一般都是通过这个静态函数来创建一个容器的 Enumeration 类对象）。
 
+不过，保留 Enumeration 类和 enumeration() 函数，都只是为了兼容，实际上，跟适配器没有一点关系。那到底哪一部分才是适配器呢？
 
+在新版本的 JDK 中，Enumeration 类是适配器类。它适配的是客户端代码（使用 Enumeration 类）和新版本 JDK 中新的迭代器 Iterator 类。不过，从代码实现的角度来说，这个适配器模式的代码实现，跟经典的适配器模式的代码实现，差别稍微有点大。enumeration() 静态函数的逻辑和 Enumeration 适配器类的代码耦合在一起，enumeration() 静态函数直接通过 new 的方式创建了匿名类对象。具体的代码如下所示：
 
+```Java
+/**
+ * Returns an enumeration over the specified collection.  This provides
+ * interoperability with legacy APIs that require an enumeration
+ * as input.
+ *
+ * @param  <T> the class of the objects in the collection
+ * @param c the collection for which an enumeration is to be returned.
+ * @return an enumeration over the specified collection.
+ * @see Enumeration
+ */
+public static <T> Enumeration<T> enumeration(final Collection<T> c) {
+  return new Enumeration<T>() {
+    private final Iterator<T> i = c.iterator();
 
+    public boolean hasMoreElements() {
+      return i.hasNext();
+    }
+
+    public T nextElement() {
+      return i.next();
+    }
+  };
+}
+```
+
+### 重点回顾
+
+好了，今天的内容到此就讲完了。我们一块来总结回顾一下，你需要重点掌握的内容。
+
+今天，我重点讲了工厂模式、建造者模式、装饰器模式、适配器模式，这四种模式在 Java JDK 中的应用，主要目的是给你展示真实项目中是如何灵活应用设计模式的。
+
+从今天的讲解中，我们可以学习到，尽管在之前的理论讲解中，我们都有讲到每个模式的经典代码实现，但是，在真实的项目开发中，这些模式的应用更加灵活，代码实现更加自由，可以根据具体的业务场景、功能需求，对代码实现做很大的调整，甚至还可能会对模式本身的设计思路做调整。
+
+比如，Java JDK 中的 Calendar 类，就耦合了业务功能代码、工厂方法、建造者类三种类型的代码，而且，在建造者类的 build() 方法中，前半部分是工厂方法的代码实现，后半部分才是真正的建造者模式的代码实现。这也告诉我们，在项目中应用设计模式，切不可生搬硬套，过于学院派，要学会结合实际情况做灵活调整，做到心中无剑胜有剑。
+
+### 课堂讨论
+
+在 Java 中，经常用到的 StringBuilder 类是否是建造者模式的应用呢？你可以试着像我一样从源码的角度去剖析一下。
+
+## 77 | 开源实战一（下）：通过剖析Java JDK源码学习灵活应用设计模式
+
+### 模板模式在 Collections 类中的应用
+
+我们前面提到，策略、模板、职责链三个模式常用在框架的设计中，提供框架的扩展点，让框架使用者，在不修改框架源码的情况下，基于扩展点定制化框架的功能。Java 中的 Collections 类的 sort() 函数就是利用了模板模式的这个扩展特性。
+
+首先，我们看下 Collections.sort() 函数是如何使用的。我写了一个示例代码，如下所示。这个代码实现了按照不同的排序方式（按照年龄从小到大、按照名字字母序从小到大、按照成绩从大到小）对 students 数组进行排序。
+
+```java
+public class Demo {
+  public static void main(String[] args) {
+    List<Student> students = new ArrayList<>();
+    students.add(new Student("Alice", 19, 89.0f));
+    students.add(new Student("Peter", 20, 78.0f));
+    students.add(new Student("Leo", 18, 99.0f));
+
+    Collections.sort(students, new AgeAscComparator());
+    print(students);
+    
+    Collections.sort(students, new NameAscComparator());
+    print(students);
+    
+    Collections.sort(students, new ScoreDescComparator());
+    print(students);
+  }
+
+  public static void print(List<Student> students) {
+    for (Student s : students) {
+      System.out.println(s.getName() + " " + s.getAge() + " " + s.getScore());
+    }
+  }
+
+  public static class AgeAscComparator implements Comparator<Student> {
+    @Override
+    public int compare(Student o1, Student o2) {
+      return o1.getAge() - o2.getAge();
+    }
+  }
+
+  public static class NameAscComparator implements Comparator<Student> {
+    @Override
+    public int compare(Student o1, Student o2) {
+      return o1.getName().compareTo(o2.getName());
+    }
+  }
+
+  public static class ScoreDescComparator implements Comparator<Student> {
+    @Override
+    public int compare(Student o1, Student o2) {
+      if (Math.abs(o1.getScore() - o2.getScore()) < 0.001) {
+        return 0;
+      } else if (o1.getScore() < o2.getScore()) {
+        return 1;
+      } else {
+        return -1;
+      }
+    }
+  }
+}
+```
+
+结合刚刚这个例子，我们再来看下，为什么说 Collections.sort() 函数用到了模板模式？
+
+Collections.sort() 实现了对集合的排序。为了扩展性，它将其中“比较大小”这部分逻辑，委派给用户来实现。如果我们把比较大小这部分逻辑看作整个排序逻辑的其中一个步骤，那我们就可以把它看作模板模式。不过，从代码实现的角度来看，它看起来有点类似之前讲过的 JdbcTemplate，并不是模板模式的经典代码实现，而是基于 Callback 回调机制来实现的。
+
+不过，在其他资料中，我还看到有人说，Collections.sort() 使用的是策略模式。这样的说法也不是没有道理的。如果我们并不把“比较大小”看作排序逻辑中的一个步骤，而是看作一种算法或者策略，那我们就可以把它看作一种策略模式的应用。
+
+不过，这也不是典型的策略模式，我们前面讲到，在典型的策略模式中，策略模式分为策略的定义、创建、使用这三部分。策略通过工厂模式来创建，并且在程序运行期间，根据配置、用户输入、计算结果等这些不确定因素，动态决定使用哪种策略。而在 Collections.sort() 函数中，策略的创建并非通过工厂模式，策略的使用也非动态确定。
 
 
 
