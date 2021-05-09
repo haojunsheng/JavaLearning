@@ -3,7 +3,6 @@ out/
 test/
 .idea/
 **/.idea/
-**
 java-demo/algo/target/generated-sources/
 java-demo/design-pattern-beautiful/design-pattern-beautiful.iml
 java-demo/design-pattern-beautiful/target/

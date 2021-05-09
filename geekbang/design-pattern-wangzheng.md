@@ -1,4 +1,5 @@
 <!--ts-->
+
    * [前言](#\xE5\x89\x8D\xE8\xA8\x80)
    * [设计模式导读](#\xE8\xAE\xBE\xE8\xAE\xA1\xE6\xA8\xA1\xE5\xBC\x8F\xE5\xAF\xBC\xE8\xAF\xBB)
       * [01 | 为什么说每个程序员都要尽早地学习并掌握设计模式相关知识？](#01--\xE4\xB8\xBA\xE4\xBB\x80\xE4\xB9\x88\xE8\xAF\xB4\xE6\xAF\x8F\xE4\xB8\xAA\xE7\xA8\x8B\xE5\xBA\x8F\xE5\x91\x98\xE9\x83\xBD\xE8\xA6\x81\xE5\xB0\xBD\xE6\x97\xA9\xE5\x9C\xB0\xE5\xAD\xA6\xE4\xB9\xA0\xE5\xB9\xB6\xE6\x8E\x8C\xE6\x8F\xA1\xE8\xAE\xBE\xE8\xAE\xA1\xE6\xA8\xA1\xE5\xBC\x8F\xE7\x9B\xB8\xE5\x85\xB3\xE7\x9F\xA5\xE8\xAF\x86)
@@ -8416,6 +8417,315 @@ public class UserController {
 
 翻译成中文就是：模板方法模式在一个方法中定义一个算法骨架，并将某些步骤推迟到子类中实现。模板方法模式可以让子类在不改变算法整体结构的情况下，重新定义算法中的某些步骤。
 
+这里的“算法”，我们可以理解为广义上的“业务逻辑”，并不特指数据结构和算法中的“算法”。这里的算法骨架就是“模板”，包含算法骨架的方法就是“模板方法”，这也是模板方法模式名字的由来。
+
+原理很简单，代码实现就更加简单，我写了一个示例代码，如下所示。templateMethod() 函数定义为 final，是为了避免子类重写它。method1() 和 method2() 定义为 abstract，是为了强迫子类去实现。不过，这些都不是必须的，在实际的项目开发中，模板模式的代码实现比较灵活，待会儿讲到应用场景的时候，我们会有具体的体现。
+
+```java
+public abstract class AbstractClass {
+  public final void templateMethod() {
+    //...
+    method1();
+    //...
+    method2();
+    //...
+  }
+  
+  protected abstract void method1();
+  protected abstract void method2();
+}
+
+public class ConcreteClass1 extends AbstractClass {
+  @Override
+  protected void method1() {
+    //...
+  }
+  
+  @Override
+  protected void method2() {
+    //...
+  }
+}
+
+public class ConcreteClass2 extends AbstractClass {
+  @Override
+  protected void method1() {
+    //...
+  }
+  
+  @Override
+  protected void method2() {
+    //...
+  }
+}
+
+AbstractClass demo = new ConcreteClass1();
+demo.templateMethod();
+```
+
+### 模板模式作用一：复用
+
+开篇的时候，我们讲到模板模式有两大作用：复用和扩展。我们先来看它的第一个作用：复用。
+
+模板模式把一个算法中不变的流程抽象到父类的模板方法 templateMethod() 中，将可变的部分 method1()、method2() 留给子类 ContreteClass1 和 ContreteClass2 来实现。所有的子类都可以复用父类中模板方法定义的流程代码。我们通过两个小例子来更直观地体会一下。
+
+#### 1.Java InputStream
+
+Java IO 类库中，有很多类的设计用到了模板模式，比如 InputStream、OutputStream、Reader、Writer。我们拿 InputStream 来举例说明一下。
+
+我把 InputStream 部分相关代码贴在了下面。在代码中，read() 函数是一个模板方法，定义了读取数据的整个流程，并且暴露了一个可以由子类来定制的抽象方法。不过这个方法也被命名为了 read()，只是参数跟模板方法不同。
+
+```java
+public abstract class InputStream implements Closeable {
+  //...省略其他代码...
+  
+  public int read(byte b[], int off, int len) throws IOException {
+    if (b == null) {
+      throw new NullPointerException();
+    } else if (off < 0 || len < 0 || len > b.length - off) {
+      throw new IndexOutOfBoundsException();
+    } else if (len == 0) {
+      return 0;
+    }
+
+    int c = read();
+    if (c == -1) {
+      return -1;
+    }
+    b[off] = (byte)c;
+
+    int i = 1;
+    try {
+      for (; i < len ; i++) {
+        c = read();
+        if (c == -1) {
+          break;
+        }
+        b[off + i] = (byte)c;
+      }
+    } catch (IOException ee) {
+    }
+    return i;
+  }
+  
+  public abstract int read() throws IOException;
+}
+
+public class ByteArrayInputStream extends InputStream {
+  //...省略其他代码...
+  
+  @Override
+  public synchronized int read() {
+    return (pos < count) ? (buf[pos++] & 0xff) : -1;
+  }
+}
+```
+
+#### 2.Java AbstractList
+
+在 Java AbstractList 类中，addAll() 函数可以看作模板方法，add() 是子类需要重写的方法，尽管没有声明为 abstract 的，但函数实现直接抛出了 UnsupportedOperationException 异常。前提是，如果子类不重写是不能使用的。
+
+```java
+public boolean addAll(int index, Collection<? extends E> c) {
+    rangeCheckForAdd(index);
+    boolean modified = false;
+    for (E e : c) {
+        add(index++, e);
+        modified = true;
+    }
+    return modified;
+}
+
+public void add(int index, E element) {
+    throw new UnsupportedOperationException();
+}
+```
+
+### 模板模式作用二：扩展
+
+模板模式的第二大作用的是扩展。这里所说的扩展，并不是指代码的扩展性，而是指框架的扩展性，有点类似我们之前讲到的控制反转，你可以结合第 19 节来一块理解。基于这个作用，模板模式常用在框架的开发中，让框架用户可以在不修改框架源码的情况下，定制化框架的功能。我们通过 Junit TestCase、Java Servlet 两个例子来解释一下。
+
+#### 1.Java Servlet
+
+对于 Java Web 项目开发来说，常用的开发框架是 SpringMVC。利用它，我们只需要关注业务代码的编写，底层的原理几乎不会涉及。但是，如果我们抛开这些高级框架来开发 Web 项目，必然会用到 Servlet。实际上，使用比较底层的 Servlet 来开发 Web 项目也不难。我们只需要定义一个继承 HttpServlet 的类，并且重写其中的 doGet() 或 doPost() 方法，来分别处理 get 和 post 请求。具体的代码示例如下所示：
+
+```java
+public class HelloServlet extends HttpServlet {
+  @Override
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    this.doPost(req, resp);
+  }
+  
+  @Override
+  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    resp.getWriter().write("Hello World.");
+  }
+}
+```
+
+除此之外，我们还需要在配置文件 web.xml 中做如下配置。Tomcat、Jetty 等 Servlet 容器在启动的时候，会自动加载这个配置文件中的 URL 和 Servlet 之间的映射关系。
+
+```xml
+<servlet>
+    <servlet-name>HelloServlet</servlet-name>
+    <servlet-class>com.xzg.cd.HelloServlet</servlet-class>
+</servlet>
+
+<servlet-mapping>
+    <servlet-name>HelloServlet</servlet-name>
+    <url-pattern>/hello</url-pattern>
+</servlet-mapping>
+```
+
+当我们在浏览器中输入网址（比如，http://127.0.0.1:8080/hello ）的时候，Servlet 容器会接收到相应的请求，并且根据 URL 和 Servlet 之间的映射关系，找到相应的 Servlet（HelloServlet），然后执行它的 service() 方法。service() 方法定义在父类 HttpServlet 中，它会调用 doGet() 或 doPost() 方法，然后输出数据（“Hello world”）到网页。
+
+我们现在来看，HttpServlet 的 service() 函数长什么样子。
+
+```java
+public void service(ServletRequest req, ServletResponse res)
+    throws ServletException, IOException
+{
+    HttpServletRequest  request;
+    HttpServletResponse response;
+    if (!(req instanceof HttpServletRequest &&
+            res instanceof HttpServletResponse)) {
+        throw new ServletException("non-HTTP request or response");
+    }
+    request = (HttpServletRequest) req;
+    response = (HttpServletResponse) res;
+    service(request, response);
+}
+
+protected void service(HttpServletRequest req, HttpServletResponse resp)
+    throws ServletException, IOException
+{
+    String method = req.getMethod();
+    if (method.equals(METHOD_GET)) {
+        long lastModified = getLastModified(req);
+        if (lastModified == -1) {
+            // servlet doesn't support if-modified-since, no reason
+            // to go through further expensive logic
+            doGet(req, resp);
+        } else {
+            long ifModifiedSince = req.getDateHeader(HEADER_IFMODSINCE);
+            if (ifModifiedSince < lastModified) {
+                // If the servlet mod time is later, call doGet()
+                // Round down to the nearest second for a proper compare
+                // A ifModifiedSince of -1 will always be less
+                maybeSetLastModified(resp, lastModified);
+                doGet(req, resp);
+            } else {
+                resp.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+            }
+        }
+    } else if (method.equals(METHOD_HEAD)) {
+        long lastModified = getLastModified(req);
+        maybeSetLastModified(resp, lastModified);
+        doHead(req, resp);
+    } else if (method.equals(METHOD_POST)) {
+        doPost(req, resp);
+    } else if (method.equals(METHOD_PUT)) {
+        doPut(req, resp);
+    } else if (method.equals(METHOD_DELETE)) {
+        doDelete(req, resp);
+    } else if (method.equals(METHOD_OPTIONS)) {
+        doOptions(req,resp);
+    } else if (method.equals(METHOD_TRACE)) {
+        doTrace(req,resp);
+    } else {
+        String errMsg = lStrings.getString("http.method_not_implemented");
+        Object[] errArgs = new Object[1];
+        errArgs[0] = method;
+        errMsg = MessageFormat.format(errMsg, errArgs);
+        resp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, errMsg);
+    }
+}
+```
+
+从上面的代码中我们可以看出，HttpServlet 的 service() 方法就是一个模板方法，它实现了整个 HTTP 请求的执行流程，doGet()、doPost() 是模板中可以由子类来定制的部分。实际上，这就相当于 Servlet 框架提供了一个扩展点（doGet()、doPost() 方法），让框架用户在不用修改 Servlet 框架源码的情况下，将业务代码通过扩展点镶嵌到框架中执行。
+
+#### 2.JUnit TestCase
+
+跟 Java Servlet 类似，JUnit 框架也通过模板模式提供了一些功能扩展点（setUp()、tearDown() 等），让框架用户可以在这些扩展点上扩展功能。
+
+在使用 JUnit 测试框架来编写单元测试的时候，我们编写的测试类都要继承框架提供的 TestCase 类。在 TestCase 类中，runBare() 函数是模板方法，它定义了执行测试用例的整体流程：先执行 setUp() 做些准备工作，然后执行 runTest() 运行真正的测试代码，最后执行 tearDown() 做扫尾工作。
+
+TestCase 类的具体代码如下所示。尽管 setUp()、tearDown() 并不是抽象函数，还提供了默认的实现，不强制子类去重新实现，但这部分也是可以在子类中定制的，所以也符合模板模式的定义。
+
+```java
+public abstract class TestCase extends Assert implements Test {
+  public void runBare() throws Throwable {
+    Throwable exception = null;
+    setUp();
+    try {
+      runTest();
+    } catch (Throwable running) {
+      exception = running;
+    } finally {
+      try {
+        tearDown();
+      } catch (Throwable tearingDown) {
+        if (exception == null) exception = tearingDown;
+      }
+    }
+    if (exception != null) throw exception;
+  }
+  
+  /**
+  * Sets up the fixture, for example, open a network connection.
+  * This method is called before a test is executed.
+  */
+  protected void setUp() throws Exception {
+  }
+
+  /**
+  * Tears down the fixture, for example, close a network connection.
+  * This method is called after a test is executed.
+  */
+  protected void tearDown() throws Exception {
+  }
+}
+```
+
+### 重点回顾
+
+模板方法模式在一个方法中定义一个算法骨架，并将某些步骤推迟到子类中实现。模板方法模式可以让子类在不改变算法整体结构的情况下，重新定义算法中的某些步骤。这里的“算法”，我们可以理解为广义上的“业务逻辑”，并不特指数据结构和算法中的“算法”。这里的算法骨架就是“模板”，包含算法骨架的方法就是“模板方法”，这也是模板方法模式名字的由来。
+
+在模板模式经典的实现中，模板方法定义为 final，可以避免被子类重写。需要子类重写的方法定义为 abstract，可以强迫子类去实现。不过，在实际项目开发中，模板模式的实现比较灵活，以上两点都不是必须的。
+
+**模板模式有两大作用：复用和扩展。其中，复用指的是，所有的子类可以复用父类中提供的模板方法的代码。扩展指的是，框架通过模板模式提供功能扩展点，让框架用户可以在不修改框架源码的情况下，基于扩展点定制化框架的功能。**
+
+### 课堂讨论
+
+假设一个框架中的某个类暴露了两个模板方法，并且定义了一堆供模板方法调用的抽象方法，代码示例如下所示。在项目开发中，即便我们只用到这个类的其中一个模板方法，我们还是要在子类中把所有的抽象方法都实现一遍，这相当于无效劳动，有没有其他方式来解决这个问题呢？
+
+```java
+public abstract class AbstractClass {
+  public final void templateMethod1() {
+    //...
+    method1();
+    //...
+    method2();
+    //...
+  }
+  
+  public final void templateMethod2() {
+    //...
+    method3();
+    //...
+    method4();
+    //...
+  }
+  
+  protected abstract void method1();
+  protected abstract void method2();
+  protected abstract void method3();
+  protected abstract void method4();
+}
+```
+
+
+
 
 
 # 开源与项目实战：开源实战 (14讲)
@@ -8821,23 +9131,301 @@ Collections.sort() 实现了对集合的排序。为了扩展性，它将其中�
 
 不过，这也不是典型的策略模式，我们前面讲到，在典型的策略模式中，策略模式分为策略的定义、创建、使用这三部分。策略通过工厂模式来创建，并且在程序运行期间，根据配置、用户输入、计算结果等这些不确定因素，动态决定使用哪种策略。而在 Collections.sort() 函数中，策略的创建并非通过工厂模式，策略的使用也非动态确定。
 
+### 观察者模式在 JDK 中的应用
 
+在讲到观察者模式的时候，我们重点讲解了 Google Guava 的 EventBus 框架，它提供了观察者模式的骨架代码。使用 EventBus，我们不需要从零开始开发观察者模式。实际上，Java JDK 也提供了观察者模式的简单框架实现。在平时的开发中，如果我们不希望引入 Google Guava 开发库，可以直接使用 Java 语言本身提供的这个框架类。
 
+不过，它比 EventBus 要简单多了，只包含两个类：java.util.Observable 和 java.util.Observer。前者是被观察者，后者是观察者。它们的代码实现也非常简单，为了方便你查看，我直接 copy-paste 到了这里。
 
+```java
+public interface Observer {
+    void update(Observable o, Object arg);
+}
 
+public class Observable {
+    private boolean changed = false;
+    private Vector<Observer> obs;
 
+    public Observable() {
+        obs = new Vector<>();
+    }
 
+    public synchronized void addObserver(Observer o) {
+        if (o == null)
+            throw new NullPointerException();
+        if (!obs.contains(o)) {
+            obs.addElement(o);
+        }
+    }
 
+    public synchronized void deleteObserver(Observer o) {
+        obs.removeElement(o);
+    }
 
+    public void notifyObservers() {
+        notifyObservers(null);
+    }
 
+    public void notifyObservers(Object arg) {
+        Object[] arrLocal;
 
+        synchronized (this) {
+            if (!changed)
+                return;
+            arrLocal = obs.toArray();
+            clearChanged();
+        }
 
+        for (int i = arrLocal.length-1; i>=0; i--)
+            ((Observer)arrLocal[i]).update(this, arg);
+    }
 
+    public synchronized void deleteObservers() {
+        obs.removeAllElements();
+    }
 
+    protected synchronized void setChanged() {
+        changed = true;
+    }
 
+    protected synchronized void clearChanged() {
+        changed = false;
+    }
+}
+```
 
+对于 Observable、Observer 的代码实现，大部分都很好理解，我们重点来看其中的两个地方。一个是 changed 成员变量，另一个是 notifyObservers() 函数。
 
+我们先来看 changed 成员变量。
 
+它用来表明被观察者（Observable）有没有状态更新。当有状态更新时，我们需要手动调用 setChanged() 函数，将 changed 变量设置为 true，这样才能在调用 notifyObservers() 函数的时候，真正触发观察者（Observer）执行 update() 函数。否则，即便你调用了 notifyObservers() 函数，观察者的 update() 函数也不会被执行。
+
+也就是说，当通知观察者被观察者状态更新的时候，我们需要依次调用 setChanged() 和 notifyObservers() 两个函数，单独调用 notifyObservers() 函数是不起作用的。你觉得这样的设计是不是多此一举呢？这个问题留给你思考，你可以在留言区说说你的看法。
+
+我们再来看 notifyObservers() 函数。
+
+为了保证在多线程环境下，添加、移除、通知观察者三个操作之间不发生冲突，Observable 类中的大部分函数都通过 synchronized 加了锁，不过，也有特例，notifyObservers() 这函数就没有加 synchronized 锁。这是为什么呢？在 JDK 的代码实现中，notifyObservers() 函数是如何保证跟其他函数操作不冲突的呢？这种加锁方法是否存在问题？又存在什么问题呢？
+
+notifyObservers() 函数之所以没有像其他函数那样，一把大锁加在整个函数上，主要还是出于性能的考虑。
+
+notifyObservers() 函数依次执行每个观察者的 update() 函数，每个 update() 函数执行的逻辑提前未知，有可能会很耗时。如果在 notifyObservers() 函数上加 synchronized 锁，notifyObservers() 函数持有锁的时间就有可能会很长，这就会导致其他线程迟迟获取不到锁，影响整个 Observable 类的并发性能。
+
+我们知道，Vector 类不是线程安全的，在多线程环境下，同时添加、删除、遍历 Vector 类对象中的元素，会出现不可预期的结果。所以，在 JDK 的代码实现中，为了避免直接给 notifyObservers() 函数加锁而出现性能问题，JDK 采用了一种折中的方案。这个方案有点类似于我们之前讲过的让迭代器支持”快照“的解决方案。
+
+在 notifyObservers() 函数中，我们先拷贝一份观察者列表，赋值给函数的局部变量，我们知道，局部变量是线程私有的，并不在线程间共享。这个拷贝出来的线程私有的观察者列表就相当于一个快照。我们遍历快照，逐一执行每个观察者的 update() 函数。而这个遍历执行的过程是在快照这个局部变量上操作的，不存在线程安全问题，不需要加锁。所以，我们只需要对拷贝创建快照的过程加锁，加锁的范围减少了很多，并发性能提高了。
+
+为什么说这是一种折中的方案呢？这是因为，这种加锁方法实际上是存在一些问题的。在创建好快照之后，添加、删除观察者都不会更新快照，新加入的观察者就不会被通知到，新删除的观察者仍然会被通知到。这种权衡是否能接受完全看你的业务场景。实际上，这种处理方式也是多线程编程中减小锁粒度、提高并发性能的常用方法。
+
+### 单例模式在 Runtime 类中的应用
+
+JDK 中 java.lang.Runtime 类就是一个单例类。这个类你有没有比较眼熟呢？是的，我们之前讲到 Callback 回调的时候，添加 shutdown hook 就是通过这个类来实现的。
+
+每个 Java 应用在运行时会启动一个 JVM 进程，每个 JVM 进程都只对应一个 Runtime 实例，用于查看 JVM 状态以及控制 JVM 行为。进程内唯一，所以比较适合设计为单例。在编程的时候，我们不能自己去实例化一个 Runtime 对象，只能通过 getRuntime() 静态方法来获得。
+
+Runtime 类的的代码实现如下所示。这里面只包含部分相关代码，其他代码做了省略。从代码中，我们也可以看出，它使用了最简单的饿汉式的单例实现方式。
+
+```java
+/**
+ * Every Java application has a single instance of class
+ * <code>Runtime</code> that allows the application to interface with
+ * the environment in which the application is running. The current
+ * runtime can be obtained from the <code>getRuntime</code> method.
+ * <p>
+ * An application cannot create its own instance of this class.
+ *
+ * @author  unascribed
+ * @see     java.lang.Runtime#getRuntime()
+ * @since   JDK1.0
+ */
+public class Runtime {
+  private static Runtime currentRuntime = new Runtime();
+
+  public static Runtime getRuntime() {
+    return currentRuntime;
+  }
+  
+  /** Don't let anyone else instantiate this class */
+  private Runtime() {}
+  
+  //....
+  public void addShutdownHook(Thread hook) {
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null) {
+       sm.checkPermission(new RuntimePermission("shutdownHooks"));
+    }
+    ApplicationShutdownHooks.add(hook);
+  }
+  //...
+}
+```
+
+### 其他模式在 JDK 中的应用汇总
+
+实际上，我们在讲解理论部分的时候，已经讲过很多模式在 Java JDK 中的应用了。这里我们一块再回顾一下，如果你对哪一部分有所遗忘，可以再回过头去看下。
+
+在讲到模板模式的时候，我们结合 Java Servlet、JUnit TestCase、Java InputStream、Java AbstractList 四个例子，来具体讲解了它的两个作用：扩展性和复用性。
+
+在讲到享元模式的时候，我们讲到 Integer 类中的 -128~127 之间的整型对象是可以复用的，还讲到 String 类型中的常量字符串也是可以复用的。这些都是享元模式的经典应用。
+
+在讲到职责链模式的时候，我们讲到Java Servlet 中的 Filter 就是通过职责链来实现的，同时还对比了 Spring 中的 interceptor。实际上，拦截器、过滤器这些功能绝大部分都是采用职责链模式来实现的。
+
+在讲到的迭代器模式的时候，我们重点剖析了 Java 中 Iterator 迭代器的实现，手把手带你实现了一个针对线性数据结构的迭代器。
+
+### 重点回顾
+
+这两节课主要剖析了 JDK 中用到的几个经典设计模式，其中重点剖析的有：工厂模式、建造者模式、装饰器模式、适配器模式、模板模式、观察者模式，除此之外，我们还汇总了其他模式在 JDK 中的应用，比如：单例模式、享元模式、职责链模式、迭代器模式。
+
+实际上，源码都很简单，理解起来都不难，都没有跳出我们之前讲解的理论知识的范畴。学习的重点并不是表面上去理解、记忆某某类用了某某设计模式，而是让你了解我反复强调的一点，也是标题中突出的一点，在真实的项目开发中，如何灵活应用设计模式，做到活学活用，能够根据具体的场景、需求，做灵活的设计和实现上的调整。这也是模式新手和老手的最大区别。
+
+### 课堂讨论
+
+针对 Java JDK 中观察者模式的代码实现，我有两个问题请你思考。
+
+1. 每个函数都加一把 synchronized 大锁，会不会影响并发性能？有没有优化的方法？
+2. changed 成员变量是否多此一举？
+
+## 84 | 开源实战四（上）：剖析Spring框架中蕴含的经典设计思想或原则
+
+在 Java 世界里，Spring 框架已经几乎成为项目开发的必备框架。作为如此优秀和受欢迎的开源项目，它是我们源码阅读的首选材料之一，不管是设计思想，还是代码实现，都有很多值得我们学习的地方。接下来，我们就详细讲讲 Spring 框架中蕴含的设计思想、原则和模式。因为内容比较多，我分三部分来讲解。
+
+- 第一部分，我们讲解 Spring 框架中蕴含的经典设计思想或原则。
+- 第二部分，我们讲解 Spring 框架中用来支持扩展的两种设计模式。
+- 第三部分，我们总结罗列 Spring 框架中用到的其他十几种设计模式。
+
+### Spring 框架简单介绍
+
+考虑到你可能不熟悉 Spring，我这里对它做下简单介绍。我们常说的 Spring 框架，是指 Spring Framework 基础框架。Spring Framework 是整个 Spring 生态（也被称作 Spring 全家桶）的基石。除了 Spring Framework，Spring 全家桶中还有更多基于 Spring Framework 开发出来的、整合更多功能的框架，比如 Spring Boot、Spring Cloud。
+
+在 Spring 全家桶中，Spring Framework 是最基础、最底层的一部分。它提供了最基础、最核心的 IOC 和 AOP 功能。当然，它包含的功能还不仅如此，还有其他比如事务管理（Transactions）、MVC 框架（Spring MVC）等很多功能。下面这个表格，是我从 Spring 官网上找的，关于 Spring Framework 的功能介绍，你可以大略地看下有个印象。
+
+<img src="https://gitee.com/haojunsheng/ImageHost/raw/master/img/20210509221134.jpeg" alt="img" style="zoom:33%;" />
+
+在 Spring Framework 中，Spring MVC 出镜率很高，经常被单独拎出来使用。它是支持 Web 开发的 MVC 框架，提供了 URL 路由、Session 管理、模板引擎等跟 Web 开发相关的一系列功能。
+
+Spring Boot 是基于 Spring Framework 开发的。它更加专注于微服务开发。之所以名字里带有“Boot”一词，跟它的设计初衷有关。Spring Boot 的设计初衷是快速启动一个项目，利用它可以快速地实现一个项目的开发、部署和运行。Spring Boot 支持的所有功能都是围绕着这个初衷设计的，比如：集成很多第三方开发包、简化配置（比如，规约优于配置）、集成内嵌 Web 容器（比如，Tomcat、Jetty）等。
+
+单个的微服务开发，使用 Spring Boot 就足够了，但是，如果要构建整个微服务集群，就需要用到 Spring Cloud 了。Spring Cloud 主要负责微服务集群的服务治理工作，包含很多独立的功能组件，比如 Spring Cloud Sleuth 调用链追踪、Spring Cloud Config 配置中心等。
+
+### 从 Spring 看框架的作用
+
+如果你使用过一些框架来做开发，你应该能感受到使用框架开发的优势。这里我稍微总结一下。利用框架的好处有：解耦业务和非业务开发、让程序员聚焦在业务开发上；隐藏复杂实现细节、降低开发难度、减少代码 bug；实现代码复用、节省开发时间；规范化标准化项目开发、降低学习和维护成本等等。实际上，如果要用一句话来总结一下的话，那就是简化开发！
+
+对于刚刚的总结，我们再详细解释一下。
+
+相比单纯的 CRUD 业务代码开发，非业务代码开发要更难一些。所以，将一些非业务的通用代码开发为框架，在项目中复用，除了节省开发时间之外，也降低了项目开发的难度。除此之外，框架经过多个项目的多次验证，比起每个项目都重新开发，代码的 bug 会相对少一些。而且，不同的项目使用相同的框架，对于研发人员来说，从一个项目切换到另一个项目的学习成本，也会降低很多。
+
+接下来，我们再拿常见的 Web 项目开发来举例说明一下。
+
+通过在项目中引入 Spring MVC 开发框架，开发一个 Web 应用，我们只需要创建 Controller、Service、Repository 三层类，在其中填写相应的业务代码，然后做些简单的配置，告知框架 Controller、Service、Repository 类之间的调用关系，剩下的非业务相关的工作，比如，对象的创建、组装、管理，请求的解析、封装，URL 与 Controller 之间的映射，都由框架来完成。
+
+不仅如此，如果我们直接引入功能更强大的 Spring Boot，那将应用部署到 Web 容器的工作都省掉了。Spring Boot 内嵌了 Tomcat、Jetty 等 Web 容器。在编写完代码之后，我们用一条命令就能完成项目的部署、运行。
+
+### Spring 框架蕴含的设计思想
+
+在 Google Guava 源码讲解中，我们讲到开发通用功能模块的一些比较普适的开发思想，比如产品意识、服务意识、代码质量意识、不要重复早轮子等。今天，我们剖析一下 Spring 框架背后的一些经典设计思想（或开发技巧）。这些设计思想并非 Spring 独有，都比较通用，能借鉴应用在很多通用功能模块的设计开发中。这也是我们学习 Spring 源码的价值所在。
+
+1. 约定优于配置
+
+在使用 Spring 开发的项目中，配置往往会比较复杂、繁琐。比如，我们利用 Spring MVC 来开发 Web 应用，需要配置每个 Controller 类以及 Controller 类中的接口对应的 URL。
+
+如何来简化配置呢？一般来讲，有两种方法，一种是基于注解，另一种是基于约定。这两种配置方式在 Spring 中都有用到。Spring 在最小化配置方面做得淋漓尽致，有很多值得我们借鉴的地方。
+
+基于注解的配置方式，我们在指定类上使用指定的注解，来替代集中的 XML 配置。比如，我们使用 @RequestMapping 注解，在 Controller 类或者接口上，标注对应的 URL；使用 @Transaction 注解表明支持事务等。
+
+基于约定的配置方式，也常叫作“约定优于配置”或者“规约优于配置”（Convention over Configuration）。通过约定的代码结构或者命名来减少配置。说直白点，就是提供配置的默认值，优先使用默认值。程序员只需要设置那些偏离约定的配置就可以了。
+
+比如，在 Spring JPA（基于 ORM 框架、JPA 规范的基础上，封装的一套 JPA 应用框架）中，我们约定类名默认跟表名相同，属性名默认跟表字段名相同，String 类型对应数据库中的 varchar 类型，long 类型对应数据库中的 bigint 类型等等。
+
+基于刚刚的约定，代码中定义的 Order 类就对应数据库中的“order”表。只有在偏离这一约定的时候，例如数据库中表命名为“order_info”而非“order”，我们才需要显示地去配置类与表的映射关系（Order 类 ->order_info 表）。
+
+实际上，约定优于配置，很好地体现了“二八法则”。在平时的项目开发中，80% 的配置使用默认配置就可以了，只有 20% 的配置必须用户显式地去设置。所以，基于约定来配置，在没有牺牲配置灵活性的前提下，节省了我们大量编写配置的时间，省掉了很多不动脑子的纯体力劳动，提高了开发效率。除此之外，基于相同的约定来做开发，也减少了项目的学习成本和维护成本。
+
+2. 低侵入、松耦合
+
+框架的侵入性是衡量框架好坏的重要指标。所谓低侵入指的是，框架代码很少耦合在业务代码中。低侵入意味着，当我们要替换一个框架的时候，对原有的业务代码改动会很少。相反，如果一个框架是高度侵入的，代码高度侵入到业务代码中，那替换成另一个框架的成本将非常高，甚至几乎不可能。这也是一些长期维护的老项目，使用的框架、技术比较老旧，又无法更新的一个很重要的原因。
+
+实际上，低侵入是 Spring 框架遵循的一个非常重要的设计思想。
+
+Spring 提供的 IOC 容器，在不需要 Bean 继承任何父类或者实现任何接口的情况下，仅仅通过配置，就能将它们纳入进 Spring 的管理中。如果我们换一个 IOC 容器，也只是重新配置一下就可以了，原有的 Bean 都不需要任何修改。
+
+除此之外，Spring 提供的 AOP 功能，也体现了低侵入的特性。在项目中，对于非业务功能，比如请求日志、数据采点、安全校验、事务等等，我们没必要将它们侵入进业务代码中。因为一旦侵入，这些代码将分散在各个业务代码中，删除、修改的成本就变得很高。而基于 AOP 这种开发模式，将非业务代码集中放到切面中，删除、修改的成本就变得很低了。
+
+3. 模块化、轻量级
+
+我们知道，十几年前，EJB 是 Java 企业级应用的主流开发框架。但是，它非常臃肿、复杂，侵入性、耦合性高，开发、维护和学习成本都不低。所以，为了替代笨重的 EJB，Rod Johnson 开发了一套开源的 Interface21 框架，提供了最基本的 IOC 功能。实际上，Interface21 框架就是 Spring 框架的前身。
+
+但是，随着不断的发展，Spring 现在也不单单只是一个只包含 IOC 功能的小框架了，它显然已经壮大成了一个“平台”或者叫“生态”，包含了各种五花八门的功能。尽管如此，但它也并没有重蹈覆辙，变成一个像 EJB 那样的庞大难用的框架。那 Spring 是怎么做到的呢？
+
+这就要归功于 Spring 的模块化设计思想。我们先看一张图，如下所示，它是 Spring Framework 的模块和分层介绍图。
+
+<img src="https://gitee.com/haojunsheng/ImageHost/raw/master/img/20210509231557.png" alt="img" style="zoom: 33%;" />
+
+从图中我们可以看出，Spring 在分层、模块化方面做得非常好。每个模块都只负责一个相对独立的功能。模块之间关系，仅有上层对下层的依赖关系，而同层之间以及下层对上层，几乎没有依赖和耦合。除此之外，在依赖 Spring 的项目中，开发者可以有选择地引入某几个模块，而不会因为需要一个小的功能，就被强迫引入整个 Spring 框架。所以，尽管 Spring Framework 包含的模块很多，已经有二十几个，但每个模块都非常轻量级，都可以单独拿来使用。正因如此，到现在，Spring 框架仍然可以被称为是一个轻量级的开发框架。
+
+4. 再封装、再抽象
+
+Spring 不仅仅提供了各种 Java 项目开发的常用功能模块，而且还对市面上主流的中间件、系统的访问类库，做了进一步的封装和抽象，提供了更高层次、更统一的访问接口。
+
+比如，Spring 提供了 spring-data-redis 模块，对 Redis Java 开发类库（比如 Jedis、Lettuce）做了进一步的封装，适配 Spring 的访问方式，让编程访问 Redis 更加简单。
+
+还有我们下节课要讲的 Spring Cache，实际上也是一种再封装、再抽象。它定义了统一、抽象的 Cache 访问接口，这些接口不依赖具体的 Cache 实现（Redis、Guava Cache、Caffeine 等）。在项目中，我们基于 Spring 提供的抽象统一的接口来访问 Cache。这样，我们就能在不修改代码的情况下，实现不同 Cache 之间的切换。
+
+除此之外，还记得我们之前在模板模式中，讲过的 JdbcTemplate 吗？实际上，它也是对 JDBC 的进一步封装和抽象，为的是进一步简化数据库编程。不仅如此，Spring 对 JDBC 异常也做了进一步的封装。封装的数据库异常继承自 DataAccessException 运行时异常。这类异常在开发中无需强制捕获，从而减少了不必要的异常捕获和处理。除此之外，Spring 封装的数据库异常，还屏蔽了不同数据库异常的细节（比如，不同的数据库对同一报错定义了不同的错误码），让异常的处理更加简单。
+
+### 重点回顾
+
+借助 Spring 框架，我们总结了框架的作用：解耦业务和非业务开发、让程序员聚焦在业务开发上；隐藏复杂实现细节、降低开发难度、减少代码 bug；实现代码复用、节省开发时间；规范化标准化项目开发、降低学习和维护成本等。实际上，如果要用一句话来总结一下的话，那就是简化开发！
+
+除此之外，我们还重点讲解了 Sping 背后蕴含的一些经典设计思想，主要有：约定优于配置，低侵入、松耦合，模块化、轻量级，再封装、再抽象。这些设计思想都比较通用，我们可以借鉴到其他框架的开发中。
+
+### 课堂讨论
+
+1. “约定优于配置”在很多开发场景中都有体现，比如 Maven、Gradle 构建工具，它们约定了一套默认的项目目录结构，除此之外，你还能想到体现这条设计思想的其他哪些开发场景吗？
+2. 参照 Spring 的设计思想，分析一个你熟悉框架、类库、功能组件背后的设计思想。
+
+## 85 | 开源实战四（中）：剖析Spring框架中用来支持扩展的两种设计模式
+
+### 观察者模式在 Spring 中的应用
+
+在前面我们讲到，Java、Google Guava 都提供了观察者模式的实现框架。Java 提供的框架比较简单，只包含 java.util.Observable 和 java.util.Observer 两个类。Google Guava 提供的框架功能比较完善和强大：通过 EventBus 事件总线来实现观察者模式。实际上，Spring 也提供了观察者模式的实现框架。今天，我们就再来讲一讲它。
+
+Spring 中实现的观察者模式包含三部分：Event 事件（相当于消息）、Listener 监听者（相当于观察者）、Publisher 发送者（相当于被观察者）。我们通过一个例子来看下，Spring 提供的观察者模式是怎么使用的。代码如下所示：
+
+```java
+// Event事件
+public class DemoEvent extends ApplicationEvent {
+  private String message;
+
+  public DemoEvent(Object source, String message) {
+    super(source);
+  }
+
+  public String getMessage() {
+    return this.message;
+  }
+}
+
+// Listener监听者
+@Component
+public class DemoListener implements ApplicationListener<DemoEvent> {
+  @Override
+  public void onApplicationEvent(DemoEvent demoEvent) {
+    String message = demoEvent.getMessage();
+    System.out.println(message);
+  }
+}
+
+// Publisher发送者
+@Component
+public class DemoPublisher {
+  @Autowired
+  private ApplicationContext applicationContext;
+
+  public void publishEvent(DemoEvent demoEvent) {
+    this.applicationContext.publishEvent(demoEvent);
+  }
+}
+```
 
 
 
