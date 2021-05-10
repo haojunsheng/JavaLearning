@@ -9427,6 +9427,267 @@ public class DemoPublisher {
 }
 ```
 
+从代码中，我们可以看出，框架使用起来并不复杂，主要包含三部分工作：定义一个继承 ApplicationEvent 的事件（DemoEvent）；定义一个实现了 ApplicationListener 的监听器（DemoListener）；定义一个发送者（DemoPublisher），发送者调用 ApplicationContext 来发送事件消息。
+
+其中，ApplicationEvent 和 ApplicationListener 的代码实现都非常简单，内部并不包含太多属性和方法。实际上，它们最大的作用是做类型标识之用（继承自 ApplicationEvent 的类是事件，实现 ApplicationListener 的类是监听器）。
+
+### 模板模式在 Spring 中的应用
+
+刚刚讲的是观察者模式在 Spring 中的应用，现在我们再讲下模板模式。
+
+我们来看下一下经常在面试中被问到的一个问题：请你说下 Spring Bean 的创建过程包含哪些主要的步骤。这其中就涉及模板模式。它也体现了 Spring 的扩展性。利用模板模式，Spring 能让用户定制 Bean 的创建过程。
+
+Spring Bean 的创建过程，可以大致分为两大步：对象的创建和对象的初始化。
+
+对象的创建是通过反射来动态生成对象，而不是 new 方法。不管是哪种方式，说白了，总归还是调用构造函数来生成对象，没有什么特殊的。对象的初始化有两种实现方式。一种是在类中自定义一个初始化函数，并且通过配置文件，显式地告知 Spring，哪个函数是初始化函数。我举了一个例子解释一下。如下所示，在配置文件中，我们通过 init-method 属性来指定初始化函数。
+
+```java
+public class DemoClass {
+  //...
+  
+  public void initDemo() {
+    //...初始化..
+  }
+}
+
+// 配置：需要通过init-method显式地指定初始化方法
+<bean id="demoBean" class="com.xzg.cd.DemoClass" init-method="initDemo"></bean>
+```
+
+这种初始化方式有一个缺点，初始化函数并不固定，由用户随意定义，这就需要 Spring 通过反射，在运行时动态地调用这个初始化函数。而反射又会影响代码执行的性能，那有没有替代方案呢？
+
+Spring 提供了另外一个定义初始化函数的方法，那就是让类实现 Initializingbean 接口。这个接口包含一个固定的初始化函数定义（afterPropertiesSet() 函数）。Spring 在初始化 Bean 的时候，可以直接通过 bean.afterPropertiesSet() 的方式，调用 Bean 对象上的这个函数，而不需要使用反射来调用了。我举个例子解释一下，代码如下所示。
+
+```java
+public class DemoClass implements InitializingBean{
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    //...初始化...      
+  }
+}
+
+// 配置：不需要显式地指定初始化方法
+<bean id="demoBean" class="com.xzg.cd.DemoClass"></bean>
+```
+
+尽管这种实现方式不会用到反射，执行效率提高了，但业务代码（DemoClass）跟框架代码（InitializingBean）耦合在了一起。框架代码侵入到了业务代码中，替换框架的成本就变高了。所以，我并不是太推荐这种写法。
+
+实际上，在 Spring 对 Bean 整个生命周期的管理中，还有一个跟初始化相对应的过程，那就是 Bean 的销毁过程。我们知道，在 Java 中，对象的回收是通过 JVM 来自动完成的。但是，我们可以在将 Bean 正式交给 JVM 垃圾回收前，执行一些销毁操作（比如关闭文件句柄等等）。
+
+销毁过程跟初始化过程非常相似，也有两种实现方式。一种是通过配置 destroy-method 指定类中的销毁函数，另一种是让类实现 DisposableBean 接口。因为 destroy-method、DisposableBean 跟 init-method、InitializingBean 非常相似，所以，这部分我们就不详细讲解了，你可以自行研究下。
+
+实际上，Spring 针对对象的初始化过程，还做了进一步的细化，将它拆分成了三个小步骤：初始化前置操作、初始化、初始化后置操作。其中，中间的初始化操作就是我们刚刚讲的那部分，初始化的前置和后置操作，定义在接口 BeanPostProcessor 中。BeanPostProcessor 的接口定义如下所示：
+
+```java
+public interface BeanPostProcessor {
+  Object postProcessBeforeInitialization(Object var1, String var2) throws BeansException;
+
+  Object postProcessAfterInitialization(Object var1, String var2) throws BeansException;
+}
+```
+
+我们再来看下，如何通过 BeanPostProcessor 来定义初始化前置和后置操作？
+
+我们只需要定义一个实现了 BeanPostProcessor 接口的处理器类，并在配置文件中像配置普通 Bean 一样去配置就可以了。Spring 中的 ApplicationContext 会自动检测在配置文件中实现了 BeanPostProcessor 接口的所有 Bean，并把它们注册到 BeanPostProcessor 处理器列表中。在 Spring 容器创建 Bean 的过程中，Spring 会逐一去调用这些处理器。
+
+通过上面的分析，我们基本上弄清楚了 Spring Bean 的整个生命周期（创建加销毁）。针对这个过程，我画了一张图，你可以结合着刚刚讲解一块看下。
+
+<img src="https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20210510174832.jpg" alt="img" style="zoom: 33%;" />
+
+不过，你可能会说，这里哪里用到了模板模式啊？模板模式不是需要定义一个包含模板方法的抽象模板类，以及定义子类实现模板方法吗？
+
+实际上，这里的模板模式的实现，并不是标准的抽象类的实现方式，而是有点类似我们前面讲到的 Callback 回调的实现方式，也就是将要执行的函数封装成对象（比如，初始化方法封装成 InitializingBean 对象），传递给模板（BeanFactory）来执行。
+
+### 重点回顾
+
+今天我讲到了 Spring 中用到的两种支持扩展的设计模式，观察者模式和模板模式。
+
+其中，观察者模式在 Java、Google Guava、Spring 中都有提供相应的实现代码。在平时的项目开发中，基于这些实现代码，我们可以轻松地实现一个观察者模式。
+
+Java 提供的框架比较简单，只包含 java.util.Observable 和 java.util.Observer 两个类。Google Guava 提供的框架功能比较完善和强大，可以通过 EventBus 事件总线来实现观察者模式。Spring 提供了观察者模式包含 Event 事件、Listener 监听者、Publisher 发送者三部分。事件发送到 ApplicationContext 中，然后，ApplicationConext 将消息发送给事先注册好的监听者。
+
+除此之外，我们还讲到模板模式在 Spring 中的一个典型应用，那就是 Bean 的创建过程。Bean 的创建包含两个大的步骤，对象的创建和对象的初始化。其中，对象的初始化又可以分解为 3 个小的步骤：初始化前置操作、初始化、初始化后置操作。
+
+## 86 | 开源实战四（下）：总结Spring框架用到的11种设计模式
+
+上一节课，我们讲解了 Spring 中支持扩展功能的两种设计模式：观察者模式和模板模式。这两种模式能够帮助我们创建扩展点，让框架的使用者在不修改源码的情况下，基于扩展点定制化框架功能。
+
+实际上，Spring 框架中用到的设计模式非常多，不下十几种。我们今天就总结罗列一下它们。限于篇幅，我不可能对每种设计模式都进行非常详细的讲解。有些前面已经讲过的或者比较简单的，我就点到为止。如果有什么不是很懂的地方，你可以通过阅读源码，查阅之前的理论讲解，自己去搞定它。如果一直跟着我的课程学习，相信你现在已经具备这样的学习能力。
+
+### 适配器模式在 Spring 中的应用
+
+在 Spring MVC 中，定义一个 Controller 最常用的方式是，通过 @Controller 注解来标记某个类是 Controller 类，通过 @RequesMapping 注解来标记函数对应的 URL。不过，定义一个 Controller 远不止这一种方法。我们还可以通过让类实现 Controller 接口或者 Servlet 接口，来定义一个 Controller。针对这三种定义方式，我写了三段示例代码，如下所示：
+
+```java
+// 方法一：通过@Controller、@RequestMapping来定义
+@Controller
+public class DemoController {
+    @RequestMapping("/employname")
+    public ModelAndView getEmployeeName() {
+        ModelAndView model = new ModelAndView("Greeting");        
+        model.addObject("message", "Dinesh");       
+        return model; 
+    }  
+}
+
+// 方法二：实现Controller接口 + xml配置文件:配置DemoController与URL的对应关系
+public class DemoController implements Controller {
+    @Override
+    public ModelAndView handleRequest(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        ModelAndView model = new ModelAndView("Greeting");
+        model.addObject("message", "Dinesh Madhwal");
+        return model;
+    }
+}
+
+// 方法三：实现Servlet接口 + xml配置文件:配置DemoController类与URL的对应关系
+public class DemoServlet extends HttpServlet {
+  @Override
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    this.doPost(req, resp);
+  }
+  
+  @Override
+  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    resp.getWriter().write("Hello World.");
+  }
+}
+```
+
+在应用启动的时候，Spring 容器会加载这些 Controller 类，并且解析出 URL 对应的处理函数，封装成 Handler 对象，存储到 HandlerMapping 对象中。当有请求到来的时候，DispatcherServlet 从 HanderMapping 中，查找请求 URL 对应的 Handler，然后调用执行 Handler 对应的函数代码，最后将执行结果返回给客户端。
+
+
+
+## 87 | 开源实战五（上）：MyBatis如何权衡易用性、性能和灵活性？
+
+### Mybatis 和 ORM 框架介绍
+
+熟悉 Java 的同学应该知道，MyBatis 是一个 ORM（Object Relational Mapping，对象 - 关系映射）框架。ORM 框架主要是根据类和数据库表之间的映射关系，帮助程序员自动实现对象与数据库中数据之间的互相转化。说得更具体点就是，ORM 负责将程序中的对象存储到数据库中、将数据库中的数据转化为程序中的对象。实际上，Java 中的 ORM 框架有很多，除了刚刚提到的 MyBatis 之外，还有 Hibernate、TopLink 等。
+
+在剖析 Spring 框架的时候，我们讲到，如果用一句话来总结框架作用的话，那就是简化开发。MyBatis 框架也不例外。它简化的是数据库方面的开发。那 MyBatis 是如何简化数据库开发的呢？我们结合第 59 讲中的 JdbcTemplate 的例子来说明一下。
+
+在第 59 讲中，我们讲到，Java 提供了 JDBC 类库来封装不同类型的数据库操作。不过，直接使用 JDBC 来进行数据库编程，还是有点麻烦的。于是，Spring 提供了 JdbcTemplate，对 JDBC 进一步封装，来进一步简化数据库编程。
+
+使用 JdbcTemplate 进行数据库编程，我们只需要编写跟业务相关的代码（比如，SQL 语句、数据库中数据与对象之间的互相转化的代码），其他流程性质的代码（比如，加载驱动、创建数据库连接、创建 statement、关闭连接、关闭 statement 等）都封装在了 JdbcTemplate 类中，不需要我们重复编写。
+
+当时，为了展示使用 JdbcTemplate 是如何简化数据库编程的，我们还举了一个查询数据库中用户信息的例子。还是同样这个例子，我再来看下，使用 MyBatis 该如何实现，是不是比使用 JdbcTemplate 更加简单。
+
+因为 MyBatis 依赖 JDBC 驱动，所以，在项目中使用 MyBatis，除了需要引入 MyBatis 框架本身（mybatis.jar）之外，还需要引入 JDBC 驱动（比如，访问 MySQL 的 JDBC 驱动实现类库 mysql-connector-java.jar）。将两个 jar 包引入项目之后，我们就可以开始编程了。使用 MyBatis 来访问数据库中用户信息的代码如下所示：
+
+```java
+// 1. 定义UserDO
+public class UserDo {
+  private long id;
+  private String name;
+  private String telephone;
+  // 省略setter/getter方法
+}
+
+// 2. 定义访问接口
+public interface UserMapper {
+  public UserDo selectById(long id);
+}
+
+// 3. 定义映射关系：UserMapper.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.xzg.cd.a87.repo.mapper.UserMapper">
+    <select id="selectById" resultType="cn.xzg.cd.a87.repo.UserDo">
+        select * from user where id=#{id}
+    </select>
+</mapper>
+
+// 4. 全局配置文件: mybatis.xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <environments default="dev">
+        <environment id="dev">
+            <transactionManager type="JDBC"></transactionManager>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.jdbc.Driver" />
+                <property name="url" value="jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF-8" />
+                <property name="username" value="root" />
+                <property name="password" value="..." />
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <mapper resource="mapper/UserMapper.xml"/>
+    </mappers>
+</configuration>
+```
+
+需要注意的是，在 UserMapper.xml 配置文件中，我们只定义了接口和 SQL 语句之间的映射关系，并没有显式地定义类（UserDo）字段与数据库表（user）字段之间的映射关系。实际上，这就体现了“约定优于配置”的设计原则。类字段与数据库表字段之间使用了默认映射关系：类字段跟数据库表中拼写相同的字段一一映射。当然，如果没办法做到一一映射，我们也可以自定义它们之间的映射关系。
+
+有了上面的代码和配置，我们就可以像下面这样来访问数据库中的用户信息了。
+
+```java
+public class MyBatisDemo {
+  public static void main(String[] args) throws IOException {
+    Reader reader = Resources.getResourceAsReader("mybatis.xml");
+    SqlSessionFactory sessionFactory = new SqlSessionFactoryBuilder().build(reader);
+    SqlSession session = sessionFactory.openSession();
+    UserMapper userMapper = session.getMapper(UserMapper.class);
+    UserDo userDo = userMapper.selectById(8);
+    //...
+  }
+}
+```
+
+![image-20210510204351089](https://raw.githubusercontent.com/haojunsheng/ImageHost/master/img/20210510204407.png)
+
+从代码中，我们可以看出，相对于使用 JdbcTemplate 的实现方式，使用 MyBatis 的实现方式更加灵活。在使用 JdbcTemplate 的实现方式中，对象与数据库中数据之间的转化代码、SQL 语句，是硬编码在业务代码中的。而在使用 MyBatis 的实现方式中，类字段与数据库字段之间的映射关系、接口与 SQL 之间的映射关系，是写在 XML 配置文件中的，是跟代码相分离的，这样会更加灵活、清晰，维护起来更加方便。
+
+### 如何平衡易用性、性能和灵活性？
+
+刚刚我们对 MyBatis 框架做了简单介绍，接下来，我们再对比一下另外两个框架：JdbcTemplate 和 Hibernate。通过对比我们来看，MyBatis 是如何权衡代码的易用性、性能和灵活性的。
+
+我们先来看 JdbcTemplate。相对于 MyBatis 来说，JdbcTemplate 更加轻量级。因为它对 JDBC 只做了很简单的封装，所以性能损耗比较少。相对于其他两个框架来说，它的性能最好。但是，它的缺点也比较明显，那就是 SQL 与代码耦合在一起，而且不具备 ORM 的功能，需要自己编写代码，解析对象跟数据库中的数据之间的映射关系。所以，在易用性上它不及其他两个框架。
+
+我们再来看 Hibernate。相对于 MyBatis 来说，Hibernate 更加重量级。Hibernate 提供了更加高级的映射功能，能够根据业务需求自动生成 SQL 语句。我们不需要像使用 MyBatis 那样自己编写 SQL。因此，有的时候，我们也把 MyBatis 称作半自动化的 ORM 框架，把 Hibernate 称作全自动化的 ORM 框架。不过，虽然自动生成 SQL 简化了开发，但是毕竟是自动生成的，没有针对性的优化。在性能方面，这样得到的 SQL 可能没有程序员编写得好。同时，这样也丧失了程序员自己编写 SQL 的灵活性。
+
+实际上，不管用哪种实现方式，从数据库中取出数据并且转化成对象，这个过程涉及的代码逻辑基本是一致的。不同实现方式的区别，只不过是哪部分代码逻辑放到了哪里。有的框架提供的功能比较强大，大部分代码逻辑都由框架来完成，程序员只需要实现很小的一部分代码就可以了。这样框架的易用性就更好些。但是，框架集成的功能越多，为了处理逻辑的通用性，就会引入更多额外的处理代码。比起针对具体问题具体编程，这样性能损耗就相对大一些。
+
+JdbcTemplate 提供的功能最简单，易用性最差，性能损耗最少，用它编程性能最好。Hibernate 提供的功能最完善，易用性最好，但相对来说性能损耗就最高了。MyBatis 介于两者中间，在易用性、性能、灵活性三个方面做到了权衡。它支持程序员自己编写 SQL，能够延续程序员对 SQL 知识的积累。相对于完全黑盒子的 Hibernate，很多程序员反倒是更加喜欢 MyBatis 这种半透明的框架。这也提醒我们，过度封装，提供过于简化的开发方式，也会丧失开发的灵活性。
+
+### 重点回顾
+
+如果你熟悉 Java 和 MyBatis，那你应该掌握今天讲到 JDBC、JdbcTemplate、MyBatis、Hibernate 之间的区别。JDBC 是 Java 访问数据库的开发规范，提供了一套抽象的统一的开发接口，隐藏不同数据库的访问细节。
+
+JdbcTemplate、MyBatis、Hibernate 都是对 JDBC 的二次封装，为的是进一步简化数据库开发。其中，JdbcTemplate 不能算得上是 ORM 框架，因为还需要程序员自己编程来实现对象和数据库数据之间的互相转化。相对于 Hibernate 这种连 SQL 都不用程序员自己写的全自动 ORM 框架，MyBatis 算是一种半自动化的 ORM 框架。
+
+# 开源与项目实战：项目实战
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
