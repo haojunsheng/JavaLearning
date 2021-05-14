@@ -1,4 +1,4 @@
-package array_05;
+package com.hjs.array05;
 
 /**
  * @author haojunsheng

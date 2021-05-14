@@ -6,3 +6,7 @@ test/
 java-demo/algo/target/generated-sources/
 java-demo/design-pattern-beautiful/design-pattern-beautiful.iml
 java-demo/design-pattern-beautiful/target/
+/java-demo/algo/target/
+java-demo/algo/src/main/resources/
+java-demo/algo/target/generated-test-sources/
+java-demo/algo/target/test-classes/
