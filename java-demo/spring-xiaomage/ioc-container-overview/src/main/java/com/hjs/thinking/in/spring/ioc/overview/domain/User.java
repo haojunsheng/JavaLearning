@@ -38,6 +38,13 @@ public class User {
 
     private String name;
 
+    public static User createUser() {
+        User user = new User();
+        user.setId(1L);
+        user.setName("hjs");
+        return user;
+    }
+
 
     public Long getId() {
         return id;
@@ -62,4 +69,5 @@ public class User {
                 ", name='" + name + '\'' +
                 '}';
     }
+
 }

@@ -6,3 +6,5 @@ test/
 java-demo/algo/target/generated-sources/
 java-demo/design-pattern-beautiful/design-pattern-beautiful.iml
 java-demo/design-pattern-beautiful/target/
+java-demo/spring-xiaomage/spring-bean/target/
+java-demo/spring-xiaomage/ioc-container-overview/target/
