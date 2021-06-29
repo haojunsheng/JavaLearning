@@ -25,7 +25,7 @@
     <!-- primary = true , 增加了一个 address 属性 -->
     <bean id="superUser" class="com.hjs.thinking.in.spring.ioc.overview.domain.SuperUser" parent="user"
           primary="true">
-        <property name="address" value="杭州"/>
+        <property name="address" value="北京"/>
     </bean>
 
     <bean id="objectFactory" class="org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean">

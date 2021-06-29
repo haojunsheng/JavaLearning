@@ -10,9 +10,13 @@
 
 IoC容器负责管理Beans，最核心的是[`BeanFactory`](https://docs.spring.io/spring-framework/docs/5.3.8/javadoc-api/org/springframework/beans/factory/BeanFactory.html) 接口和[`ApplicationContext`](https://docs.spring.io/spring-framework/docs/5.3.8/javadoc-api/org/springframework/context/ApplicationContext.html)接口。其中，后者是前者的子接口，增加了更多的功能特性。
 
-beans是被Spring IoC容器实例化，装配和管理的对象。
+beans是被Spring IoC容器实例化，装配和管理的对象。Bean之间的关系是用配置元数据来表示的。
 
 ## 1.2. 容器简介
+
+ApplicationContext的常见实现是：[`ClassPathXmlApplicationContext`](https://docs.spring.io/spring-framework/docs/5.3.8/javadoc-api/org/springframework/context/support/ClassPathXmlApplicationContext.html) or [`FileSystemXmlApplicationContext`](https://docs.spring.io/spring-framework/docs/5.3.8/javadoc-api/org/springframework/context/support/FileSystemXmlApplicationContext.html)。
+
+
 
 ![container magic](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost@master/img/20210628211106.png)
 
@@ -29,8 +33,6 @@ xml的话，一般是：`<bean/>`，Java注解的话是@Bean注解方法，@Conf
 ```
 ApplicationContext context = new ClassPathXmlApplicationContext("services.xml", "daos.xml");
 ```
-
-
 
 ### 1.2.3 使用容器
 
@@ -49,12 +51,41 @@ List<String> userList = service.getUsernameList();
 
 BeanDefinition 是 Spring Framework 中定义 Bean 的配置元信息接口。
 
-- 包含包名的类名
+- 类的全限定名
 - Bean 行为配置元素，如作用域、自动绑定的模式，生命周期回调等
 - 其他 Bean 引用，又可称作合作者(collaborators)或者依赖(dependencies)
 - 配置设置，比如 Bean 属性(Properties)
 
 <img src="https://gitee.com/haojunsheng/ImageHost/raw/master/img/20210628231951.png" alt="image-20210628231950382" style="zoom:50%;" />
+
+BeanDefinition 构建
+
+- 通过 BeanDefinitionBuilder
+- 通过 AbstractBeanDefinition 以及派生类
+
+```java
+// 1.通过 BeanDefinitionBuilder 构建
+        BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(User.class);
+        // 通过属性设置
+        beanDefinitionBuilder
+                .addPropertyValue("id", 1)
+                .addPropertyValue("name", "郝俊生");
+        // 获取 BeanDefinition 实例
+        BeanDefinition beanDefinition = beanDefinitionBuilder.getBeanDefinition();
+        System.out.println(beanDefinition);
+        // 2. 通过 AbstractBeanDefinition 以及派生类
+        GenericBeanDefinition genericBeanDefinition = new GenericBeanDefinition();
+        // 设置 Bean 类型
+        genericBeanDefinition.setBeanClass(User.class);
+        // 通过 MutablePropertyValues 批量操作属性
+        MutablePropertyValues propertyValues = new MutablePropertyValues();
+        propertyValues
+                .add("id", 1)
+                .add("name", "郝俊生");
+        // 通过 set MutablePropertyValues 批量操作属性
+        genericBeanDefinition.setPropertyValues(propertyValues);
+        System.out.println(genericBeanDefinition);
+```
 
 ### 1.3.1 命名Bean
 
@@ -103,6 +134,11 @@ Bean 的 id 或 name 属性并非必须制定，如果留空的话，容器会�
 用来把多个对象组装在一起进行工作。
 
 ### 1.4.1 依赖注入
+
+注意区分依赖查找和依赖注入。
+
+- 依赖查找：主动去获取，如beanFactory.getBean(User.class)
+- 依赖注入：IoC容器去查找并且进行注入。
 
 #### 1.4.1.1 构造函数注入
 
@@ -201,15 +237,83 @@ public class SimpleMovieLister {
 </bean>
 ```
 
+#### 内部Beans
+
+定义在<property/>或者<constructor-arg/>的内部。
+
+```
+<bean id="outer" class="...">
+    <!-- instead of using a reference to a target bean, simply define the target bean inline -->
+    <property name="target">
+        <bean class="com.example.Person"> <!-- this is the inner bean -->
+            <property name="name" value="Fiona Apple"/>
+            <property name="age" value="25"/>
+        </bean>
+    </property>
+</bean>
+```
+
+#### 集合
+
+```
+<bean id="moreComplexObject" class="example.ComplexObject">
+    <!-- results in a setAdminEmails(java.util.Properties) call -->
+    <property name="adminEmails">
+        <props>
+            <prop key="administrator">administrator@example.org</prop>
+            <prop key="support">support@example.org</prop>
+            <prop key="development">development@example.org</prop>
+        </props>
+    </property>
+    <!-- results in a setSomeList(java.util.List) call -->
+    <property name="someList">
+        <list>
+            <value>a list element followed by a reference</value>
+            <ref bean="myDataSource" />
+        </list>
+    </property>
+    <!-- results in a setSomeMap(java.util.Map) call -->
+    <property name="someMap">
+        <map>
+            <entry key="an entry" value="just some string"/>
+            <entry key ="a ref" value-ref="myDataSource"/>
+        </map>
+    </property>
+    <!-- results in a setSomeSet(java.util.Set) call -->
+    <property name="someSet">
+        <set>
+            <value>just some string</value>
+            <ref bean="myDataSource" />
+        </set>
+    </property>
+</bean>
+```
+
+### 1.4.3 使用`depends-on`
 
 
 
+### 1.4.4 Bean的延迟初始化
+
+第一次使用的时候初始化，而不是启动的时候初始化。
+
+```
+<bean id="lazy" class="com.something.ExpensiveToCreateBean" lazy-init="true"/>
+<bean name="not.lazy" class="com.something.AnotherBean"/>
+```
 
 
 
+## 1.5 Bean的作用域
 
-
-
+| Scope                                                        | Description                                                  | 图示                                                         |
+| :----------------------------------------------------------- | :----------------------------------------------------------- | ------------------------------------------------------------ |
+| [singleton](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-singleton)单例 | (Default) Scopes a single bean definition to a single object instance for each Spring IoC container. | ![singleton](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost@master/img/20210629110121.png) |
+| [prototype](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-prototype)多例 | Scopes a single bean definition to any number of object instances. | ![prototype](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost@master/img/20210629110203.png) |
+| [request](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-request) | Scopes a single bean definition to the lifecycle of a single HTTP request. That is, each HTTP request has its own instance of a bean created off the back of a single bean definition. Only valid in the context of a web-aware Spring `ApplicationContext`. |                                                              |
+| [session](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-session) | Scopes a single bean definition to the lifecycle of an HTTP `Session`. Only valid in the context of a web-aware Spring `ApplicationContext`. |                                                              |
+| [application](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-application) | Scopes a single bean definition to the lifecycle of a `ServletContext`. Only valid in the context of a web-aware Spring `ApplicationContext`. |                                                              |
+| [websocket](https://docs.spring.io/spring-framework/docs/current/reference/html/web.html#websocket-stomp-websocket-scope) | Scopes a single bean definition to the lifecycle of a `WebSocket`. Only valid in the context of a web-aware Spring `ApplicationContext`. |                                                              |
 
 
 

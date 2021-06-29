@@ -31,7 +31,7 @@ public class BeanDefinitionCreationDemo {
         MutablePropertyValues propertyValues = new MutablePropertyValues();
         propertyValues
                 .add("id", 1)
-                .add("name", "小马哥");
+                .add("name", "郝俊生");
         // 通过 set MutablePropertyValues 批量操作属性
         genericBeanDefinition.setPropertyValues(propertyValues);
         System.out.println(genericBeanDefinition);
