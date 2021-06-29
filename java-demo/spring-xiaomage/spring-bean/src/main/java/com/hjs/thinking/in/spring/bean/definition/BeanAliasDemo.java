@@ -16,7 +16,7 @@ public class BeanAliasDemo {
         BeanFactory beanFactory = new ClassPathXmlApplicationContext("classpath:/META-INF/bean-definitions-context.xml");
         // 通过别名 hjs-user 获取曾用名 user 的 bean
         User user = beanFactory.getBean("user", User.class);
-        User xiaomageUser = beanFactory.getBean("hjs-user", User.class);
-        System.out.println(user == xiaomageUser);
+        User hjsUser = beanFactory.getBean("hjs-user", User.class);
+        System.out.println(user == hjsUser);
     }
 }

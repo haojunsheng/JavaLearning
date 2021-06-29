@@ -95,15 +95,45 @@ BeanDefinition 构建
 
 Bean 的 id 或 name 属性并非必须制定，如果留空的话，容器会为 Bean 自动生成一个唯一的 名称。
 
+```java
+<alias name="user" alias="hjs-user" />
+  
+// 配置 XML 配置文件
+// 启动 Spring 应用上下文
+BeanFactory beanFactory = new ClassPathXmlApplicationContext("classpath:/META-INF/bean-definitions-context.xml");
+// 通过别名 hjs-user 获取曾用名 user 的 bean
+User user = beanFactory.getBean("user", User.class);
+User hjsUser = beanFactory.getBean("hjs-user", User.class);
+System.out.println(user == hjsUser);
+```
+
 ### 1.3.2 实例化Bean
 
 - 常规方式
 
   - 通过构造器(配置元信息:XML、Java 注解和 Java API )
+  
   - 通过静态工厂方法(配置元信息:XML 和 Java API )
+  
+    ```java
+    <bean id="clientService"
+        class="examples.ClientService"
+        factory-method="createInstance"/>
+        
+    public class ClientService {
+        private static ClientService clientService = new ClientService();
+        private ClientService() {}
+    
+        public static ClientService createInstance() {
+            return clientService;
+        }
+    }
+    ```
+  
   - 通过 Bean 工厂方法(配置元信息:XML和 Java API )
+  
   - 通过 FactoryBean(配置元信息:XML、Java 注解和 Java API )
-
+  
   ```
   <!-- the factory bean, which contains a method called createInstance() -->
   <bean id="serviceLocator" class="examples.DefaultServiceLocator">
@@ -115,7 +145,7 @@ Bean 的 id 或 name 属性并非必须制定，如果留空的话，容器会�
       factory-bean="serviceLocator"
       factory-method="createClientServiceInstance"/>
   ```
-
+  
   ```
   public class DefaultServiceLocator {
   
@@ -126,8 +156,22 @@ Bean 的 id 或 name 属性并非必须制定，如果留空的话，容器会�
       }
   }
   ```
-
   
+
+### 1.3.3 Bean的初始化
+
+- @PostConstruct 标注方法
+
+```
+@PostConstruct
+    public void init() {
+        System.out.println("@PostConstruct : UserFactory 初始化中...");
+    }
+```
+
+- 实现 InitializingBean 接口的 afterPropertiesSet() 方法
+
+
 
 ## 1.4 Dependencies
 
