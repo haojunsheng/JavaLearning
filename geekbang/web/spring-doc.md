@@ -352,14 +352,72 @@ public class SimpleMovieLister {
 
 | Scope                                                        | Description                                                  | 图示                                                         |
 | :----------------------------------------------------------- | :----------------------------------------------------------- | ------------------------------------------------------------ |
-| [singleton](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-singleton)单例 | (Default) Scopes a single bean definition to a single object instance for each Spring IoC container. | ![singleton](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost@master/img/20210629110121.png) |
-| [prototype](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-prototype)多例 | Scopes a single bean definition to any number of object instances. | ![prototype](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost@master/img/20210629110203.png) |
-| [request](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-request) | Scopes a single bean definition to the lifecycle of a single HTTP request. That is, each HTTP request has its own instance of a bean created off the back of a single bean definition. Only valid in the context of a web-aware Spring `ApplicationContext`. |                                                              |
-| [session](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-session) | Scopes a single bean definition to the lifecycle of an HTTP `Session`. Only valid in the context of a web-aware Spring `ApplicationContext`. |                                                              |
-| [application](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-application) | Scopes a single bean definition to the lifecycle of a `ServletContext`. Only valid in the context of a web-aware Spring `ApplicationContext`. |                                                              |
+| [singleton](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-singleton)单例，默认 | (Default) Scopes a single bean definition to a single object instance for each Spring IoC container. | ![singleton](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost@master/img/20210629110121.png) |
+| [prototype](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-prototype)原型，多例 | Scopes a single bean definition to any number of object instances. | ![prototype](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost@master/img/20210629110203.png) |
+| [request](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-request) | Scopes a single bean definition to the lifecycle of a single HTTP request. That is, each HTTP request has its own instance of a bean created off the back of a single bean definition. Only valid in the context of a web-aware Spring `ApplicationContext`. | 参考：RequestScope                                           |
+| [session](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-session) | Scopes a single bean definition to the lifecycle of an HTTP `Session`. Only valid in the context of a web-aware Spring `ApplicationContext`. | 参考：SessionScope                                           |
+| [application](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-application) | Scopes a single bean definition to the lifecycle of a `ServletContext`. Only valid in the context of a web-aware Spring `ApplicationContext`. | 参考:ApplicationScope                                        |
 | [websocket](https://docs.spring.io/spring-framework/docs/current/reference/html/web.html#websocket-stomp-websocket-scope) | Scopes a single bean definition to the lifecycle of a `WebSocket`. Only valid in the context of a web-aware Spring `ApplicationContext`. |                                                              |
 
 
 
+## Bean生命周期
 
+### Bean元信息配置阶段
+
+BeanDefinition配置
+
+### Bean元信息解析阶段
+
+-  面向资源BeanDefinition解析
+  - BeanDefinitionReader
+  - XML 解析器 - BeanDefinitionParser
+- 面向注解BeanDefinition解析
+  - AnnotatedBeanDefinitionReader
+
+### Bean注册阶段
+
+BeanDefinitionRegistry
+
+### BeanDefinition 合并阶段
+
+
+
+### Bean Class 加载阶段
+
+- ClassLoader类加载
+-  JavaSecurity安全控制
+- ConfigurableBeanFactory临时ClassLoader
+
+ 
+
+
+
+
+
+
+
+### Bean 实例化阶段
+
+### Bean 实例化前阶段
+
+### Bean 实例化后阶段
+
+### Bean 属性赋值前阶段
+
+### Bean Aware 接口回调阶段
+
+### Bean 初始化前阶段
+
+### Bean 初始化阶段
+
+### Bean 初始化后阶段
+
+### Bean 初始化完成阶段
+
+###  Bean 销毁前阶段
+
+### Bean 销毁阶段
+
+### Bean 垃圾收集
 
