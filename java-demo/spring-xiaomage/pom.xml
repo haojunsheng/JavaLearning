@@ -14,6 +14,7 @@
         <module>dependency-lookup</module>
         <module>bean-scope</module>
         <module>bean-lifecycle</module>
+        <module>resource</module>
     </modules>
 
     <properties>

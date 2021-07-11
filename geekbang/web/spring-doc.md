@@ -1,3 +1,5 @@
+[toc]
+
 # 前言
 
 [Spring官方文档。](https://docs.spring.io/spring-framework/docs/current/reference/html/)
@@ -6,13 +8,13 @@
 
 ## 1. IoC容器
 
-## 1.1 IoC容器和Beans的简介
+### 1.1 IoC容器和Beans的简介
 
 IoC容器负责管理Beans，最核心的是[`BeanFactory`](https://docs.spring.io/spring-framework/docs/5.3.8/javadoc-api/org/springframework/beans/factory/BeanFactory.html) 接口和[`ApplicationContext`](https://docs.spring.io/spring-framework/docs/5.3.8/javadoc-api/org/springframework/context/ApplicationContext.html)接口。其中，后者是前者的子接口，增加了更多的功能特性。
 
 beans是被Spring IoC容器实例化，装配和管理的对象。Bean之间的关系是用配置元数据来表示的。
 
-## 1.2. 容器简介
+### 1.2. 容器简介
 
 ApplicationContext的常见实现是：[`ClassPathXmlApplicationContext`](https://docs.spring.io/spring-framework/docs/5.3.8/javadoc-api/org/springframework/context/support/ClassPathXmlApplicationContext.html) or [`FileSystemXmlApplicationContext`](https://docs.spring.io/spring-framework/docs/5.3.8/javadoc-api/org/springframework/context/support/FileSystemXmlApplicationContext.html)。
 
@@ -47,7 +49,7 @@ PetStoreService service = context.getBean("petStore", PetStoreService.class);
 List<String> userList = service.getUsernameList();
 ```
 
-## 1.3 Bean概览
+### 1.3 Bean概览
 
 BeanDefinition 是 Spring Framework 中定义 Bean 的配置元信息接口。
 
@@ -156,7 +158,6 @@ System.out.println(user == hjsUser);
       }
   }
   ```
-  
 
 ### 1.3.3 Bean的初始化
 
@@ -173,7 +174,7 @@ System.out.println(user == hjsUser);
 
 
 
-## 1.4 Dependencies
+### 1.4 Dependencies
 
 用来把多个对象组装在一起进行工作。
 
@@ -348,7 +349,7 @@ public class SimpleMovieLister {
 
 
 
-## 1.5 Bean的作用域
+### 1.5 Bean的作用域
 
 | Scope                                                        | Description                                                  | 图示                                                         |
 | :----------------------------------------------------------- | :----------------------------------------------------------- | ------------------------------------------------------------ |
@@ -361,13 +362,13 @@ public class SimpleMovieLister {
 
 
 
-## Bean生命周期
+### Bean生命周期
 
-### Bean元信息配置阶段
+#### Bean元信息配置阶段
 
 BeanDefinition配置
 
-### Bean元信息解析阶段
+#### Bean元信息解析阶段
 
 -  面向资源BeanDefinition解析
   - BeanDefinitionReader
@@ -375,15 +376,15 @@ BeanDefinition配置
 - 面向注解BeanDefinition解析
   - AnnotatedBeanDefinitionReader
 
-### Bean注册阶段
+#### Bean注册阶段
 
 BeanDefinitionRegistry
 
-### BeanDefinition 合并阶段
+#### BeanDefinition 合并阶段
 
 
 
-### Bean Class 加载阶段
+#### Bean Class 加载阶段
 
 - ClassLoader类加载
 -  JavaSecurity安全控制
@@ -397,27 +398,29 @@ BeanDefinitionRegistry
 
 
 
-### Bean 实例化阶段
+#### Bean 实例化阶段
 
-### Bean 实例化前阶段
+#### Bean 实例化前阶段
 
-### Bean 实例化后阶段
+#### Bean 实例化后阶段
 
-### Bean 属性赋值前阶段
+#### Bean 属性赋值前阶段
 
-### Bean Aware 接口回调阶段
+#### Bean Aware 接口回调阶段
 
-### Bean 初始化前阶段
+#### Bean 初始化前阶段
 
-### Bean 初始化阶段
+#### Bean 初始化阶段
 
-### Bean 初始化后阶段
+#### Bean 初始化后阶段
 
-### Bean 初始化完成阶段
+#### Bean 初始化完成阶段
 
-###  Bean 销毁前阶段
+####  Bean 销毁前阶段
 
-### Bean 销毁阶段
+#### Bean 销毁阶段
 
-### Bean 垃圾收集
+#### Bean 垃圾收集
+
+# 2. 资源
 
