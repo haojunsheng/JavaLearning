@@ -36,6 +36,8 @@ xml的话，一般是：`<bean/>`，Java注解的话是@Bean注解方法，@Conf
 ApplicationContext context = new ClassPathXmlApplicationContext("services.xml", "daos.xml");
 ```
 
+
+
 ### 1.2.3 使用容器
 
 ```java
@@ -60,35 +62,6 @@ BeanDefinition 是 Spring Framework 中定义 Bean 的配置元信息接口。
 
 <img src="https://gitee.com/haojunsheng/ImageHost/raw/master/img/20210628231951.png" alt="image-20210628231950382" style="zoom:50%;" />
 
-BeanDefinition 构建
-
-- 通过 BeanDefinitionBuilder
-- 通过 AbstractBeanDefinition 以及派生类
-
-```java
-// 1.通过 BeanDefinitionBuilder 构建
-        BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(User.class);
-        // 通过属性设置
-        beanDefinitionBuilder
-                .addPropertyValue("id", 1)
-                .addPropertyValue("name", "郝俊生");
-        // 获取 BeanDefinition 实例
-        BeanDefinition beanDefinition = beanDefinitionBuilder.getBeanDefinition();
-        System.out.println(beanDefinition);
-        // 2. 通过 AbstractBeanDefinition 以及派生类
-        GenericBeanDefinition genericBeanDefinition = new GenericBeanDefinition();
-        // 设置 Bean 类型
-        genericBeanDefinition.setBeanClass(User.class);
-        // 通过 MutablePropertyValues 批量操作属性
-        MutablePropertyValues propertyValues = new MutablePropertyValues();
-        propertyValues
-                .add("id", 1)
-                .add("name", "郝俊生");
-        // 通过 set MutablePropertyValues 批量操作属性
-        genericBeanDefinition.setPropertyValues(propertyValues);
-        System.out.println(genericBeanDefinition);
-```
-
 ### 1.3.1 命名Bean
 
 每个 Bean 拥有一个或多个标识符(identifiers)，这些标识符在 Bean 所在的容器必须是唯一 的。通常，一个 Bean 仅有一个标识符，如果需要额外的，可考虑使用别名(Alias)来扩充。
@@ -97,45 +70,15 @@ BeanDefinition 构建
 
 Bean 的 id 或 name 属性并非必须制定，如果留空的话，容器会为 Bean 自动生成一个唯一的 名称。
 
-```java
-<alias name="user" alias="hjs-user" />
-  
-// 配置 XML 配置文件
-// 启动 Spring 应用上下文
-BeanFactory beanFactory = new ClassPathXmlApplicationContext("classpath:/META-INF/bean-definitions-context.xml");
-// 通过别名 hjs-user 获取曾用名 user 的 bean
-User user = beanFactory.getBean("user", User.class);
-User hjsUser = beanFactory.getBean("hjs-user", User.class);
-System.out.println(user == hjsUser);
-```
-
 ### 1.3.2 实例化Bean
 
 - 常规方式
 
   - 通过构造器(配置元信息:XML、Java 注解和 Java API )
-  
   - 通过静态工厂方法(配置元信息:XML 和 Java API )
-  
-    ```java
-    <bean id="clientService"
-        class="examples.ClientService"
-        factory-method="createInstance"/>
-        
-    public class ClientService {
-        private static ClientService clientService = new ClientService();
-        private ClientService() {}
-    
-        public static ClientService createInstance() {
-            return clientService;
-        }
-    }
-    ```
-  
   - 通过 Bean 工厂方法(配置元信息:XML和 Java API )
-  
   - 通过 FactoryBean(配置元信息:XML、Java 注解和 Java API )
-  
+
   ```
   <!-- the factory bean, which contains a method called createInstance() -->
   <bean id="serviceLocator" class="examples.DefaultServiceLocator">
@@ -147,7 +90,7 @@ System.out.println(user == hjsUser);
       factory-bean="serviceLocator"
       factory-method="createClientServiceInstance"/>
   ```
-  
+
   ```
   public class DefaultServiceLocator {
   
@@ -159,10 +102,9 @@ System.out.println(user == hjsUser);
   }
   ```
 
-### 1.3.3 Bean的初始化
+  
 
-- @PostConstruct 标注方法
-
+## 1.4 Dependencies
 ```
 @PostConstruct
     public void init() {
@@ -181,9 +123,6 @@ System.out.println(user == hjsUser);
 ### 1.4.1 依赖注入
 
 注意区分依赖查找和依赖注入。
-
-- 依赖查找：主动去获取，如beanFactory.getBean(User.class)
-- 依赖注入：IoC容器去查找并且进行注入。
 
 #### 1.4.1.1 构造函数注入
 
@@ -353,11 +292,11 @@ public class SimpleMovieLister {
 
 | Scope                                                        | Description                                                  | 图示                                                         |
 | :----------------------------------------------------------- | :----------------------------------------------------------- | ------------------------------------------------------------ |
-| [singleton](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-singleton)单例，默认 | (Default) Scopes a single bean definition to a single object instance for each Spring IoC container. | ![singleton](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost@master/img/20210629110121.png) |
-| [prototype](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-prototype)原型，多例 | Scopes a single bean definition to any number of object instances. | ![prototype](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost@master/img/20210629110203.png) |
-| [request](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-request) | Scopes a single bean definition to the lifecycle of a single HTTP request. That is, each HTTP request has its own instance of a bean created off the back of a single bean definition. Only valid in the context of a web-aware Spring `ApplicationContext`. | 参考：RequestScope                                           |
-| [session](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-session) | Scopes a single bean definition to the lifecycle of an HTTP `Session`. Only valid in the context of a web-aware Spring `ApplicationContext`. | 参考：SessionScope                                           |
-| [application](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-application) | Scopes a single bean definition to the lifecycle of a `ServletContext`. Only valid in the context of a web-aware Spring `ApplicationContext`. | 参考:ApplicationScope                                        |
+| [singleton](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-singleton)单例 | (Default) Scopes a single bean definition to a single object instance for each Spring IoC container. | ![singleton](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost@master/img/20210629110121.png) |
+| [prototype](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-prototype)多例 | Scopes a single bean definition to any number of object instances. | ![prototype](https://cdn.jsdelivr.net/gh/haojunsheng/ImageHost@master/img/20210629110203.png) |
+| [request](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-request) | Scopes a single bean definition to the lifecycle of a single HTTP request. That is, each HTTP request has its own instance of a bean created off the back of a single bean definition. Only valid in the context of a web-aware Spring `ApplicationContext`. |                                                              |
+| [session](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-session) | Scopes a single bean definition to the lifecycle of an HTTP `Session`. Only valid in the context of a web-aware Spring `ApplicationContext`. |                                                              |
+| [application](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-scopes-application) | Scopes a single bean definition to the lifecycle of a `ServletContext`. Only valid in the context of a web-aware Spring `ApplicationContext`. |                                                              |
 | [websocket](https://docs.spring.io/spring-framework/docs/current/reference/html/web.html#websocket-stomp-websocket-scope) | Scopes a single bean definition to the lifecycle of a `WebSocket`. Only valid in the context of a web-aware Spring `ApplicationContext`. |                                                              |
 
 
