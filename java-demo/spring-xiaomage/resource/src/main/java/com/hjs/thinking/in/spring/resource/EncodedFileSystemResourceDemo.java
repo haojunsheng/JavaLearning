@@ -15,7 +15,6 @@ import java.io.Reader;
 public class EncodedFileSystemResourceDemo {
     public static void main(String[] args) {
         String currentJavaFilePath = System.getProperty("user.dir") + "/resource/src/main/java/com/hjs/thinking/in/spring/resource/EncodedFileSystemResourceDemo.java";
-        File currentJavaFile = new File(currentJavaFilePath);
         // FileSystemResource => WritableResource => Resource
         FileSystemResource fileSystemResource = new FileSystemResource(currentJavaFilePath);
         EncodedResource encodedResource = new EncodedResource(fileSystemResource, "UTF-8");
