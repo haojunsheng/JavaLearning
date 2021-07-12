@@ -15,6 +15,7 @@
         <module>bean-scope</module>
         <module>bean-lifecycle</module>
         <module>resource</module>
+        <module>validation</module>
     </modules>
 
     <properties>
