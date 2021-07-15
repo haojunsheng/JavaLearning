@@ -25,6 +25,7 @@ public class AnnotationBeanDefinitionDemo {
         // 1.命名 Bean 的注册方式
         registerUserBeanDefinition(applicationContext, "hao-user");
         // 2. 非命名 Bean 的注册方法
+        registerUserBeanDefinition(applicationContext,null);
         registerUserBeanDefinition(applicationContext);
         // 启动 Spring 应用上下文
         applicationContext.refresh();

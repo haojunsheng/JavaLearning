@@ -13,5 +13,4 @@
     <!-- FactoryBean实例化 Bean -->
     <bean id="user-by-factory-bean" class="com.hjs.thinking.in.spring.bean.factory.UserFactoryBean"/>
 
-
 </beans>

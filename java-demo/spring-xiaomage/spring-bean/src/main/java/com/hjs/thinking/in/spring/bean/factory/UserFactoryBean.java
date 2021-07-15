@@ -17,4 +17,9 @@ public class UserFactoryBean implements FactoryBean {
     public Class<?> getObjectType() {
         return User.class;
     }
+
+    @Override
+    public boolean isSingleton() {
+        return true;
+    }
 }
